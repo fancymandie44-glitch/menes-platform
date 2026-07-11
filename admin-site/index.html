@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>MENES Platform — Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="console.css">
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-wrap">
+      <div class="login-brand">
+        <div class="login-logo">MENES</div>
+        <div class="login-platform">Platform Console</div>
+      </div>
+      <form id="loginForm" class="login-box">
+        <h1>Connexion sécurisée</h1>
+        <p>Gère tes boutiques, domaines, produits et commandes — tout en un seul endroit.</p>
+        <input type="password" id="loginPassword" placeholder="Mot de passe admin" required autocomplete="current-password">
+        <button type="submit">Accéder à la console</button>
+        <p class="login-secure">🔒 Session chiffrée · Accès privé</p>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">MENES<span>Platform</span></div>
+        <label class="site-switch">
+          <span>Boutique active</span>
+          <select id="siteSelector"></select>
+        </label>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">Principal</div>
+        <button class="nav-btn active" data-tab="dashboard">📊 Tableau de bord</button>
+        <button class="nav-btn" data-tab="sites">🏪 Boutiques & marques</button>
+        <button class="nav-btn" data-tab="domains">🌐 Domaines</button>
+
+        <div class="nav-group-label">Commerce</div>
+        <button class="nav-btn" data-tab="products">👕 Produits</button>
+        <button class="nav-btn" data-tab="collections">📁 Collections</button>
+        <button class="nav-btn" data-tab="orders">📦 Commandes</button>
+        <button class="nav-btn" data-tab="customers">👥 Clients</button>
+        <button class="nav-btn" data-tab="marketing">📣 Marketing</button>
+
+        <div class="nav-group-label">Boutique en ligne</div>
+        <button class="nav-btn" data-tab="appearance">🎨 Apparence & thème</button>
+        <button class="nav-btn" data-tab="design">✏️ Design & contenu</button>
+        <button class="nav-btn" data-tab="sections">📋 Sections page</button>
+
+        <div class="nav-group-label">Système</div>
+        <button class="nav-btn" data-tab="payments">💳 Paiements</button>
+        <button class="nav-btn" data-tab="settings">⚙ Paramètres</button>
+        <button class="nav-btn" data-tab="publish">🚀 Déploiement</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a id="viewStoreLink" href="/" target="_blank" class="sidebar-link">👁 Voir la boutique</a>
+        <button id="logoutBtn" class="logout-btn">Déconnexion</button>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="pageTitle">Tableau de bord</h1>
+          <span id="siteBadge" class="site-badge"></span>
+        </div>
+        <div class="topbar-right">
+          <button id="saveAllBtn" class="btn-primary btn-sm">💾 Sauvegarder</button>
+        </div>
+      </header>
+
+      <main class="main">
+        <!-- Dashboard -->
+        <section id="tab-dashboard" class="tab active">
+          <div class="stats-grid">
+            <div class="stat-card highlight"><span class="stat-num" id="statRevenue">0$</span><span class="stat-label">Revenus (payés)</span></div>
+            <div class="stat-card"><span class="stat-num" id="statOrders">0</span><span class="stat-label">Commandes</span></div>
+            <div class="stat-card"><span class="stat-num" id="statProducts">0</span><span class="stat-label">Produits actifs</span></div>
+            <div class="stat-card"><span class="stat-num" id="statCustomers">0</span><span class="stat-label">Clients</span></div>
+            <div class="stat-card"><span class="stat-num" id="statPending">0</span><span class="stat-label">En attente</span></div>
+            <div class="stat-card"><span class="stat-num" id="statSites">1</span><span class="stat-label">Boutiques</span></div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Actions rapides</h3>
+              <div class="quick-grid">
+                <button onclick="switchTab('products')" class="quick-card">+ Nouveau produit</button>
+                <button onclick="switchTab('orders')" class="quick-card">📦 Commandes</button>
+                <button onclick="switchTab('sites')" class="quick-card">🏪 Nouvelle marque</button>
+                <button onclick="switchTab('domains')" class="quick-card">🌐 Ajouter domaine</button>
+                <button onclick="switchTab('marketing')" class="quick-card">🏷 Code promo</button>
+                <button onclick="switchTab('design')" class="quick-card">🎨 Modifier design</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Commandes récentes</h3>
+              <div id="recentOrders" class="mini-list"></div>
+            </div>
+          </div>
+          <div class="card info-card">
+            <strong>MENES Platform</strong> — Alternative gratuite à Shopify. Gère plusieurs marques, domaines, produits, commandes et paiements depuis une seule console.
+          </div>
+        </section>
+
+        <!-- Sites -->
+        <section id="tab-sites" class="tab">
+          <div class="tab-header"><h2>Boutiques & marques</h2><button id="newSiteBtn" class="btn-primary">+ Nouvelle boutique</button></div>
+          <p class="hint">Crée une boutique pour chaque marque. Chaque boutique a ses propres produits, design et domaines.</p>
+          <div id="sitesList" class="sites-grid"></div>
+        </section>
+
+        <!-- Domains -->
+        <section id="tab-domains" class="tab">
+          <h2>Domaines</h2>
+          <p class="hint">Référence les adresses de chaque boutique. <strong>Pas besoin</strong> de les ajouter dans Netlify → boutiquemenes si c'est un autre projet Netlify (ex: Grillz).</p>
+          <div class="card card-info">
+            <h3>🦷 Site sur un autre projet Netlify (ex: MENES Grillz)</h3>
+            <p>Chaque projet Netlify a déjà son URL (<code>xxx.netlify.app</code>). Tu ne lies <strong>pas</strong> le domaine Grillz dans boutiquemenes.</p>
+            <ol class="steps-list">
+              <li>Console → <strong>Boutiques & marques</strong> → crée « MENES Grillz »</li>
+              <li>Ici, ajoute <code>menesjewelrygrillzprice.netlify.app</code> comme domaine de référence</li>
+              <li>Sur le projet Grillz, déploie avec <code>grillz-site/DEPLOY-GRILLZ.bat</code></li>
+              <li>Gère produits et design depuis l'admin en sélectionnant « MENES Grillz »</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3 id="domainSiteName">Domaines — MENES</h3>
+            <div id="domainsList" class="domain-list"></div>
+            <div class="inline-form">
+              <input type="text" id="newDomainInput" placeholder="mymarque.com">
+              <button id="addDomainBtn" class="btn-primary">Ajouter</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Domaine personnalisé (mybrand.com)</h3>
+            <ol class="steps-list">
+              <li>Ajoute le domaine ici (ex: <code>mybrand.com</code>)</li>
+              <li>Va sur Netlify → <strong>le projet de cette boutique</strong> → Domain management</li>
+              <li>Clique <strong>Add domain</strong> et suis les instructions DNS</li>
+              <li>Attends 5–30 min pour la propagation DNS</li>
+            </ol>
+          </div>
+        </section>
+
+        <!-- Products -->
+        <section id="tab-products" class="tab">
+          <div class="tab-header"><h2>Produits</h2><button id="addProductBtn" class="btn-primary">+ Nouveau produit</button></div>
+          <div class="toolbar">
+            <input type="search" id="productSearch" placeholder="Rechercher un produit...">
+            <select id="productFilterCat"><option value="">Toutes catégories</option></select>
+          </div>
+          <div id="productsList" class="data-table-wrap"></div>
+        </section>
+
+        <!-- Collections -->
+        <section id="tab-collections" class="tab">
+          <div class="tab-header"><h2>Collections</h2><button id="addCollectionBtn" class="btn-outline">+ Collection</button></div>
+          <div id="collectionsList"></div>
+        </section>
+
+        <!-- Orders -->
+        <section id="tab-orders" class="tab">
+          <div class="tab-header"><h2>Commandes</h2></div>
+          <div class="toolbar">
+            <select id="orderFilterStatus">
+              <option value="">Tous statuts</option>
+              <option value="pending">En attente</option>
+              <option value="paid">Payée</option>
+              <option value="processing">En préparation</option>
+              <option value="shipped">Expédiée</option>
+              <option value="delivered">Livrée</option>
+              <option value="cancelled">Annulée</option>
+            </select>
+          </div>
+          <div id="ordersList" class="data-table-wrap"></div>
+        </section>
+
+        <!-- Customers -->
+        <section id="tab-customers" class="tab">
+          <h2>Clients</h2>
+          <p class="hint">Liste automatique des clients ayant passé commande.</p>
+          <div id="customersList" class="data-table-wrap"></div>
+        </section>
+
+        <!-- Marketing -->
+        <section id="tab-marketing" class="tab">
+          <h2>Marketing</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Codes promo</h3>
+              <div id="discountsList"></div>
+              <div class="btn-row">
+                <button id="addDiscountBtn" class="btn-outline">+ Nouveau code</button>
+                <button id="saveDiscountsBtn" class="btn-primary">💾 Sauvegarder les codes</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Barre d'annonce</h3>
+              <label>Texte (haut du site)<textarea id="mktAnnouncement" rows="2"></textarea></label>
+              <button id="saveAnnouncementBtn" class="btn-primary">Sauvegarder</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Appearance -->
+        <section id="tab-appearance" class="tab">
+          <h2>Apparence & thème</h2>
+          <p class="hint">Contrôle total du look de ta boutique. Les changements s'appliquent après « Sauvegarder » et un rafraîchissement du site.</p>
+
+          <div class="card">
+            <h3>🌐 Langue & SEO</h3>
+            <div class="form-grid-2">
+              <label>Langue du site
+                <select id="apLanguage">
+                  <option value="fr">Français</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
+              <label>Titre SEO (onglet navigateur)<input type="text" id="apSeoTitle" placeholder="MENES — Luxe Streetwear"></label>
+            </div>
+            <label>Description SEO (Google)<textarea id="apSeoDesc" rows="2" placeholder="Vêtements premium, paiement sécurisé..."></textarea></label>
+            <label class="upload-label">Favicon (icône onglet)
+              <div class="upload-zone small" id="faviconUploadZone"><img id="faviconPreview" class="upload-preview hidden" alt=""><span>📷 Favicon</span><input type="file" id="faviconFile" accept="image/*" hidden></div>
+            </label>
+          </div>
+
+          <div class="card">
+            <h3>🎨 Couleurs</h3>
+            <label>Mode
+              <select id="apMode">
+                <option value="light">Clair</option>
+                <option value="dark">Sombre</option>
+                <option value="custom">Personnalisé</option>
+              </select>
+            </label>
+            <div class="color-grid">
+              <label class="color-field">Couleur d'accent<input type="color" id="apAccent" value="#c9a84c"></label>
+              <label class="color-field">Accent foncé (survol)<input type="color" id="apAccentDark" value="#9a7b2f"></label>
+            </div>
+            <div id="apCustomColors" class="color-grid hidden">
+              <label class="color-field">Fond de page<input type="color" id="apBg" value="#fafafa"></label>
+              <label class="color-field">Cartes / surfaces<input type="color" id="apSurface" value="#ffffff"></label>
+              <label class="color-field">Texte<input type="color" id="apText" value="#0a0a0a"></label>
+            </div>
+            <p class="hint">Le mode « Personnalisé » active les couleurs de fond, cartes et texte ci-dessus.</p>
+          </div>
+
+          <div class="card">
+            <h3>🔤 Polices</h3>
+            <div class="form-grid-2">
+              <label>Police des titres
+                <select id="apHeadingFont">
+                  <option value="Bebas Neue">Bebas Neue (défaut)</option>
+                  <option value="Anton">Anton</option>
+                  <option value="Archivo Black">Archivo Black</option>
+                  <option value="Oswald">Oswald</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Playfair Display">Playfair Display</option>
+                  <option value="Cormorant Garamond">Cormorant Garamond</option>
+                  <option value="Space Grotesk">Space Grotesk</option>
+                </select>
+              </label>
+              <label>Police du texte
+                <select id="apBodyFont">
+                  <option value="Inter">Inter (défaut)</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Rubik">Rubik</option>
+                  <option value="Space Grotesk">Space Grotesk</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🖼 Photos & mise en page</h3>
+            <div class="form-grid-2">
+              <label>Format des photos produits
+                <select id="apAspect">
+                  <option value="">Hauteur fixe</option>
+                  <option value="square">Carré (1:1)</option>
+                  <option value="portrait45">Portrait (4:5)</option>
+                  <option value="portrait34">Portrait (3:4)</option>
+                  <option value="landscape">Paysage (16:9)</option>
+                  <option value="wide">Paysage (3:2)</option>
+                </select>
+              </label>
+              <label>Ajustement image
+                <select id="apImgFit">
+                  <option value="cover">Remplir (crop auto)</option>
+                  <option value="contain">Entier (pas de crop)</option>
+                </select>
+              </label>
+              <label>Hauteur photo (px, si hauteur fixe)<input type="number" id="apImgHeight" min="150" max="700" value="320"></label>
+              <label>Largeur min. des cartes (px)<input type="number" id="apGridMin" min="180" max="420" value="280"></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🏔 Hero & bannière</h3>
+            <div class="form-grid-2">
+              <label>Hauteur du hero (% écran)<input type="number" id="apHeroHeight" min="40" max="100" value="85"></label>
+              <label>Assombrissement image hero (%)<input type="number" id="apHeroOverlay" min="0" max="90" value="55"></label>
+            </div>
+            <div class="color-grid">
+              <label class="color-field">Fond barre d'annonce<input type="color" id="apAnnBg" value="#0a0a0a"></label>
+              <label class="color-field">Texte barre d'annonce<input type="color" id="apAnnColor" value="#c9a84c"></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🔘 Coins arrondis</h3>
+            <div class="form-grid-2">
+              <label>Arrondi général (px)<input type="number" id="apRadius" min="0" max="30" value="6"></label>
+              <label>Arrondi des boutons (px)<input type="number" id="apBtnRadius" min="0" max="40" value="6"></label>
+            </div>
+          </div>
+
+          <div class="publish-actions">
+            <button id="saveAppearanceBtn" class="btn-primary">💾 Sauvegarder l'apparence</button>
+            <button id="resetAppearanceBtn" class="btn-outline">↺ Réinitialiser</button>
+            <a id="appearancePreviewLink" class="btn-outline" target="_blank" rel="noopener">👁 Voir le site</a>
+          </div>
+        </section>
+
+        <!-- Design -->
+        <section id="tab-design" class="tab">
+          <h2>Design & contenu</h2>
+          <form id="siteForm" class="card">
+            <h3>Identité de marque</h3>
+            <div class="form-grid-2">
+              <label>Nom<input type="text" id="siteName"></label>
+              <label>Slogan<input type="text" id="siteTagline"></label>
+              <label>Titre hero<input type="text" id="siteHeroTitle"></label>
+              <label>Bouton CTA<input type="text" id="siteHeroCta"></label>
+            </div>
+            <label>Sous-titre hero<textarea id="siteHeroSubtitle" rows="2"></textarea></label>
+            <div class="form-grid-2">
+              <label class="upload-label">Image hero
+                <div class="upload-zone" id="heroUploadZone"><img id="heroImagePreview" class="upload-preview hidden" alt=""><span>📷 Image de fond</span><input type="file" id="heroImageFile" accept="image/*" hidden></div>
+              </label>
+              <label class="upload-label">Logo
+                <div class="upload-zone small" id="logoUploadZone"><img id="logoPreview" class="upload-preview hidden" alt=""><span>📷 Logo</span><input type="file" id="logoFile" accept="image/*" hidden></div>
+              </label>
+            </div>
+            <h3>Contact</h3>
+            <div class="form-grid-2">
+              <label>Instagram URL<input type="url" id="siteInstagram"></label>
+              <label>Handle<input type="text" id="siteInstagramHandle" placeholder="@marque"></label>
+              <label>Email<input type="email" id="siteEmail"></label>
+              <label>Téléphone<input type="tel" id="sitePhone"></label>
+            </div>
+            <h3>Liste VIP & Bundle</h3>
+            <div class="form-grid-2">
+              <label>Titre VIP<input type="text" id="emailCapTitle"></label>
+              <label>Titre bundle<input type="text" id="bundleTitle"></label>
+            </div>
+            <label>Sous-titre VIP<textarea id="emailCapSubtitle" rows="2"></textarea></label>
+            <label>Texte bundle<textarea id="bundleText" rows="2"></textarea></label>
+            <h3>Wallets crypto</h3>
+            <div id="cryptoEditor"></div>
+            <button type="submit" class="btn-primary">Sauvegarder le design</button>
+          </form>
+        </section>
+
+        <!-- Sections -->
+        <section id="tab-sections" class="tab">
+          <h2>Sections de la page</h2>
+          <div class="card"><h3>Visibilité</h3><div class="toggle-grid" id="sectionToggles"></div></div>
+          <div class="card"><h3>Badges confiance</h3><div id="trustEditor"></div><button type="button" id="addTrustBtn" class="btn-outline">+ Badge</button></div>
+          <div class="card"><h3>Pourquoi nous</h3><div id="whyEditor"></div><button type="button" id="addWhyBtn" class="btn-outline">+ Point</button></div>
+          <div class="card"><h3>FAQ</h3><div id="faqEditor"></div><button type="button" id="addFaqBtn" class="btn-outline">+ Question</button></div>
+          <div class="card">
+            <h3>Ils portent MENES — Galerie</h3>
+            <div class="form-grid-2">
+              <label>Titre<input id="galleryTitle"></label>
+              <label>Sous-titre<input id="gallerySubtitle"></label>
+            </div>
+            <div id="galleryEditor"></div>
+            <button type="button" id="addGalleryBtn" class="btn-outline">+ Photo client</button>
+          </div>
+          <div class="card"><label>Texte sécurité<textarea id="siteGuarantee" rows="3"></textarea></label></div>
+          <button id="saveSectionsBtn" class="btn-primary">Sauvegarder sections</button>
+        </section>
+
+        <!-- Payments -->
+        <section id="tab-payments" class="tab">
+          <h2>Paiements</h2>
+          <div class="grid-2">
+            <div class="card"><h3>💳 Carte — Stripe</h3><p>Checkout sécurisé page principale</p><code>STRIPE_SECRET_KEY</code></div>
+            <div class="card"><h3>₿ Crypto</h3><p>Wallets dans Design → crypto</p></div>
+            <div class="card"><h3>🛍 Klarna</h3><p>Page <code>/paiement.html</code> via Stripe</p></div>
+            <div class="card"><h3>🅿 PayPal</h3><p><code>PAYPAL_CLIENT_ID</code> + <code>PAYPAL_CLIENT_SECRET</code></p></div>
+            <div class="card"><h3>⬛ Square</h3><p><code>SQUARE_ACCESS_TOKEN</code> + <code>SQUARE_LOCATION_ID</code></p></div>
+          </div>
+          <div class="card info-card">🔒 Clés secrètes dans <strong>Netlify → Environment variables</strong> uniquement.</div>
+        </section>
+
+        <!-- Settings -->
+        <section id="tab-settings" class="tab">
+          <h2>Paramètres</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Console</h3>
+              <p class="hint">Mot de passe admin : variable Netlify <code>ADMIN_PASSWORD</code></p>
+              <p class="hint">URL console : <code>/console</code></p>
+            </div>
+            <div class="card">
+              <h3>Données</h3>
+              <div class="publish-actions">
+                <button id="exportDataBtn" class="btn-outline">📥 Exporter boutique</button>
+                <button id="importDataBtn" class="btn-outline">📤 Importer</button>
+                <input type="file" id="importFile" accept=".json" hidden>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Publish -->
+        <section id="tab-publish" class="tab">
+          <h2>Déploiement</h2>
+          <div class="card">
+            <h3>Mettre en ligne</h3>
+            <ol class="steps-list">
+              <li>Modifie ta boutique dans cette console</li>
+              <li>Tout est sauvegardé automatiquement sur Netlify (Blobs)</li>
+              <li>Pour mettre à jour le code : lance <strong>ENVOYER-ZIP.bat</strong> ou <code>netlify deploy --prod</code></li>
+            </ol>
+            <p class="hint">Boutique : <span id="publishStoreUrl"></span><br>Console : <span id="publishConsoleUrl"></span></p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Product modal -->
+  <div id="productModal" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <h3 id="productModalTitle">Nouveau produit</h3>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-grid-2">
+          <label>Nom<input type="text" id="productName" required></label>
+          <label>SKU<input type="text" id="productSku" placeholder="MENES-HOOD-001"></label>
+          <label>Prix (CAD)<input type="number" id="productPrice" min="0" step="0.01" required></label>
+          <label>Ancien prix barré (doit être plus élevé que le prix)<input type="number" id="productCompare" min="0" step="0.01" placeholder="ex: 120 si le prix actuel est 90"></label>
+          <label>Stock<input type="number" id="productStock" min="0" value="0"></label>
+          <label>Catégorie<select id="productCategory"></select></label>
+        </div>
+        <label>Description<textarea id="productDesc" rows="3"></textarea></label>
+        <label>Tags (virgule)<input type="text" id="productTags" placeholder="nouveau, drop, limité"></label>
+
+        <div class="modal-subhead">Options <small>(taille, couleur, matière… ajoute autant que tu veux)</small></div>
+        <div id="optionsEditor"></div>
+        <button type="button" id="addOptionBtn" class="btn-outline btn-sm">+ Ajouter une option</button>
+
+        <div class="modal-subhead">Photos <small>(la 1<sup>re</sup> = principale · associe une photo à une variante pour l'afficher au clic)</small></div>
+        <div id="productImagesEditor" class="images-editor"></div>
+        <div class="images-add-row">
+          <div class="upload-zone small" id="productUploadZone"><span>📷 Ajouter une photo (recadrage)</span><input type="file" id="productImageFile" accept="image/*" hidden></div>
+          <div class="url-add">
+            <input type="url" id="productImageUrl" placeholder="ou coller une URL d'image">
+            <button type="button" id="addImageUrlBtn" class="btn-outline btn-sm">Ajouter l'URL</button>
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <label class="checkbox"><input type="checkbox" id="productActive" checked> Actif</label>
+          <label class="checkbox"><input type="checkbox" id="productFeatured"> Populaire</label>
+        </div>
+        <div class="modal-actions"><button type="button" id="cancelProductBtn">Annuler</button><button type="submit" class="btn-primary">Sauvegarder</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Site modal -->
+  <div id="siteModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Nouvelle boutique / marque</h3>
+      <form id="newSiteForm" class="modal-content-inner">
+        <label>Nom de la marque<input type="text" id="newSiteName" required placeholder="Ex: NOVA STREET"></label>
+        <label>Slug (URL interne)<input type="text" id="newSiteSlug" placeholder="nova-street"></label>
+        <label>Description<input type="text" id="newSiteBrand" placeholder="Streetwear premium"></label>
+        <label>Domaine / URL Netlify<input type="text" id="newSiteDomain" placeholder="menesjewelrygrillzprice.netlify.app"></label>
+        <label>URL Netlify complète (optionnel)<input type="text" id="newSiteNetlifyUrl" placeholder="https://menesjewelrygrillzprice.netlify.app"></label>
+        <label>Dupliquer depuis<select id="duplicateFrom"><option value="">Boutique vide</option></select></label>
+        <div class="modal-actions"><button type="button" id="cancelSiteBtn">Annuler</button><button type="submit" class="btn-primary">Créer la boutique</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cropper modal -->
+  <div id="cropperModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>✂️ Recadrer la photo</h3>
+      <p class="hint">Choisis le format, zoome et déplace l'image. Glisse directement sur l'aperçu pour positionner.</p>
+      <label>Format
+        <select id="cropAspect">
+          <option value="square">Carré (1:1)</option>
+          <option value="portrait45">Portrait (4:5)</option>
+          <option value="portrait34">Portrait (3:4)</option>
+          <option value="landscape">Paysage (16:9)</option>
+          <option value="wide">Paysage (3:2)</option>
+          <option value="free">Libre (image entière)</option>
+        </select>
+      </label>
+      <div id="cropStage" class="crop-stage"><canvas id="cropCanvas"></canvas></div>
+      <label>Zoom<input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1"></label>
+      <div class="modal-actions">
+        <button type="button" id="cropCancelBtn">Annuler</button>
+        <button type="button" id="cropApplyBtn" class="btn-primary">Appliquer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="config.js"></script>
+  <script src="console.js"></script>
+</body>
+</html>

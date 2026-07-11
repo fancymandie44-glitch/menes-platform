@@ -1,0 +1,91 @@
+[build]
+  publish = "dist"
+  functions = "dist/api"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "http://*"
+  to = "https://:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/console"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/console/"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/platform"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/platform/"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/paiement"
+  to = "/paiement.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Cross-Origin-Opener-Policy = "same-origin"
+    X-XSS-Protection = "1; mode=block"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://formsubmit.co; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://boutiquemenes.netlify.app https://api.coingecko.com https://photon.komoot.io https://formsubmit.co https://api.qrserver.com"
+
+[[headers]]
+  for = "/console.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

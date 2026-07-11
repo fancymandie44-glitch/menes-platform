@@ -1,0 +1,98 @@
+{
+  "site": {
+    "name": "MENES",
+    "tagline": "Luxe streetwear · Qualité premium",
+    "heroTitle": "PORTEZ L'EXCELLENCE.",
+    "heroSubtitle": "Vêtements et accessoires conçus pour ceux qui ne suivent pas la mode — ils la créent.",
+    "heroCta": "Voir la collection",
+    "heroImage": "",
+    "logo": "",
+    "announcement": "✦ Drop limité · Livraison Québec & Canada · -10% première commande (liste VIP)",
+    "instagram": "https://www.instagram.com/menes_jewelry",
+    "instagramHandle": "@menes_jewelry",
+    "email": "mymenes2022@gmail.com",
+    "phone": "",
+    "currency": "CAD",
+    "sections": {
+      "announcement": true,
+      "trustBar": true,
+      "why": true,
+      "gallery": true,
+      "bundle": true,
+      "emailCapture": true,
+      "faq": true,
+      "guarantee": true
+    },
+    "trust": [
+      { "icon": "🔒", "title": "Paiement 100% sécurisé", "text": "Carte · Crypto · Klarna · PayPal" },
+      { "icon": "🚚", "title": "Livraison rapide", "text": "Expédition sous 3-5 jours ouvrables" },
+      { "icon": "💎", "title": "Qualité premium", "text": "Matériaux sélectionnés, finitions soignées" },
+      { "icon": "↩", "title": "Satisfait ou échangé", "text": "14 jours pour échanger" }
+    ],
+    "why": [
+      { "title": "Design exclusif", "text": "Chaque pièce MENES est pensée pour se démarquer. Pas de mass market — du vrai streetwear luxe." },
+      { "title": "Prix direct producteur", "text": "Pas d'intermédiaire. Tu paies le juste prix pour une qualité boutique." },
+      { "title": "Service personnalisé", "text": "Questions? Écris-nous sur Instagram ou par email. Réponse sous 24h garantie." }
+    ],
+    "gallery": [
+      { "image": "", "caption": "Client MENES", "handle": "" },
+      { "image": "", "caption": "Client MENES", "handle": "" },
+      { "image": "", "caption": "Client MENES", "handle": "" },
+      { "image": "", "caption": "Client MENES", "handle": "" },
+      { "image": "", "caption": "Client MENES", "handle": "" },
+      { "image": "", "caption": "Client MENES", "handle": "" }
+    ],
+    "galleryTitle": "Ils portent MENES",
+    "gallerySubtitle": "Rejoins la communauté. Tag @menes_jewelry pour apparaître ici.",
+    "bundle": {
+      "title": "Complete le look",
+      "text": "Grillz + streetwear = ta signature MENES. Combine tes pièces préférées en un seul panier.",
+      "cta": "Voir la collection"
+    },
+    "emailCapture": {
+      "title": "Rejoins la liste VIP MENES",
+      "subtitle": "Accès anticipé aux drops, offres exclusives et -10% sur ta première commande.",
+      "button": "M'inscrire",
+      "placeholder": "ton@email.com"
+    },
+    "faq": [
+      { "q": "Comment passer commande?", "a": "Ajoute tes articles au panier, remplis tes infos et paie par carte ou crypto. Klarna et PayPal sont aussi disponibles sur la page paiement alternative." },
+      { "q": "Quels modes de paiement acceptez-vous?", "a": "Carte (Square), crypto (BTC, ETH, USDT), Klarna (4x sans frais) et PayPal." },
+      { "q": "Combien de temps pour la livraison?", "a": "3 à 5 jours ouvrables au Québec. 5 à 10 jours pour le reste du Canada." },
+      { "q": "Puis-je échanger un article?", "a": "Oui, dans les 14 jours suivant la réception, si l'article est neuf avec étiquettes." }
+    ],
+    "guarantee": "Toutes les transactions sont chiffrées SSL 256-bit. Vos données bancaires ne sont jamais stockées sur nos serveurs — elles sont traitées directement par nos partenaires de paiement certifiés PCI-DSS.",
+    "crypto": [
+      { "label": "Bitcoin", "symbol": "BTC", "network": "Bitcoin", "address": "" },
+      { "label": "Ethereum", "symbol": "ETH", "network": "ERC-20", "address": "" },
+      { "label": "USDT", "symbol": "USDT", "network": "TRC-20", "address": "" }
+    ]
+  },
+  "products": [
+    {
+      "id": "hoodie-noir",
+      "name": "Hoodie MENES Noir",
+      "category": "vetements",
+      "price": 85,
+      "description": "Hoodie oversize 400gsm, logo brodé, coupe streetwear premium.",
+      "sizes": ["S", "M", "L", "XL"],
+      "image": "",
+      "stock": 0,
+      "active": true,
+      "featured": true
+    },
+    {
+      "id": "tshirt-logo",
+      "name": "T-Shirt Logo MENES",
+      "category": "vetements",
+      "price": 45,
+      "description": "Coton peigné 220gsm, impression haute densité, fit relaxed.",
+      "sizes": ["S", "M", "L", "XL", "XXL"],
+      "image": "",
+      "stock": 0,
+      "active": true,
+      "featured": false
+    }
+  ],
+  "orders": []
+}

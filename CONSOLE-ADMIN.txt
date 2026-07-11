@@ -1,0 +1,19 @@
+MENES PLATFORM — CONSOLE ADMIN
+================================
+
+OUVRIR LA CONSOLE (double-clic):
+  OPEN-CONSOLE.bat
+
+URL DIRECTE:
+  https://boutiquemenes.netlify.app/console
+
+AUTRES LIENS:
+  Boutique:  https://boutiquemenes.netlify.app/
+  Admin:     https://boutiquemenes.netlify.app/console
+  Klarna/PayPal: https://boutiquemenes.netlify.app/paiement.html
+
+MOT DE PASSE: menes2026
+(Change via Netlify → ADMIN_PASSWORD)
+
+NOTE: L'ancienne URL regal-tapioca-470bbf.netlify.app n'existe plus.
+      Utilise boutiquemenes.netlify.app

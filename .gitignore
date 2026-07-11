@@ -1,0 +1,15 @@
+.netlify
+.vercel
+node_modules
+dist
+*.exe
+*.zip
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+MENES-VETEMENTS-extracted
+
+GRILLZ-CONNECT.txt
+CONSOLE-ADMIN.txt

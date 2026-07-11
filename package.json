@@ -1,0 +1,9 @@
+{
+  "name": "menes-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MENES — boutique en ligne (vêtements, grillz, accessoires)",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

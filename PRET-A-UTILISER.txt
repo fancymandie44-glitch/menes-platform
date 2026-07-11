@@ -1,0 +1,50 @@
+MENES VETEMENTS — PRET A UTILISER
+=================================
+
+DEMARRER (sur ton PC)
+---------------------
+Double-clique: START-PLATFORM.bat
+
+  Boutique clients → http://localhost:8888/store/
+  Admin (toi)      → http://localhost:8888/admin/
+  Mot de passe     → menes2026
+
+
+UTILISATION QUOTIDIENNE
+-----------------------
+
+1. Lance START-PLATFORM.bat
+2. Ouvre l'admin → ajoute/modifie tes produits
+3. Clique Sauvegarder → produit visible sur la boutique (auto!)
+4. Clients commandent → tu reçois email à mymenes2022@gmail.com
+
+
+METTRE EN LIGNE (Internet)
+--------------------------
+
+1. Va sur https://app.netlify.com
+2. Deploys → glisse MENES-VETEMENTS.zip
+3. Site settings → Environment variables:
+   ADMIN_PASSWORD = menes2026
+   SQUARE_ACCESS_TOKEN = (de developer.squareup.com)
+   SQUARE_LOCATION_ID = (de Square)
+   SQUARE_SANDBOX = false
+
+URLs en ligne:
+  Boutique → https://boutiquemenes.netlify.app/
+  Console  → https://boutiquemenes.netlify.app/console
+  Admin    → Double-clic OPEN-CONSOLE.bat
+
+
+SQUARE (paiements)
+------------------
+1. https://developer.squareup.com/apps → Creer app
+2. Copie Access Token + Location ID
+3. Ajoute dans Netlify Environment variables
+4. L'argent va sur ton compte Square (meme que ta machine)
+
+
+IMPORTANT
+---------
+- Site GRILLZ = dossier menes-grillz (SEPARÉ, ne pas melanger)
+- Site VETEMENTS = dossier menes-platform (celui-ci)

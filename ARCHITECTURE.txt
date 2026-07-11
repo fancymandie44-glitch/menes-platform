@@ -1,0 +1,43 @@
+MENES PLATFORM — ARCHITECTURE SÉPARÉE
+========================================
+
+Tu as maintenant 2 sites Netlify distincts:
+
+1. ADMIN (console seulement)
+   URL: https://menesadmin.netlify.app
+   Fichier: OPEN-CONSOLE.bat
+   Deploy: admin-site\DEPLOY-ADMIN.bat
+
+2. BOUTIQUE + API (serveur central de données)
+   URL: https://boutiquemenes.netlify.app
+   Deploy: DEPLOY-BOUTIQUE.bat
+
+COMMENT ÇA MARCHE
+-----------------
+- L'admin est sur menesadmin.netlify.app
+- Quand tu sauvegardes, les données vont sur boutiquemenes.netlify.app/api/
+- Les autres domaines (grillz, custom) pointent vers la même API
+- Tu gères toutes les boutiques depuis l'admin
+
+SUR NETLIFY TU VERRAS:
+- menesadmin = site admin (fichiers HTML/CSS/JS seulement)
+- boutiquemenes = boutique + Functions (api/store, api/platform)
+
+MOT DE PASSE: menes2026
+(Netlify → boutiquemenes → Environment variables → ADMIN_PASSWORD)
+
+LIER UN NOUVEAU DOMAINE
+-----------------------
+
+A) AUTRE PROJET NETLIFY (ex: MENES Grillz)
+   1. Console admin → Boutiques & marques → + Nouvelle boutique (slug: grillz)
+   2. Console admin → Domaines → ajoute menesjewelrygrillzprice.netlify.app
+      (reference admin seulement — NE PAS ajouter dans Netlify boutiquemenes)
+   3. Deploy: grillz-site\DEPLOY-GRILLZ.bat
+   4. Gere depuis l'admin en selectionnant "MENES Grillz"
+   Voir: GRILLZ-CONNECT.txt
+
+B) DOMAINE PERSONNALISE (ex: grillz.com)
+   1. Console admin → Domaines → ajoute grillz.com
+   2. Netlify → projet GRILLZ (pas boutiquemenes) → Add custom domain
+   3. Configure DNS chez ton registrar

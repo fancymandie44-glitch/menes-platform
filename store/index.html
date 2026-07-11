@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MENES — Boutique</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="#" class="nav-brand" id="navBrand">MENES</a>
+    <div class="nav-links">
+      <a href="#products">Boutique</a>
+      <a href="#contact">Contact</a>
+      <button id="cartBtn" class="cart-btn">Panier (<span id="cartCount">0</span>)</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <p class="hero-tag" id="heroTag">Luxe streetwear</p>
+    <h1 id="heroTitle">VOTRE STYLE. VOTRE MARQUE.</h1>
+    <p id="heroSubtitle">Vêtements et grillz sur mesure.</p>
+  </header>
+
+  <section id="products" class="products-section">
+    <div class="container">
+      <h2>Boutique</h2>
+      <div class="filters">
+        <button class="filter active" data-cat="all">Tout</button>
+        <button class="filter" data-cat="vetements">Vêtements</button>
+        <button class="filter" data-cat="grillz">Grillz</button>
+        <button class="filter" data-cat="accessoires">Accessoires</button>
+      </div>
+      <div id="productsGrid" class="products-grid"></div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact-section">
+    <div class="container">
+      <h2>Contact</h2>
+      <div class="contact-links">
+        <a id="linkInstagram" href="#" target="_blank">Instagram @menes_jewelry</a>
+        <a id="linkEmail" href="mailto:mymenes2022@gmail.com">mymenes2022@gmail.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart sidebar -->
+  <div id="cartOverlay" class="cart-overlay hidden"></div>
+  <aside id="cartPanel" class="cart-panel hidden">
+    <div class="cart-header">
+      <h3>Panier</h3>
+      <button id="closeCart">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total">Total: <strong id="cartTotal">0$</strong></div>
+      <button id="checkoutBtn" class="btn-checkout">Payer avec Square</button>
+    </div>
+  </aside>
+
+  <!-- Checkout modal -->
+  <div id="checkoutModal" class="modal hidden">
+    <div class="modal-box">
+      <h3>Finaliser la commande</h3>
+      <form id="checkoutForm">
+        <label>Nom<input type="text" name="name" required></label>
+        <label>Email<input type="email" name="email" required></label>
+        <label>Téléphone<input type="tel" name="phone" required></label>
+        <label>Adresse<textarea name="address" rows="2" required></textarea></label>
+        <button type="submit" class="btn-checkout">Continuer vers le paiement Square</button>
+        <button type="button" id="cancelCheckout">Annuler</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 <span id="footerBrand">MENES</span></p>
+  </footer>
+
+  <script src="shop.js"></script>
+</body>
+</html>

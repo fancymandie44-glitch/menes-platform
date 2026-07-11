@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Paiement alternatif — MENES</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shop.css?v=20260710">
+</head>
+<body class="pay-page">
+  <nav class="nav">
+    <a href="/" class="nav-brand"><span>MENES</span></a>
+    <div class="nav-links">
+      <a href="/">← Retour boutique</a>
+    </div>
+  </nav>
+
+  <main class="pay-page-main container">
+    <div class="pay-page-head">
+      <span class="section-label">Paiement alternatif</span>
+      <h1>Klarna & PayPal</h1>
+      <p>Choisis ton mode de paiement préféré. Toutes les transactions sont sécurisées et chiffrées.</p>
+    </div>
+
+    <div class="pay-page-grid">
+      <section class="pay-summary card-panel">
+        <h2>Récapitulatif</h2>
+        <div id="summaryItems" class="summary-items"></div>
+        <div class="summary-total">Total : <strong id="summaryTotal">0$</strong> CAD</div>
+        <div id="summaryCustomer" class="summary-customer"></div>
+      </section>
+
+      <section class="pay-options card-panel">
+        <h2>Comment veux-tu payer?</h2>
+        <p class="checkout-secure">🔒 Redirection vers un paiement sécurisé</p>
+        <div class="pay-methods-alt">
+          <button type="button" class="pay-btn-alt" id="payKlarna">
+            <span class="pay-icon">🛍</span>
+            <span>Klarna</span>
+            <small>4 paiements sans frais</small>
+          </button>
+          <button type="button" class="pay-btn-alt" id="payPaypal">
+            <span class="pay-icon">🅿</span>
+            <span>PayPal</span>
+            <small>Compte ou carte</small>
+          </button>
+        </div>
+        <p class="checkout-note" id="payNote"></p>
+        <a href="/" class="back-link">← Modifier ma commande</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-trust">
+        <span>🔒 SSL Sécurisé</span>
+        <span>💳 Paiement chiffré</span>
+      </div>
+      <p>© 2026 MENES</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="config.js?v=20260710"></script>
+  <script src="paiement.js?v=20260710"></script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MENES — Luxe streetwear. Vêtements premium, paiement sécurisé, livraison rapide au Québec et Canada.">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>MENES — Luxe Streetwear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shop.css?v=20260710">
+</head>
+<body>
+  <div id="announceBar" class="announce hidden"></div>
+
+  <nav class="nav">
+    <a href="#" class="nav-brand">
+      <img id="navLogo" class="nav-logo-img hidden" alt="MENES" width="36" height="36">
+      <span id="navBrand">MENES</span>
+    </a>
+    <div class="nav-links">
+      <a href="#products" data-i18n="nav_shop">Boutique</a>
+      <a href="#gallery" data-i18n="nav_community">Communauté</a>
+      <a href="#why" data-i18n="nav_why">Pourquoi MENES</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <button id="cartBtn" class="cart-btn"><span data-i18n="cart">Panier</span> (<span id="cartCount">0</span>)</button>
+    </div>
+  </nav>
+
+  <header class="hero" id="heroSection">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-inner">
+      <p class="hero-tag" id="heroTag"></p>
+      <h1 id="heroTitle">MENES</h1>
+      <p class="hero-sub" id="heroSubtitle"></p>
+      <a href="#products" class="hero-cta" id="heroCta">Voir la collection</a>
+    </div>
+  </header>
+
+  <section id="trustBar" class="trust-bar hidden"></section>
+
+  <section id="products" class="products-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label" data-i18n="label_collection">Collection</span>
+        <h2 data-i18n="label_boutique">Boutique</h2>
+      </div>
+      <div class="filters" id="filtersBar"></div>
+      <div id="productsGrid" class="products-grid"></div>
+    </div>
+  </section>
+
+  <section id="bundle" class="bundle-section hidden">
+    <div class="container bundle-inner">
+      <div class="bundle-copy">
+        <span class="section-label">Signature MENES</span>
+        <h2 id="bundleTitle">Complete le look</h2>
+        <p id="bundleText"></p>
+        <a href="#products" class="hero-cta" id="bundleCta">Voir la collection</a>
+      </div>
+      <div class="bundle-tags">
+        <span>Grillz</span><span>+</span><span>Streetwear</span><span>=</span><span>MENES</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery" class="gallery-section hidden">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label">Communauté</span>
+        <h2 id="galleryTitle">Ils portent MENES</h2>
+        <p class="section-sub" id="gallerySubtitle"></p>
+      </div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <p class="gallery-empty hidden" id="galleryEmpty">Photos clients bientôt disponibles — tag <a id="galleryIgLink" href="#" target="_blank" rel="noopener">@menes_jewelry</a> sur Instagram!</p>
+    </div>
+  </section>
+
+  <section id="why" class="why-section hidden">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label">Pourquoi nous</span>
+        <h2 id="whyTitle">Pourquoi MENES</h2>
+      </div>
+      <div id="whyGrid" class="why-grid"></div>
+    </div>
+  </section>
+
+  <section id="emailCapture" class="email-section hidden">
+    <div class="container email-inner">
+      <div class="email-copy">
+        <h2 id="emailTitle">Rejoins la liste VIP MENES</h2>
+        <p id="emailSubtitle"></p>
+      </div>
+      <form id="emailForm" class="email-form">
+        <input type="email" id="emailInput" required autocomplete="email">
+        <input type="text" id="emailHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" id="emailBtn">M'inscrire</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-section hidden">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label">Questions</span>
+        <h2>FAQ</h2>
+      </div>
+      <div id="faqList" class="faq-list"></div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact-section">
+    <div class="container">
+      <h2 data-i18n="label_contact">Contact</h2>
+      <p class="contact-sub" data-i18n="contact_sub">Une question? On répond sous 24h.</p>
+      <div class="contact-links">
+        <a id="linkInstagram" href="#" target="_blank" rel="noopener">Instagram</a>
+        <a id="linkEmail" href="#">Email</a>
+        <a id="linkPhone" href="#" class="hidden">Téléphone</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="guarantee" class="guarantee-section hidden">
+    <div class="container guarantee-box">
+      <span class="guarantee-icon">🛡</span>
+      <p id="guaranteeText"></p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-trust">
+        <span data-i18n="foot_ssl">🔒 SSL Sécurisé</span>
+        <span data-i18n="foot_pay">💳 Paiement chiffré</span>
+        <span data-i18n="foot_pci">✓ PCI-DSS Compliant</span>
+      </div>
+      <nav class="footer-legal">
+        <a href="livraison.html" data-i18n="foot_shipping">Livraison</a>
+        <a href="retours.html" data-i18n="foot_returns">Retours & échanges</a>
+        <a href="confidentialite.html" data-i18n="foot_privacy">Confidentialité</a>
+      </nav>
+      <p>© 2026 <span id="footerBrand">MENES</span> · <span data-i18n="foot_rights">Tous droits réservés</span></p>
+    </div>
+  </footer>
+
+  <div id="cartOverlay" class="cart-overlay hidden"></div>
+  <aside id="cartPanel" class="cart-panel hidden">
+    <div class="cart-header">
+      <h3 data-i18n="cart_title">Panier</h3>
+      <button id="closeCart" aria-label="Fermer">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-secure" data-i18n="cart_secure">🔒 Paiement 100% sécurisé</div>
+      <div class="cart-total"><span data-i18n="cart_total">Total:</span> <strong id="cartTotal">0$</strong> CAD</div>
+      <button id="checkoutBtn" class="btn-checkout" data-i18n="cart_checkout">Commander — Paiement sécurisé</button>
+    </div>
+  </aside>
+
+  <div id="checkoutModal" class="modal hidden">
+    <div class="modal-box modal-checkout">
+      <h3 data-i18n="checkout_title">Finaliser la commande</h3>
+      <p class="checkout-secure" data-i18n="checkout_secure">🔒 Connexion chiffrée SSL · Données protégées</p>
+      <form id="checkoutForm">
+        <label><span data-i18n="f_name">Nom complet</span><input type="text" name="name" required autocomplete="name"></label>
+        <div class="checkout-row-2">
+          <label><span data-i18n="f_email">Courriel</span><input type="email" name="email" required autocomplete="email"></label>
+          <label><span data-i18n="f_phone">Téléphone</span><input type="tel" name="phone" required autocomplete="tel"></label>
+        </div>
+        <label><span data-i18n="f_country">Pays</span>
+          <select name="country" id="checkoutCountry">
+            <option value="CA" selected>Canada</option>
+            <option value="US">États-Unis</option>
+            <option value="FR">France</option>
+            <option value="BE">Belgique</option>
+            <option value="CH">Suisse</option>
+            <option value="OTHER">Autre</option>
+          </select>
+        </label>
+        <label class="addr-field"><span data-i18n="f_address">Adresse</span>
+          <input type="text" name="address" id="checkoutAddress" required autocomplete="off" placeholder="Commence à taper ton adresse...">
+          <div id="addrSuggestions" class="addr-suggestions hidden"></div>
+        </label>
+        <div class="checkout-row-3">
+          <label><span data-i18n="f_city">Ville</span><input type="text" name="city" id="checkoutCity" required></label>
+          <label><span data-i18n="f_province">Province</span><select name="province" id="checkoutProvince"></select></label>
+          <label><span data-i18n="f_postal">Code postal</span><input type="text" name="postal" id="checkoutPostal" required></label>
+        </div>
+
+        <div class="checkout-summary" id="checkoutSummary"></div>
+
+        <p class="pay-label" data-i18n="pay_label">Mode de paiement :</p>
+        <div class="pay-methods pay-methods-main">
+          <button type="button" class="pay-btn active" data-method="stripe">
+            <span class="pay-icon">💳</span><span data-i18n="pay_card">Carte</span><small>Stripe · Visa · MC · Amex</small>
+          </button>
+          <button type="button" class="pay-btn" data-method="crypto">
+            <span class="pay-icon">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
+          </button>
+        </div>
+        <input type="hidden" name="method" id="payMethod" value="stripe">
+        <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Payer par carte — Sécurisé</button>
+        <p class="alt-pay">
+          <span data-i18n="alt_pay">Besoin de Klarna ou PayPal?</span>
+          <button type="button" id="altPayBtn" class="link-btn" data-i18n="alt_pay_btn">Continuer avec Klarna / PayPal →</button>
+        </p>
+        <button type="button" id="cancelCheckout" data-i18n="cancel">Annuler</button>
+        <p class="checkout-note" id="checkoutNote"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="cryptoModal" class="modal hidden">
+    <div class="modal-box modal-crypto">
+      <h3>Paiement en crypto</h3>
+      <p class="checkout-secure">Envoie le montant exact avant la fin du minuteur</p>
+
+      <div class="crypto-order">
+        <span>Commande <strong id="cryptoOrderId">#—</strong></span>
+        <span class="crypto-fiat">Total : <strong id="cryptoAmount">0$ CAD</strong></span>
+      </div>
+
+      <div id="cryptoTimer" class="crypto-timer">
+        <span class="crypto-timer-label">Temps restant pour payer</span>
+        <span class="crypto-timer-clock" id="cryptoClock">15:00</span>
+        <div class="crypto-timer-bar"><div id="cryptoTimerFill" class="crypto-timer-fill"></div></div>
+      </div>
+
+      <div id="cryptoExpired" class="crypto-expired hidden">
+        <p>⏱ Le délai est écoulé. Le taux de change a peut-être changé.</p>
+        <button type="button" class="btn-checkout" id="cryptoRestartBtn">Recommencer le paiement</button>
+      </div>
+
+      <div id="cryptoBody">
+        <div id="cryptoTabs" class="crypto-tabs"></div>
+        <div id="cryptoPanel" class="crypto-panel"></div>
+        <p class="crypto-help">Le paiement est confirmé automatiquement dès réception sur la blockchain. On expédie ensuite ta commande.</p>
+        <button type="button" class="btn-checkout" id="cryptoPaidBtn">J'ai envoyé le paiement ✓</button>
+      </div>
+
+      <button type="button" id="cryptoCloseBtn">Fermer</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+
+  <div id="successModal" class="modal hidden">
+    <div class="modal-box modal-success">
+      <div class="success-check">✓</div>
+      <h3 id="successTitle">Merci pour ta commande!</h3>
+      <p id="successMsg">Ta commande est confirmée. Tu vas recevoir un courriel avec les détails. On prépare ton colis avec soin.</p>
+      <button type="button" id="successCloseBtn" class="btn-checkout">Continuer mes achats</button>
+    </div>
+  </div>
+
+  <script src="config.js?v=20260710"></script>
+  <script src="shop.js?v=20260710"></script>
+</body>
+</html>

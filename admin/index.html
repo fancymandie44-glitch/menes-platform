@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>MENES Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-box">
+      <h1>MENES Admin</h1>
+      <p>Connecte-toi pour gérer ta boutique</p>
+      <input type="password" id="loginPassword" placeholder="Mot de passe admin" required>
+      <button type="submit">Entrer</button>
+      <p class="login-hint">Mot de passe par défaut: <code>menes2026</code> — change-le dans admin.js</p>
+    </form>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="sidebar-brand">MENES<span>Admin</span></div>
+      <nav>
+        <button class="nav-btn active" data-tab="dashboard">📊 Tableau de bord</button>
+        <button class="nav-btn" data-tab="products">👕 Produits</button>
+        <button class="nav-btn" data-tab="site">🎨 Site</button>
+        <button class="nav-btn" data-tab="orders">📦 Commandes</button>
+        <button class="nav-btn" data-tab="payments">💳 Paiements Square</button>
+        <button class="nav-btn" data-tab="publish">🚀 Publier</button>
+      </nav>
+      <button id="logoutBtn" class="logout-btn">Déconnexion</button>
+    </aside>
+
+    <main class="main">
+      <!-- Dashboard -->
+      <section id="tab-dashboard" class="tab active">
+        <h2>Tableau de bord</h2>
+        <div class="stats">
+          <div class="stat-card"><span class="stat-num" id="statProducts">0</span><span class="stat-label">Produits actifs</span></div>
+          <div class="stat-card"><span class="stat-num" id="statOrders">0</span><span class="stat-label">Commandes</span></div>
+          <div class="stat-card"><span class="stat-num" id="statRevenue">0$</span><span class="stat-label">Revenus</span></div>
+        </div>
+        <div class="card">
+          <h3>Actions rapides</h3>
+          <div class="quick-actions">
+            <button onclick="switchTab('products')">+ Ajouter un produit</button>
+            <button onclick="switchTab('site')">Modifier le site</button>
+            <button onclick="switchTab('orders')">Voir commandes</button>
+            <a href="/" target="_blank">👁 Voir la boutique</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section id="tab-products" class="tab">
+        <div class="tab-header">
+          <h2>Produits</h2>
+          <button id="addProductBtn" class="btn-primary">+ Nouveau produit</button>
+        </div>
+        <div id="productsList" class="products-list"></div>
+
+        <div id="productModal" class="modal hidden">
+          <div class="modal-content">
+            <h3 id="productModalTitle">Nouveau produit</h3>
+            <form id="productForm">
+              <input type="hidden" id="productId">
+              <label>Nom<input type="text" id="productName" required></label>
+              <label>Catégorie
+                <select id="productCategory">
+                  <option value="vetements">Vêtements</option>
+                  <option value="grillz">Grillz</option>
+                  <option value="accessoires">Accessoires</option>
+                </select>
+              </label>
+              <label>Prix (CAD)<input type="number" id="productPrice" min="0" step="0.01" required></label>
+              <label>Description<textarea id="productDesc" rows="3"></textarea></label>
+              <label>Tailles (séparées par virgule)<input type="text" id="productSizes" placeholder="S, M, L, XL"></label>
+              <label>URL image<input type="url" id="productImage" placeholder="https://... ou laisse vide"></label>
+              <label class="checkbox"><input type="checkbox" id="productActive" checked> Produit actif (visible en boutique)</label>
+              <div class="modal-actions">
+                <button type="button" id="cancelProductBtn">Annuler</button>
+                <button type="submit" class="btn-primary">Sauvegarder</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Site settings -->
+      <section id="tab-site" class="tab">
+        <h2>Paramètres du site</h2>
+        <form id="siteForm" class="card form-grid">
+          <label>Nom de la marque<input type="text" id="siteName"></label>
+          <label>Slogan<input type="text" id="siteTagline"></label>
+          <label>Titre hero<input type="text" id="siteHeroTitle"></label>
+          <label>Sous-titre hero<textarea id="siteHeroSubtitle" rows="2"></textarea></label>
+          <label>Instagram (URL)<input type="url" id="siteInstagram"></label>
+          <label>Email contact<input type="email" id="siteEmail"></label>
+          <button type="submit" class="btn-primary">Sauvegarder le site</button>
+        </form>
+      </section>
+
+      <!-- Orders -->
+      <section id="tab-orders" class="tab">
+        <h2>Commandes</h2>
+        <p class="hint">Les commandes payées via Square apparaissent ici + dans ton app Square Seller.</p>
+        <div id="ordersList" class="orders-list"></div>
+      </section>
+
+      <!-- Square setup -->
+      <section id="tab-payments" class="tab">
+        <h2>Paiements Square</h2>
+        <div class="card">
+          <h3>Configuration Square</h3>
+          <p>Ta machine Square = paiements en personne. Pour le site web, on utilise l'API Square (même compte, même argent).</p>
+          <form id="squareForm" class="form-grid">
+            <label>Application ID Square<input type="text" id="squareAppId" placeholder="sandbox-sq0idb-... ou sq0idp-..."></label>
+            <label>Location ID<input type="text" id="squareLocationId" placeholder="L..."></label>
+            <label>Access Token (secret — garde privé)<input type="password" id="squareAccessToken" placeholder="EAAA..."></label>
+            <label class="checkbox"><input type="checkbox" id="squareSandbox" checked> Mode test (sandbox)</label>
+            <button type="submit" class="btn-primary">Sauvegarder Square</button>
+          </form>
+          <div class="setup-steps">
+            <h4>Comment obtenir tes clés Square (gratuit):</h4>
+            <ol>
+              <li>Va sur <a href="https://developer.squareup.com/apps" target="_blank">developer.squareup.com/apps</a></li>
+              <li>Crée une application → copie Application ID</li>
+              <li>Credentials → Access Token + Location ID</li>
+              <li>Colle-les ici → les clients pourront payer sur le site</li>
+            </ol>
+            <p>💡 L'argent arrive sur le même compte que ta machine Square. Tu reçois les notifications dans l'app <strong>Square Seller</strong> sur ton téléphone.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Publish -->
+      <section id="tab-publish" class="tab">
+        <h2>Publier en ligne</h2>
+        <div class="card">
+          <h3>✅ Sync automatique</h3>
+          <p>Quand tu sauvegardes un produit ou le site, c'est <strong>immédiatement visible</strong> sur la boutique (même onglet ou rafraîchis F5).</p>
+          <p style="margin-top:12px">Pour mettre sur Internet (Netlify):</p>
+          <ol style="margin:12px 0 0 20px;color:#555">
+            <li>Double-clique <strong>ENVOYER-ZIP.bat</strong></li>
+            <li>Glisse <strong>MENES-VETEMENTS.zip</strong> sur <a href="https://app.netlify.com/drop" target="_blank">Netlify Drop</a></li>
+            <li>Boutique: <code>ton-site.netlify.app/store/</code></li>
+            <li>Admin: <code>ton-site.netlify.app/admin/</code></li>
+          </ol>
+          <div class="publish-actions" style="margin-top:20px">
+            <button id="exportDataBtn" class="btn-outline">📥 Backup store.json</button>
+            <button id="importDataBtn" class="btn-outline">📤 Importer backup</button>
+            <input type="file" id="importFile" accept=".json" hidden>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="admin.js"></script>
+</body>
+</html>

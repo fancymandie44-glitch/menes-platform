@@ -1,0 +1,93 @@
+MENES PLATFORM — Guide complet
+==============================
+
+Tu as maintenant ta propre "mini-Shopify" GRATUITE!
+
+
+CE QUE TU AS
+------------
+✅ Boutique en ligne (store/index.html)
+✅ Panel admin pour modifier produits et site (admin/index.html)
+✅ Panier + commandes
+✅ Intégration Square pour recevoir l'argent
+✅ Notifications par email à mymenes2022@gmail.com
+✅ 0$/mois (juste frais Square ~2.9% par vente)
+
+
+DOSSIER
+-------
+C:\Users\mathi\menes-platform\
+
+
+DÉMARRAGE RAPIDE
+----------------
+
+1. ADMIN — Modifier ta boutique:
+   Double-clique: OPEN-ADMIN.bat
+   Mot de passe: menes2026 (change-le dans admin/admin.js ligne 2)
+
+2. BOUTIQUE — Voir ce que les clients voient:
+   Ouvre: store/index.html
+
+3. PUBLIER en ligne:
+   Double-clique: UPDATE-PLATFORM.bat
+   Glisse menes-platform-deploy.zip sur Netlify
+
+
+COMMENT MODIFIER COMME SHOPIFY
+------------------------------
+
+Dans l'admin (OPEN-ADMIN.bat):
+
+📊 Tableau de bord → stats ventes
+👕 Produits → ajouter/modifier/supprimer vêtements ou grillz
+🎨 Site → changer titre, slogan, Instagram, email
+📦 Commandes → voir toutes les commandes
+💳 Square → configurer les paiements
+🚀 Publier → télécharger store.json et mettre en ligne
+
+
+SQUARE — RECEVOIR L'ARGENT
+--------------------------
+
+Ta machine Square = paiements EN PERSONNE seulement.
+Pour le SITE WEB, tu utilises l'API Square (même compte):
+
+1. Va sur https://developer.squareup.com/apps
+2. Crée une app → copie Application ID + Access Token + Location ID
+3. Dans l'admin → onglet Paiements Square → colle les clés
+4. Dans Netlify → Site settings → Environment variables:
+   SQUARE_ACCESS_TOKEN = ton token
+   SQUARE_LOCATION_ID = ton location ID
+   SQUARE_SANDBOX = true (pour tester) ou false (production)
+
+L'argent va sur le MÊME compte que ta machine Square.
+Tu reçois les notifications dans l'app Square Seller sur ton téléphone.
+
+
+WORKFLOW QUOTIDIEN
+------------------
+
+1. Ouvre OPEN-ADMIN.bat
+2. Ajoute/modifie tes produits (hoodies, t-shirts, grillz...)
+3. Clique "Publier" → télécharge store.json
+4. Remplace data/store.json → lance UPDATE-PLATFORM.bat
+5. Glisse le zip sur Netlify → site mis à jour!
+
+
+COÛTS
+-----
+Plateforme MENES: 0$/mois
+Netlify hosting: 0$/mois (gratuit)
+Square: ~2.9% + 0.30$ par transaction en ligne
+Pas de Shopify à 50$/mois!
+
+
+PROCHAINES ÉTAPES (on peut ajouter)
+-----------------------------------
+- Upload photos produits directement dans l'admin
+- App mobile admin
+- Domaine mymenesjewelry.com connecté
+- Sync automatique sans re-upload zip (Supabase)
+
+Dis-moi ce que tu veux en premier!

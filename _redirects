@@ -1,0 +1,8 @@
+/                    /index.html          200
+/console             /console.html        200
+/console/            /console.html        200
+/platform            /console.html        200
+/admin               /console.html        200
+/admin/              /console.html        200
+/paiement            /paiement.html       200
+/api/*               /.netlify/functions/:splat  200
