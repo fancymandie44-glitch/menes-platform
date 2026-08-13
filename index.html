@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260813">
+  <link rel="stylesheet" href="shop.css?v=20260710">
 </head>
 <body>
   <div id="announceBar" class="announce hidden"></div>
@@ -22,7 +22,6 @@
     <div class="nav-links">
       <a href="#products" data-i18n="nav_shop">Boutique</a>
       <a href="#gallery" data-i18n="nav_community">Communauté</a>
-      <a href="#ambassadeur" data-i18n="nav_ambassador">Ambassadeur</a>
       <a href="#why" data-i18n="nav_why">Pourquoi MENES</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
@@ -110,48 +109,6 @@
         <h2>FAQ</h2>
       </div>
       <div id="faqList" class="faq-list"></div>
-    </div>
-  </section>
-
-  <section id="ambassadeur" class="ambassador-section">
-    <div class="container">
-      <div class="section-head">
-        <span class="section-label" data-i18n="amb_label">Programme ambassadeur</span>
-        <h2 data-i18n="amb_title">Deviens ambassadeur MENES</h2>
-        <p class="section-sub" id="ambSub" data-i18n="amb_sub">Génère ton lien personnel, partage-le et invite d'autres ambassadeurs à rejoindre la communauté MENES.</p>
-      </div>
-      <div class="amb-grid">
-        <div class="amb-card">
-          <form id="ambForm" class="amb-form" autocomplete="off">
-            <label class="amb-field">
-              <span data-i18n="amb_name_label">Ton nom ou pseudo Instagram</span>
-              <input type="text" id="ambName" required maxlength="40" placeholder="Ex : Alex ou @ton_ig">
-            </label>
-            <button type="submit" class="btn-checkout amb-generate" data-i18n="amb_generate">Générer mon lien d'invitation</button>
-          </form>
-
-          <div id="ambResult" class="amb-result hidden">
-            <span class="amb-result-label" data-i18n="amb_your_link">Ton lien d'invitation</span>
-            <div class="amb-link-row">
-              <input type="text" id="ambLink" class="amb-link-input" readonly aria-label="Lien d'invitation">
-              <button type="button" id="ambCopyBtn" class="amb-copy" data-i18n="amb_copy">Copier</button>
-            </div>
-            <p class="amb-copy-hint" id="ambCopyHint" data-i18n="amb_copy_hint">Astuce : le lien est sélectionné, tu peux aussi faire un copier-coller manuel.</p>
-            <div class="amb-share">
-              <a id="ambShareWa" class="amb-share-btn amb-share-wa" target="_blank" rel="noopener">WhatsApp</a>
-              <a id="ambShareSms" class="amb-share-btn">SMS</a>
-              <a id="ambShareEmail" class="amb-share-btn">Email</a>
-              <button type="button" id="ambShareNative" class="amb-share-btn hidden" data-i18n="amb_share">Partager…</button>
-            </div>
-          </div>
-        </div>
-
-        <ol class="amb-steps">
-          <li><strong data-i18n="amb_step1_t">1. Génère ton lien</strong><span data-i18n="amb_step1">Entre ton nom pour créer ton lien d'ambassadeur unique.</span></li>
-          <li><strong data-i18n="amb_step2_t">2. Partage-le</strong><span data-i18n="amb_step2">Envoie-le par WhatsApp, SMS, courriel ou Instagram.</span></li>
-          <li><strong data-i18n="amb_step3_t">3. Fais grandir MENES</strong><span data-i18n="amb_step3">Tes invités rejoignent la communauté et deviennent ambassadeurs à leur tour.</span></li>
-        </ol>
-      </div>
     </div>
   </section>
 
@@ -301,7 +258,7 @@
     </div>
   </div>
 
-  <script src="config.js?v=20260813"></script>
-  <script src="shop.js?v=20260813"></script>
+  <script src="config.js?v=20260710"></script>
+  <script src="shop.js?v=20260710"></script>
 </body>
 </html>
