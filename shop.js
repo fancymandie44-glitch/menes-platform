@@ -1256,6 +1256,12 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     setTimeout(showSuccess, 400);
   }
+  // Le contenu (produits, sections) est rendu de façon asynchrone, ce qui décale
+  // la position de l'ancre #ambassadeur au chargement. On re-cible la section une
+  // fois le rendu terminé pour que les liens d'invitation arrivent au bon endroit.
+  if (location.hash === '#ambassadeur') {
+    setTimeout(() => document.getElementById('ambassadeur')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+  }
 }
 
 window.addEventListener('storage', (e) => {
