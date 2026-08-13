@@ -51,6 +51,27 @@ const I18N = {
     grand_total: 'Total', tax_intl: 'Taxes selon la destination',
     success_title: 'Merci pour ta commande! 🎉', success_msg: 'Ta commande est confirmée. Tu vas recevoir un courriel avec les détails. On prépare ton colis avec soin.',
     success_close: 'Continuer mes achats',
+    nav_ambassador: 'Ambassadeur',
+    amb_label: 'Programme ambassadeur',
+    amb_title: 'Deviens ambassadeur MENES',
+    amb_sub: "Génère ton lien personnel, partage-le et invite d'autres ambassadeurs à rejoindre la communauté MENES.",
+    amb_name_label: 'Ton nom ou pseudo Instagram',
+    amb_generate: "Générer mon lien d'invitation",
+    amb_your_link: "Ton lien d'invitation",
+    amb_copy: 'Copier',
+    amb_copied: 'Copié ✓',
+    amb_copy_fail: 'Copie bloquée — sélectionne et copie',
+    amb_copy_hint: 'Astuce : le lien est sélectionné, tu peux aussi faire un copier-coller manuel.',
+    amb_share: 'Partager…',
+    amb_share_msg: 'Rejoins la communauté MENES avec moi 🔥 Deviens ambassadeur ici :',
+    amb_share_subject: 'Rejoins MENES comme ambassadeur',
+    amb_welcome: '🔥 Invité par un ambassadeur — bienvenue chez MENES !',
+    amb_step1_t: '1. Génère ton lien',
+    amb_step1: "Entre ton nom pour créer ton lien d'ambassadeur unique.",
+    amb_step2_t: '2. Partage-le',
+    amb_step2: 'Envoie-le par WhatsApp, SMS, courriel ou Instagram.',
+    amb_step3_t: '3. Fais grandir MENES',
+    amb_step3: 'Tes invités rejoignent la communauté et deviennent ambassadeurs à leur tour.',
   },
   en: {
     nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why us', nav_faq: 'FAQ', nav_contact: 'Contact',
@@ -71,6 +92,27 @@ const I18N = {
     grand_total: 'Total', tax_intl: 'Taxes based on destination',
     success_title: 'Thank you for your order! 🎉', success_msg: 'Your order is confirmed. You will receive an email with the details. We are preparing your parcel with care.',
     success_close: 'Continue shopping',
+    nav_ambassador: 'Ambassador',
+    amb_label: 'Ambassador program',
+    amb_title: 'Become a MENES ambassador',
+    amb_sub: 'Generate your personal link, share it and invite other ambassadors to join the MENES community.',
+    amb_name_label: 'Your name or Instagram handle',
+    amb_generate: 'Generate my invite link',
+    amb_your_link: 'Your invite link',
+    amb_copy: 'Copy',
+    amb_copied: 'Copied ✓',
+    amb_copy_fail: 'Copy blocked — select & copy',
+    amb_copy_hint: 'Tip: the link is selected, you can also copy-paste it manually.',
+    amb_share: 'Share…',
+    amb_share_msg: 'Join the MENES community with me 🔥 Become an ambassador here:',
+    amb_share_subject: 'Join MENES as an ambassador',
+    amb_welcome: '🔥 Invited by an ambassador — welcome to MENES!',
+    amb_step1_t: '1. Generate your link',
+    amb_step1: 'Enter your name to create your unique ambassador link.',
+    amb_step2_t: '2. Share it',
+    amb_step2: 'Send it via WhatsApp, SMS, email or Instagram.',
+    amb_step3_t: '3. Grow MENES',
+    amb_step3: 'Your invitees join the community and become ambassadors too.',
   },
 };
 
@@ -294,6 +336,8 @@ function renderSite() {
   toggle('announceBar', sec.announcement !== false && s.announcement);
   if (s.announcement) document.getElementById('announceBar').textContent = s.announcement;
 
+  toggle('ambassadeur', sec.ambassador !== false);
+
   document.getElementById('heroTag').textContent = s.tagline || '';
   document.getElementById('heroTitle').textContent = s.heroTitle || s.name || 'MENES';
   document.getElementById('heroSubtitle').textContent = s.heroSubtitle || '';
@@ -442,6 +486,37 @@ function toggle(id, show) {
 
 function esc(str) {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+
+// Copie robuste : l'API navigator.clipboard n'existe qu'en contexte sécurisé
+// (HTTPS/localhost). Sur une page ouverte en http:// (ex. sur mobile) elle est
+// absente et la copie échouait silencieusement. On tente l'API moderne puis on
+// retombe sur execCommand('copy') via un textarea temporaire.
+async function copyToClipboard(text) {
+  const value = String(text ?? '');
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch { /* on tente le fallback ci-dessous */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, value.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 function productImages(p) {
@@ -794,7 +869,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const method = form.get('method') || 'stripe';
   const customer = getCheckoutCustomer(form);
   const { subtotal, tax, total } = currentTotals();
-  const order = { id: Date.now().toString(36).toUpperCase(), customer, items: [...cart], subtotal, tax, total, status: 'pending', date: new Date().toISOString() };
+  const order = { id: Date.now().toString(36).toUpperCase(), customer, items: [...cart], subtotal, tax, total, status: 'pending', date: new Date().toISOString(), referral: getReferral() };
 
   const btn = document.getElementById('paySubmitBtn');
   const note = document.getElementById('checkoutNote');
@@ -884,8 +959,112 @@ function notifyOrder(order, method, total) {
       Client: order.customer.name, Email: order.customer.email, Téléphone: order.customer.phone,
       Adresse: order.customer.address, Total: `${total.toFixed(2)}$ CAD`, Paiement: method,
       Articles: order.items.map((c) => `${c.name} (${c.size}) x${c.qty}`).join(', '),
+      Parrain: order.referral || '—',
     }),
   }).catch(() => {});
+}
+
+/* ---------- Programme ambassadeur ---------- */
+const AMB_KEY = 'menes_ambassador';
+const REF_KEY = 'menes_ref';
+
+function ambSlug(name) {
+  const base = String(name || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 20) || 'amb';
+  const rand = Math.random().toString(36).slice(2, 6);
+  return `${base}-${rand}`;
+}
+
+function ambInviteLink(code) {
+  const url = new URL(location.origin + location.pathname);
+  url.searchParams.set('ref', code);
+  url.hash = 'ambassadeur';
+  return url.toString();
+}
+
+function getReferral() {
+  try { return localStorage.getItem(REF_KEY) || ''; } catch { return ''; }
+}
+
+function captureReferral() {
+  try {
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref) {
+      localStorage.setItem(REF_KEY, ref);
+      setTimeout(() => showToast(t('amb_welcome')), 900);
+    }
+  } catch {}
+}
+
+function renderAmbassadorResult(amb) {
+  const linkInput = document.getElementById('ambLink');
+  if (!linkInput) return;
+  const link = ambInviteLink(amb.code);
+  linkInput.value = link;
+  document.getElementById('ambResult').classList.remove('hidden');
+
+  const full = `${t('amb_share_msg')} ${link}`;
+  const wa = document.getElementById('ambShareWa');
+  const sms = document.getElementById('ambShareSms');
+  const mail = document.getElementById('ambShareEmail');
+  if (wa) wa.href = `https://wa.me/?text=${encodeURIComponent(full)}`;
+  if (sms) sms.href = `sms:?&body=${encodeURIComponent(full)}`;
+  if (mail) mail.href = `mailto:?subject=${encodeURIComponent(t('amb_share_subject'))}&body=${encodeURIComponent(full)}`;
+
+  const nativeBtn = document.getElementById('ambShareNative');
+  if (nativeBtn && navigator.share) {
+    nativeBtn.classList.remove('hidden');
+    nativeBtn.onclick = () => navigator.share({ title: 'MENES', text: t('amb_share_msg'), url: link }).catch(() => {});
+  }
+}
+
+function initAmbassador() {
+  const form = document.getElementById('ambForm');
+  if (!form) return;
+
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(AMB_KEY) || 'null'); } catch {}
+  if (saved && saved.code) {
+    document.getElementById('ambName').value = saved.name || '';
+    renderAmbassadorResult(saved);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('ambName').value.trim();
+    if (!name) return;
+    let amb = null;
+    try { amb = JSON.parse(localStorage.getItem(AMB_KEY) || 'null'); } catch {}
+    if (!amb || !amb.code || amb.name !== name) {
+      amb = { name, code: ambSlug(name), created: new Date().toISOString() };
+      try { localStorage.setItem(AMB_KEY, JSON.stringify(amb)); } catch {}
+    }
+    renderAmbassadorResult(amb);
+    document.getElementById('ambResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  const copyBtn = document.getElementById('ambCopyBtn');
+  copyBtn?.addEventListener('click', async () => {
+    const input = document.getElementById('ambLink');
+    // Sélectionne le champ pour laisser un copier-coller manuel possible en dernier recours
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    const ok = await copyToClipboard(input.value);
+    const old = copyBtn.dataset.label || copyBtn.textContent;
+    copyBtn.dataset.label = old;
+    copyBtn.textContent = ok ? t('amb_copied') : t('amb_copy_fail');
+    copyBtn.classList.toggle('copied', ok);
+    if (ok) showToast(t('amb_copied'));
+    setTimeout(() => {
+      copyBtn.textContent = copyBtn.dataset.label || t('amb_copy');
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  });
 }
 
 const CRYPTO_PAY_WINDOW = 15 * 60; // 15 minutes en secondes
@@ -1000,13 +1179,12 @@ function renderCryptoPanel(symbol) {
     </div>`;
 
   panel.querySelectorAll('.crypto-copy, .crypto-copy-amount').forEach((b) => {
-    b.addEventListener('click', () => {
+    b.addEventListener('click', async () => {
       const value = b.dataset.addr || b.dataset.amount;
-      navigator.clipboard.writeText(value).then(() => {
-        const old = b.textContent;
-        b.textContent = 'Copié ✓';
-        setTimeout(() => { b.textContent = old; }, 1500);
-      });
+      const ok = await copyToClipboard(value);
+      const old = b.textContent;
+      b.textContent = ok ? 'Copié ✓' : 'Copie bloquée';
+      setTimeout(() => { b.textContent = old; }, 1500);
     });
   });
 
@@ -1067,6 +1245,8 @@ document.getElementById('cryptoCloseBtn').addEventListener('click', () => {
 });
 
 async function init() {
+  captureReferral();
+  initAmbassador();
   await refreshStore();
   updateCartUI();
   const params = new URLSearchParams(location.search);
