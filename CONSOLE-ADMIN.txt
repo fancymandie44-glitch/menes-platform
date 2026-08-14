@@ -1,19 +1,76 @@
-MENES PLATFORM — CONSOLE ADMIN
-================================
+MENES PLATFORM - Guide console admin
+=====================================
 
-OUVRIR LA CONSOLE (double-clic):
-  OPEN-CONSOLE.bat
+Pour l'équipe admin. Opérations courantes.
 
-URL DIRECTE:
-  https://boutiquemenes.netlify.app/console
 
-AUTRES LIENS:
-  Boutique:  https://boutiquemenes.netlify.app/
-  Admin:     https://boutiquemenes.netlify.app/console
-  Klarna/PayPal: https://boutiquemenes.netlify.app/paiement.html
+LIENS
+-----
+Console : https://menesadmin.netlify.app  (OPEN-CONSOLE.bat)
+Boutique : https://boutiquemenes.netlify.app/
+Console alt. : https://boutiquemenes.netlify.app/console
 
-MOT DE PASSE: menes2026
-(Change via Netlify → ADMIN_PASSWORD)
+Mot de passe : variable Netlify ADMIN_PASSWORD (boutiquemenes → Site settings → Environment variables)
+Aucun mot de passe par défaut n'est documenté ici — configure ADMIN_PASSWORD avant d'utiliser la console.
 
-NOTE: L'ancienne URL regal-tapioca-470bbf.netlify.app n'existe plus.
-      Utilise boutiquemenes.netlify.app
+
+CONNEXION
+---------
+1. Ouvre la console
+2. Entre le mot de passe
+3. « Accéder à la console »
+
+Déconnexion : bas du menu gauche. La session dure tant que l'onglet reste ouvert.
+
+
+CHANGER DE BOUTIQUE
+-------------------
+Menu gauche, haut : « Boutique active » (liste déroulante).
+
+Chaque boutique a ses produits, design et domaines (MENES, MENES Grillz, etc.).
+
+Nouvelle boutique : Boutiques & marques → + Nouvelle boutique.
+Vérifie le badge en haut et « Voir la boutique » après le switch.
+
+
+PRODUITS
+--------
+Onglet Produits → + Nouveau produit (nom, prix, catégorie, photos, tailles).
+
+Recherche et filtre catégorie en haut. Modifier ou supprimer depuis la liste.
+
+Clique « Sauvegarder » (haut droite) après chaque changement.
+Pas de redeploy pour ajouter un produit : la sauvegarde suffit.
+
+
+APPARENCE / PRESET OBSIDIAN & CARAT
+------------------------------------
+Onglet Apparence & thème → « Appliquer Obsidian & Carat ».
+
+Look noir/or : Syne + DM Sans, fond sombre, accent or, coins nets.
+Puis « Sauvegarder l'apparence » ou Sauvegarder global.
+Rafraîchis la boutique (Ctrl+F5) pour voir le rendu.
+
+
+PROMO VIP10
+-----------
+Onglet Marketing → Codes promo.
+
+VIP10 = -10 % (type %, valeur 10). WELCOME10 aussi disponible.
+« Sauvegarder les codes ». Le client tape VIP10 au checkout → Appliquer.
+
+Membres VIP : rabais auto possible. Pour couper : supprime VIP10 et sauvegarde.
+
+
+DEPLOIEMENT
+-----------
+Contenu (produits, design, promos) : Sauvegarder dans la console = en ligne.
+
+Code (HTML, JS, API) :
+  Admin seul     → admin-site\DEPLOY-ADMIN.bat
+  Boutique + API → DEPLOY-BOUTIQUE.bat
+  Zip alternatif → ENVOYER-ZIP.bat → glisse sur Netlify Deploys
+  Grillz         → grillz-site\DEPLOY-GRILLZ.bat (voir GRILLZ-CONNECT.txt)
+
+Onglet Déploiement : URLs boutique et console.
+Paiements : clés dans Netlify env vars, pas dans la console.

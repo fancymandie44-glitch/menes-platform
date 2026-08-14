@@ -1,4 +1,4 @@
-MENES VETEMENTS — PRET A UTILISER
+MENES VETEMENTS · PRET A UTILISER
 =================================
 
 DEMARRER (sur ton PC)
@@ -7,7 +7,7 @@ Double-clique: START-PLATFORM.bat
 
   Boutique clients → http://localhost:8888/store/
   Admin (toi)      → http://localhost:8888/admin/
-  Mot de passe     → menes2026
+  Mot de passe     → ADMIN_PASSWORD (défini en variable d'environnement / Netlify)
 
 
 UTILISATION QUOTIDIENNE
@@ -16,7 +16,7 @@ UTILISATION QUOTIDIENNE
 1. Lance START-PLATFORM.bat
 2. Ouvre l'admin → ajoute/modifie tes produits
 3. Clique Sauvegarder → produit visible sur la boutique (auto!)
-4. Clients commandent → tu reçois email à mymenes2022@gmail.com
+4. Clients commandent → notifications selon la config email du serveur
 
 
 METTRE EN LIGNE (Internet)
@@ -25,7 +25,7 @@ METTRE EN LIGNE (Internet)
 1. Va sur https://app.netlify.com
 2. Deploys → glisse MENES-VETEMENTS.zip
 3. Site settings → Environment variables:
-   ADMIN_PASSWORD = menes2026
+   ADMIN_PASSWORD = (choisis un mot de passe fort, jamais dans le code)
    SQUARE_ACCESS_TOKEN = (de developer.squareup.com)
    SQUARE_LOCATION_ID = (de Square)
    SQUARE_SANDBOX = false

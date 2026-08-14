@@ -4,17 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
-  <title>Paiement alternatif — MENES</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260710">
+  <meta name="theme-color" content="#050505">
+  <title>Paiement alternatif | MENES</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shop.css?v=20260724">
 </head>
-<body class="pay-page">
+<body class="pay-page theme-obsidian">
   <nav class="nav">
     <a href="/" class="nav-brand"><span>MENES</span></a>
     <div class="nav-links">
-      <a href="/">← Retour boutique</a>
+      <a href="/">Retour boutique</a>
     </div>
   </nav>
+
+  <div class="pay-trust-strip">
+    <div class="container pay-trust-inner">
+      <span>SSL 256-bit</span>
+      <span>Paiement chiffré</span>
+      <span>PCI-DSS</span>
+    </div>
+  </div>
 
   <main class="pay-page-main container">
     <div class="pay-page-head">
@@ -26,44 +37,47 @@
     <div class="pay-page-grid">
       <section class="pay-summary card-panel">
         <h2>Récapitulatif</h2>
-        <div id="summaryItems" class="summary-items"></div>
-        <div class="summary-total">Total : <strong id="summaryTotal">0$</strong> CAD</div>
+        <div id="summaryItems" class="summary-items checkout-summary pay-summary-box"></div>
+        <div class="summary-total pay-summary-total">
+          <span>Total</span>
+          <strong id="summaryTotal">0$</strong>
+          <small>CAD</small>
+        </div>
         <div id="summaryCustomer" class="summary-customer"></div>
       </section>
 
       <section class="pay-options card-panel">
         <h2>Comment veux-tu payer?</h2>
-        <p class="checkout-secure">🔒 Redirection vers un paiement sécurisé</p>
+        <p class="checkout-secure pay-trust-line">Redirection vers un paiement sécurisé · SSL chiffré</p>
         <div class="pay-methods-alt">
           <button type="button" class="pay-btn-alt" id="payKlarna">
-            <span class="pay-icon">🛍</span>
-            <span>Klarna</span>
-            <small>4 paiements sans frais</small>
+            <span class="pay-btn-brand pay-btn-brand-klarna">Klarna</span>
+            <span class="pay-btn-desc">4 paiements sans frais</span>
           </button>
           <button type="button" class="pay-btn-alt" id="payPaypal">
-            <span class="pay-icon">🅿</span>
-            <span>PayPal</span>
-            <small>Compte ou carte</small>
+            <span class="pay-btn-brand pay-btn-brand-paypal">PayPal</span>
+            <span class="pay-btn-desc">Compte ou carte</span>
           </button>
         </div>
         <p class="checkout-note" id="payNote"></p>
-        <a href="/" class="back-link">← Modifier ma commande</a>
+        <a href="/" class="back-link">Modifier ma commande</a>
       </section>
     </div>
   </main>
 
   <footer class="footer">
     <div class="container footer-inner">
-      <div class="footer-trust">
-        <span>🔒 SSL Sécurisé</span>
-        <span>💳 Paiement chiffré</span>
+      <div class="footer-trust pay-footer-trust">
+        <span>SSL sécurisé</span>
+        <span>Paiement chiffré</span>
+        <span>Données protégées</span>
       </div>
       <p>© 2026 MENES</p>
     </div>
   </footer>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js?v=20260710"></script>
-  <script src="paiement.js?v=20260710"></script>
+  <script src="config.js?v=20260724"></script>
+  <script src="paiement.js?v=20260724"></script>
 </body>
 </html>

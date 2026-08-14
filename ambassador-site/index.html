@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MENES Amb">
+  <meta name="description" content="MENES Ambassador — plateforme privée">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <title>MENES Ambassador</title>
+</head>
+<body>
+  <div id="app">
+    <!-- Auth / splash -->
+    <section id="view-auth" class="view active">
+      <div class="auth-hero">
+        <div class="auth-grain"></div>
+        <p class="brand-mark">MENES</p>
+        <h1 class="auth-title">Ambassador</h1>
+        <p class="auth-sub">Plateforme privée · Performance · Équipe</p>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" data-auth="login">Connexion</button>
+          <button type="button" class="auth-tab" data-auth="register">Rejoindre</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <label>Email<input type="email" name="email" required autocomplete="username"></label>
+          <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
+          <button type="submit" class="btn-gold">Entrer</button>
+          <p id="loginError" class="form-error"></p>
+        </form>
+        <form id="registerForm" class="auth-form hidden">
+          <label>Nom affiché<input type="text" name="displayName" required maxlength="40"></label>
+          <label>Email<input type="email" name="email" required></label>
+          <label>Mot de passe (8+)<input type="password" name="password" required minlength="8"></label>
+          <input type="hidden" name="ref" id="regRef">
+          <button type="submit" class="btn-gold">Créer mon compte</button>
+          <p id="registerError" class="form-error"></p>
+        </form>
+      </div>
+      <button type="button" id="installBtn" class="install-pill hidden">Installer l'app</button>
+    </section>
+
+    <!-- Onboarding -->
+    <section id="view-onboarding" class="view">
+      <div class="onboard-wrap">
+        <p class="brand-mark sm">MENES</p>
+        <h2 id="onboardTitle">Welcome to MENES.</h2>
+        <p id="onboardBody" class="onboard-body">You're officially part of the team.</p>
+        <div class="progress-track"><div id="onboardBar" class="progress-fill" style="width:0%"></div></div>
+        <p id="onboardPct" class="onboard-pct">0%</p>
+        <div id="onboardStep" class="onboard-step"></div>
+        <button type="button" id="onboardNext" class="btn-gold">Continuer</button>
+      </div>
+    </section>
+
+    <!-- Pending approval -->
+    <section id="view-pending" class="view">
+      <div class="center-msg">
+        <p class="brand-mark">MENES</p>
+        <h2>En revue</h2>
+        <p>Ton compte Ambassador est en attente d'approbation. Tu recevras un email dès validation.</p>
+        <button type="button" class="btn-outline" id="pendingLogout">Déconnexion</button>
+      </div>
+    </section>
+
+    <!-- Push required gate -->
+    <section id="view-push" class="view">
+      <div class="center-msg push-gate">
+        <p class="brand-mark">MENES</p>
+        <h2>Notifications obligatoires</h2>
+        <p id="pushGateBody">Active les notifications pour recevoir les ventes, messages et annonces en temps réel.</p>
+        <div id="pushGateIOS" class="hidden">
+          <p class="rank-meta">Sur iPhone : ouvre l'app depuis Safari → Partager → <strong>Sur l'écran d'accueil</strong>, puis rouvre l'app installée.</p>
+          <button type="button" class="btn-outline" id="pushGateInstall">Comment installer sur iPhone</button>
+        </div>
+        <button type="button" class="btn-gold" id="pushGateEnable">Activer les notifications</button>
+        <p id="pushGateStatus" class="form-error" style="margin-top:12px"></p>
+      </div>
+    </section>
+
+    <!-- Main app shell -->
+    <section id="view-app" class="view">
+      <header class="topbar">
+        <div>
+          <p class="brand-mark sm">MENES</p>
+          <h1 id="welcomeLine" class="welcome">Bon retour</h1>
+        </div>
+        <button type="button" id="notifBtn" class="icon-btn" aria-label="Notifications">
+          <span id="notifDot" class="dot hidden"></span>
+          ⌁
+        </button>
+      </header>
+
+      <main id="main" class="main"></main>
+
+      <nav class="bottom-nav" aria-label="Navigation">
+        <button type="button" class="nav-item active" data-view="home"><span>⌂</span>Home</button>
+        <button type="button" class="nav-item" data-view="sales"><span>◈</span>Ventes</button>
+        <button type="button" class="nav-item" data-view="team"><span>◎</span>Équipe</button>
+        <button type="button" class="nav-item" data-view="community"><span>✦</span>Community</button>
+        <button type="button" class="nav-item" data-view="profile"><span>●</span>Profil</button>
+      </nav>
+    </section>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/config.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

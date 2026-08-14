@@ -1,4 +1,4 @@
-MENES PLATFORM — Guide complet
+MENES PLATFORM · Guide complet
 ==============================
 
 Tu as maintenant ta propre "mini-Shopify" GRATUITE!
@@ -22,11 +22,11 @@ C:\Users\mathi\menes-platform\
 DÉMARRAGE RAPIDE
 ----------------
 
-1. ADMIN — Modifier ta boutique:
+1. ADMIN : Modifier ta boutique:
    Double-clique: OPEN-ADMIN.bat
-   Mot de passe: menes2026 (change-le dans admin/admin.js ligne 2)
+   Mot de passe: variable ADMIN_PASSWORD (Netlify → Environment variables ; en local: exporte ADMIN_PASSWORD avant de lancer le serveur)
 
-2. BOUTIQUE — Voir ce que les clients voient:
+2. BOUTIQUE : Voir ce que les clients voient:
    Ouvre: store/index.html
 
 3. PUBLIER en ligne:
@@ -47,7 +47,7 @@ Dans l'admin (OPEN-ADMIN.bat):
 🚀 Publier → télécharger store.json et mettre en ligne
 
 
-SQUARE — RECEVOIR L'ARGENT
+SQUARE : RECEVOIR L'ARGENT
 --------------------------
 
 Ta machine Square = paiements EN PERSONNE seulement.

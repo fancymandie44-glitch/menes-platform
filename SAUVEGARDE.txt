@@ -1,0 +1,47 @@
+SAUVEGARDE MENES — pour ne rien perdre si l'ordi lâche
+======================================================
+
+Une clé USB seule, ce n'est PAS assez (elle casse, se perd, s'écrase).
+Le mieux: 3 copies.
+
+1) GitHub (déjà en place, privé)
+   https://github.com/fancymandie44-glitch/menes-platform
+   = tout le CODE (boutique, admin, ambassadeurs, grillz)
+   Si l'ordi meurt: tu reclones ça sur un nouvel ordi.
+
+2) OneDrive ou Google Drive  ← le plus important pour les PHOTOS
+   Double-clic BACKUP-TOUT.bat
+   Copie le dossier Desktop\MENES-SAUVEGARDE dans Drive.
+   Ça contient les produits, photos, logo, fond, codes promo, ambassadeurs.
+
+3) Clé USB  ← copie extra, utile mais pas obligatoire
+   Même dossier MENES-SAUVEGARDE collé sur la clé.
+   Prends une clé 16 Go, c'est largement assez.
+   Range-la ailleurs que l'ordi.
+
+Le site en ligne (Netlify) continue de tourner même si l'ordi est éteint.
+C'est déjà une copie "dans le cloud". Le backup Drive/USB sert SI Netlify
+perd les données un jour (comme le crash catalogue).
+
+--------------------------------------------------
+QUAND SAUVEGARDER
+--------------------------------------------------
+Après chaque gros changement (nouveaux produits, nouvelles photos):
+  double-clic BACKUP-TOUT.bat
+  puis copie Desktop\MENES-SAUVEGARDE vers Drive (et USB si tu veux).
+
+--------------------------------------------------
+RELANCER SUR UN NOUVEL ORDI
+--------------------------------------------------
+1. Installe Git, Node.js, Netlify CLI
+2. git clone https://github.com/fancymandie44-glitch/menes-platform.git
+3. cd menes-platform
+   npm install
+   netlify login
+4. Recopie le dossier backups\ depuis Drive/USB
+5. Double-clic RESTAURER-CATALOGUE.bat
+6. Double-clic DEPLOY-BOUTIQUE.bat puis admin-site\DEPLOY-ADMIN.bat
+   puis ambassador-site\DEPLOY-AMBASSADOR.bat
+
+Les mots de passe (admin, paiements) restent dans Netlify → Site settings
+→ Environment variables. Tu n'as PAS besoin de les avoir sur l'ordi.

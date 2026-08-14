@@ -1,0 +1,95 @@
+GUIDE ADMIN MENES (court)
+=========================
+
+Console : https://menesadmin.netlify.app
+Boutique : https://boutiquemenes.netlify.app
+Mot de passe : variable Netlify ADMIN_PASSWORD (aucun défaut documenté)
+
+
+CONNEXION
+---------
+Ouvre la console, entre le mot de passe, tu es dedans.
+Déconnexion en bas du menu. Session = onglet ouvert.
+
+
+ROLE (STUB)
+-----------
+Paramètres → Rôle opérateur.
+- Owner : tout (design, paiements, déploiement, catalogue).
+- Staff : ops courantes (commandes, clients, stock).
+
+Aujourd'hui le mot de passe est partagé. Le rôle est local (navigateur) pour préparer un vrai SSO plus tard.
+
+
+BOUTIQUE ACTIVE
+---------------
+Haut du menu : sélectionne MENES, Grillz, etc.
+Chaque boutique a ses produits, design, codes promo et domaines.
+
+
+PRODUITS
+--------
+Produits → Nouveau / Modifier.
+Photos + options (taille, couleur).
+URL vidéo produit : champ optionnel (mp4/webm) pour le PDP.
+
+
+MARKETING
+---------
+Codes promo : code, % ou $, panier minimum (CAD).
+VIP10 / WELCOME10 : -10% première commande côté boutique.
+Barre d'annonce : texte en haut du site.
+
+
+LIVRAISON OFFERTE
+-----------------
+Design → seuil livraison offerte (CAD), défaut 150.
+La barre panier boutique utilise cette valeur.
+
+
+SECTIONS HOMEPAGE
+-----------------
+Sections page → Visibilité on/off.
+Ordre des blocs : Haut / Bas puis Sauvegarder sections.
+La boutique réordonne trust, boutique, bundle, galerie, why, VIP, FAQ, contact, sécurité.
+
+
+CRM CLIENTS
+-----------
+Clients → LTV (total dépensé), segment VIP / Nouveau / Régulier.
+Filtre segment en haut.
+
+
+APPARENCE
+---------
+Preset Obsidian & Carat recommandé.
+Langue du site = défaut admin (FR/EN). Les visiteurs gardent leur choix via le toggle EN/FR de la boutique.
+
+
+DEPLOIEMENT CODE
+----------------
+1. Modifs root (index, shop.js, shop.css, console.*)
+2. Sync dist (DEPLOY-BOUTIQUE.bat le fait)
+3. Admin : admin-site/DEPLOY-ADMIN.bat (copie console → deploy)
+4. Grillz : grillz-site/DEPLOY-GRILLZ.bat
+
+IMPORTANT GRILLZ
+----------------
+Grillz n'est PAS une copie de la boutique.
+C'est l'outil prix + "Je veux commander" dans grillz-site/.
+Ne jamais deployer index.html/shop.js de la boutique sur menesjewelrygrillzprice.
+
+Ne déploie JAMAIS le zip store/ legacy sans sync dist.
+Après deploy : hard refresh (Ctrl+F5).
+
+
+DONNEES
+-------
+Sauvegarde auto via Netlify Blobs (API boutiquemenes).
+Export/Import JSON dans Paramètres si besoin de backup.
+
+
+AIDE RAPIDE
+-----------
+Guide plus long : CONSOLE-ADMIN.txt
+Architecture : ARCHITECTURE.txt

@@ -1,0 +1,62 @@
+MENES GRILLZ · PAGE TARIFS A-Z
+================================
+
+QU'EST-CE QUE GRILLZ
+--------------------
+Site de tarifs grillz (or 10k/14k/18k, diamants, argent) + formulaire de commande.
+PAS la boutique streetwear.
+Code : dossier grillz-site/ seulement.
+URL : https://menesjewelrygrillzprice.netlify.app
+
+Fichiers cles :
+  grillz-site/index.html   → grilles de prix completes
+  grillz-site/styles.css   → design
+  grillz-site/app.js       → menu, onglets karat, formulaire
+  grillz-site/assets/      → logo
+
+
+SOURCE ORIGINALE
+----------------
+Restauree depuis C:\Users\mathi\menes-grillz\ (backup 2 juil. 2026)
+et menes-grillz-deploy.zip. Ne pas ecraser avec la boutique.
+
+
+ERREUR COURANTE
+---------------
+Netlify dit "un projet ne peut avoir qu'un seul domaine netlify.app"
+→ Normal. Tu ne dois PAS ajouter menesjewelrygrillzprice.netlify.app
+  dans les domaines de boutiquemenes ou menesadmin.
+
+Chaque projet Netlify garde SON propre .netlify.app automatiquement.
+
+
+NE PAS FAIRE
+------------
+Ne jamais copier index.html / shop.js / shop.css de la boutique
+vers le projet Grillz. Ca ecrase la page tarifs.
+
+
+COMMENT CA MARCHE
+-----------------
+  menesadmin.netlify.app                  → console admin
+  boutiquemenes.netlify.app               → boutique vetements + API
+  menesjewelrygrillzprice.netlify.app     → GRILLZ (tarifs + commande)
+
+Le formulaire envoie les demandes au contact configure sur le site (API / notification email).
+Instagram: @menes_jewelry
+
+
+ETAPES
+------
+
+1. DEPLOY : Site Grillz
+   Double-clic: grillz-site\DEPLOY-GRILLZ.bat
+   (Deploie UNIQUEMENT grillz-site/ — index, styles, app, assets)
+
+2. VERIFIER
+   https://menesjewelrygrillzprice.netlify.app
+   Hard refresh: Ctrl+Shift+R
+   Tu dois voir: Sets complets, Pieces, Diamants, Argent + grilles 10k/14k/18k
+
+3. MODIFIER UN PRIX
+   Ouvre grillz-site\index.html, cherche le prix (ex: 1 650$), modifie, redeploie.

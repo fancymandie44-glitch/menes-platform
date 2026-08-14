@@ -8,7 +8,8 @@ echo  ==========================================
 echo.
 echo  Admin:  https://menesadmin.netlify.app
 echo  API:    https://boutiquemenes.netlify.app
-echo  Mot de passe: menes2026
+echo  Mot de passe: ADMIN_PASSWORD (Netlify env vars)
+echo  Aucun mot de passe par defaut n'est affiche ici.
 echo.
 start https://menesadmin.netlify.app
 pause

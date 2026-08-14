@@ -15,7 +15,7 @@
       <p>Connecte-toi pour gérer ta boutique</p>
       <input type="password" id="loginPassword" placeholder="Mot de passe admin" required>
       <button type="submit">Entrer</button>
-      <p class="login-hint">Mot de passe par défaut: <code>menes2026</code> — change-le dans admin.js</p>
+      <p class="login-hint">Configure <code>ADMIN_PASSWORD</code> dans Netlify (Environment variables). Aucun mot de passe par défaut.</p>
     </form>
   </div>
 
@@ -118,7 +118,7 @@
           <form id="squareForm" class="form-grid">
             <label>Application ID Square<input type="text" id="squareAppId" placeholder="sandbox-sq0idb-... ou sq0idp-..."></label>
             <label>Location ID<input type="text" id="squareLocationId" placeholder="L..."></label>
-            <label>Access Token (secret — garde privé)<input type="password" id="squareAccessToken" placeholder="EAAA..."></label>
+            <label>Access Token (secret, garde privé)<input type="password" id="squareAccessToken" placeholder="EAAA..."></label>
             <label class="checkbox"><input type="checkbox" id="squareSandbox" checked> Mode test (sandbox)</label>
             <button type="submit" class="btn-primary">Sauvegarder Square</button>
           </form>

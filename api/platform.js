@@ -2,10 +2,10 @@ const {
   readPlatform, writePlatform, readSiteStore, writeSiteStore, slugify, newSiteTemplate, normalizeHost, setLambdaEvent,
 } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
+const { checkAdminAuth } = require('../lib/admin-auth');
 
 function auth(event) {
-  const pw = event.headers['x-admin-password'] || event.headers['X-Admin-Password'];
-  return pw === (process.env.ADMIN_PASSWORD || 'menes2026');
+  return checkAdminAuth(event).ok;
 }
 
 exports.handler = async (event) => {

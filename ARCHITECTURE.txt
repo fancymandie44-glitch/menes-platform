@@ -23,8 +23,9 @@ SUR NETLIFY TU VERRAS:
 - menesadmin = site admin (fichiers HTML/CSS/JS seulement)
 - boutiquemenes = boutique + Functions (api/store, api/platform)
 
-MOT DE PASSE: menes2026
+MOT DE PASSE: variable Netlify ADMIN_PASSWORD
 (Netlify → boutiquemenes → Environment variables → ADMIN_PASSWORD)
+Aucun défaut dans le code — la variable doit être définie.
 
 LIER UN NOUVEAU DOMAINE
 -----------------------

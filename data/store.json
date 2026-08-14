@@ -1,36 +1,83 @@
 {
   "site": {
     "name": "MENES",
-    "tagline": "Luxe streetwear · Qualité premium",
-    "heroTitle": "PORTEZ L'EXCELLENCE.",
-    "heroSubtitle": "Vêtements et accessoires conçus pour ceux qui ne suivent pas la mode — ils la créent.",
+    "tagline": "Luxe streetwear. Qualite premium.",
+    "heroTitle": "Street luxe.\nC'est MENES.",
+    "heroSubtitle": "Vetements et accessoires pour ceux qui creent la mode. Pas ceux qui la suivent.",
     "heroCta": "Voir la collection",
     "heroImage": "",
+    "heroVideo": "",
     "logo": "",
-    "announcement": "✦ Drop limité · Livraison Québec & Canada · -10% première commande (liste VIP)",
+    "theme": {
+      "mode": "dark",
+      "accent": "#c9a84c",
+      "accentDark": "#e0c078",
+      "headingFont": "Syne",
+      "bodyFont": "DM Sans",
+      "productAspect": "portrait45",
+      "productImgFit": "cover",
+      "productImgHeight": 360,
+      "gridMin": 260,
+      "heroHeight": 92,
+      "heroOverlay": 48,
+      "announceBg": "#050505",
+      "announceColor": "#c9a84c",
+      "radius": 2,
+      "buttonRadius": 2
+    },
+    "announcement": "Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off",
     "instagram": "https://www.instagram.com/menes_jewelry",
     "instagramHandle": "@menes_jewelry",
     "email": "mymenes2022@gmail.com",
     "phone": "",
     "currency": "CAD",
+    "language": "en",
+    "freeShippingThreshold": 150,
+    "sectionOrder": ["trustBar", "products", "gallery", "why", "emailCapture", "faq", "contact", "guarantee"],
+    "seo": {
+      "title": "MENES | Luxe Streetwear",
+      "description": "MENES. Luxe streetwear. Vetements premium, paiement securise, livraison rapide au Quebec et Canada.",
+      "en": {
+        "title": "MENES | Luxury Streetwear",
+        "description": "MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada."
+      }
+    },
+    "i18n": {
+      "en": {
+        "tagline": "Luxury streetwear. Premium quality.",
+        "heroTitle": "Street luxe.\nThis is MENES.",
+        "heroSubtitle": "Clothes and accessories for people who set the trend. Not the ones who follow it.",
+        "heroCta": "Shop the collection",
+        "announcement": "Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off",
+        "galleryTitle": "They wear MENES",
+        "gallerySubtitle": "Join the community. Tag @menes_jewelry to get featured."
+      },
+      "fr": {
+        "tagline": "Luxe streetwear. Qualite premium.",
+        "heroTitle": "Street luxe.\nC'est MENES.",
+        "heroSubtitle": "Vetements et accessoires pour ceux qui creent la mode. Pas ceux qui la suivent.",
+        "heroCta": "Voir la collection",
+        "announcement": "Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs"
+      }
+    },
     "sections": {
       "announcement": true,
       "trustBar": true,
       "why": true,
       "gallery": true,
-      "bundle": true,
+      "bundle": false,
       "emailCapture": true,
       "faq": true,
       "guarantee": true
     },
     "trust": [
-      { "icon": "🔒", "title": "Paiement 100% sécurisé", "text": "Carte · Crypto · Klarna · PayPal" },
-      { "icon": "🚚", "title": "Livraison rapide", "text": "Expédition sous 3-5 jours ouvrables" },
-      { "icon": "💎", "title": "Qualité premium", "text": "Matériaux sélectionnés, finitions soignées" },
-      { "icon": "↩", "title": "Satisfait ou échangé", "text": "14 jours pour échanger" }
+      { "icon": "◆", "title": "Paiement 100% securise", "text": "Carte, Crypto, Klarna, PayPal" },
+      { "icon": "◆", "title": "Livraison rapide", "text": "Expedition sous 3-5 jours ouvrables" },
+      { "icon": "◆", "title": "Qualite premium", "text": "Materiaux selectionnes, finitions soignees" },
+      { "icon": "◆", "title": "Satisfait ou echange", "text": "14 jours pour echanger" }
     ],
     "why": [
-      { "title": "Design exclusif", "text": "Chaque pièce MENES est pensée pour se démarquer. Pas de mass market — du vrai streetwear luxe." },
+      { "title": "Design exclusif", "text": "Chaque pièce MENES est pensée pour se démarquer. Pas de mass market. Du vrai streetwear luxe." },
       { "title": "Prix direct producteur", "text": "Pas d'intermédiaire. Tu paies le juste prix pour une qualité boutique." },
       { "title": "Service personnalisé", "text": "Questions? Écris-nous sur Instagram ou par email. Réponse sous 24h garantie." }
     ],
@@ -50,10 +97,10 @@
       "cta": "Voir la collection"
     },
     "emailCapture": {
-      "title": "Rejoins la liste VIP MENES",
-      "subtitle": "Accès anticipé aux drops, offres exclusives et -10% sur ta première commande.",
-      "button": "M'inscrire",
-      "placeholder": "ton@email.com"
+      "title": "Join the MENES inner circle",
+      "subtitle": "Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.",
+      "button": "Sign me up",
+      "placeholder": "you@email.com"
     },
     "faq": [
       { "q": "Comment passer commande?", "a": "Ajoute tes articles au panier, remplis tes infos et paie par carte ou crypto. Klarna et PayPal sont aussi disponibles sur la page paiement alternative." },
@@ -61,7 +108,7 @@
       { "q": "Combien de temps pour la livraison?", "a": "3 à 5 jours ouvrables au Québec. 5 à 10 jours pour le reste du Canada." },
       { "q": "Puis-je échanger un article?", "a": "Oui, dans les 14 jours suivant la réception, si l'article est neuf avec étiquettes." }
     ],
-    "guarantee": "Toutes les transactions sont chiffrées SSL 256-bit. Vos données bancaires ne sont jamais stockées sur nos serveurs — elles sont traitées directement par nos partenaires de paiement certifiés PCI-DSS.",
+    "guarantee": "Transactions chiffrées SSL 256-bit. Tes infos bancaires ne restent jamais chez nous. Square, Stripe et PayPal s'en occupent, certifiés PCI-DSS.",
     "crypto": [
       { "label": "Bitcoin", "symbol": "BTC", "network": "Bitcoin", "address": "" },
       { "label": "Ethereum", "symbol": "ETH", "network": "ERC-20", "address": "" },
@@ -94,5 +141,6 @@
       "featured": false
     }
   ],
-  "orders": []
+  "orders": [],
+  "discounts": []
 }

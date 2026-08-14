@@ -1,29 +1,35 @@
 @echo off
-title DEPLOY MENES GRILLZ (projet Netlify separe)
+title DEPLOY MENES GRILLZ (page tarifs A-Z - PAS la boutique)
 cd /d "%~dp0\.."
 
 set OUT=%TEMP%\menes-grillz-deploy
 if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
+mkdir "%OUT%\assets"
 
-copy /Y index.html shop.css shop.js paiement.html paiement.js livraison.html retours.html confidentialite.html grillz-site\netlify.toml "%OUT%\" >nul
-copy /Y grillz-site\config.js "%OUT%\config.js" >nul
-xcopy /E /I /Y data "%OUT%\data" >nul
+REM IMPORTANT: deploie UNIQUEMENT grillz-site/ (page prix originale)
+REM Ne JAMAIS copier index.html / shop.js / shop.css de la boutique ici.
+copy /Y grillz-site\index.html "%OUT%\index.html" >nul
+copy /Y grillz-site\styles.css "%OUT%\styles.css" >nul
+copy /Y grillz-site\app.js "%OUT%\app.js" >nul
+copy /Y grillz-site\netlify.toml "%OUT%\netlify.toml" >nul
+copy /Y grillz-site\_redirects "%OUT%\_redirects" >nul
+copy /Y grillz-site\assets\*.* "%OUT%\assets\" >nul
 
 echo.
 echo  ==========================================
-echo    DEPLOIEMENT MENES GRILLZ
+echo    DEPLOIEMENT MENES GRILLZ (tarifs A-Z)
 echo  ==========================================
 echo.
 echo  Site: menesjewelrygrillzprice.netlify.app
-echo  API:  boutiquemenes.netlify.app (donnees admin)
-echo  SITE_ID: grillz
+echo  Type: grille de prix complete + formulaire commande
+echo  Source: grillz-site/ UNIQUEMENT (pas la boutique)
 echo.
 
 cd "%OUT%"
-netlify deploy --prod --dir=. --site f106aff8-4721-4774-b3c1-465aed77c48a
+netlify deploy --prod --dir=. --site f106aff8-4721-4774-b3c1-465aed77c48a --message "Restore original MENES Grillz A-Z price page"
 
 echo.
 echo  GRILLZ: https://menesjewelrygrillzprice.netlify.app
-echo  ADMIN:  https://menesadmin.netlify.app (selectionne MENES Grillz)
+echo  ADMIN:  https://menesadmin.netlify.app
 pause

@@ -1,15 +1,13 @@
 [build]
   publish = "."
 
-[[redirects]]
-  from = "/paiement"
-  to = "/paiement.html"
-  status = 200
+# Custom domain: mymenesjewelry.com
+# Configure DNS at your registrar (see DOMAIN-SETUP.txt)
 
 [[redirects]]
-  from = "/api/*"
-  to = "https://boutiquemenes.netlify.app/api/:splat"
-  status = 200
+  from = "https://www.mymenesjewelry.com/*"
+  to = "https://mymenesjewelry.com/:splat"
+  status = 301
   force = true
 
 [[headers]]

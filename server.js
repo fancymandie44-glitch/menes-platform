@@ -5,7 +5,7 @@ const { readStoreFile, writeStoreFile } = require('./lib/store-data');
 
 const root = __dirname;
 const port = 8888;
-const ADMIN_PASSWORD = 'menes2026';
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '').trim();
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -34,6 +34,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/api/store') {
     if (req.method === 'GET') return sendJson(res, 200, readStoreFile(root));
     if (req.method === 'POST') {
+      if (!ADMIN_PASSWORD) return sendJson(res, 503, { error: 'ADMIN_PASSWORD non configuré sur le serveur' });
       const body = await readBody(req);
       if (req.headers['x-admin-password'] !== ADMIN_PASSWORD) return sendJson(res, 401, { error: 'Mot de passe incorrect' });
       writeStoreFile(root, JSON.parse(body));

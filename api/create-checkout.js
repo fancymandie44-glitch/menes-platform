@@ -51,7 +51,7 @@ exports.handler = async (event) => {
           reference_id: order.id,
         },
         checkout_options: {
-          redirect_url: `${process.env.URL || 'https://menesjewelrygrillzprice.netlify.app'}/store/?paid=1&order=${order.id}`,
+          redirect_url: `${process.env.URL || 'https://boutiquemenes.netlify.app'}/?paid=1&order=${order.id}&method=square`,
           ask_for_shipping_address: true,
         },
         pre_populated_data: {
@@ -70,21 +70,12 @@ exports.handler = async (event) => {
 
     const checkoutUrl = data.payment_link?.url || data.payment_link?.long_url;
 
-    // Notify merchant by email via FormSubmit
-    await fetch('https://formsubmit.co/ajax/mymenes2022@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        _subject: `Nouvelle commande MENES #${order.id}`,
-        _template: 'table',
-        Client: order.customer.name,
-        Email: order.customer.email,
-        Téléphone: order.customer.phone,
-        Total: `${order.total.toFixed(2)}$ CAD`,
-        Articles: order.items.map((i) => `${i.name} (${i.size}) x${i.qty}`).join(', '),
-        Statut: 'En attente de paiement Square',
-      }),
-    }).catch(() => {});
+    try {
+      const { notifyMerchant } = require('../lib/notify');
+      await notifyMerchant(order, 'Square', 'En attente de paiement');
+    } catch (e) {
+      console.log('Merchant notify failed:', e.message);
+    }
 
     return {
       statusCode: 200,

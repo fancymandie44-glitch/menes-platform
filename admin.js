@@ -1,7 +1,8 @@
 // MENES Admin CMS
-const ADMIN_PASSWORD = 'menes2026';
+let adminPassword = '';
 const STORAGE_KEY = 'menes_store_data';
 const AUTH_KEY = 'menes_admin_auth';
+const PW_KEY = 'menes_admin_pw';
 const API = '/api/store';
 let storeData = null;
 let pendingProductImage = null;
@@ -25,10 +26,10 @@ async function saveStore(msg = '✅ Sauvegardé!') {
   const json = JSON.stringify(storeData);
   localStorage.setItem(STORAGE_KEY, json);
   try {
-    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PASSWORD }, body: json });
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPassword }, body: json });
     if (res.ok) toast(msg, 'success');
     else toast('Sauvegardé localement', '');
-  } catch { toast('Sauvegardé localement — visible sur F5', ''); }
+  } catch { toast('Sauvegardé localement. Visible sur F5.', ''); }
   window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: json }));
 }
 
@@ -99,12 +100,22 @@ async function handleImage(file, preview, callback) {
 // Auth
 document.getElementById('loginForm').addEventListener('submit', (e) => {
   e.preventDefault();
-  if (document.getElementById('loginPassword').value === ADMIN_PASSWORD) {
-    sessionStorage.setItem(AUTH_KEY, '1');
-    showApp();
-  } else toast('Mot de passe incorrect', 'error');
+  const pw = document.getElementById('loginPassword').value.trim();
+  if (!pw) {
+    toast('Configure ADMIN_PASSWORD et saisis le mot de passe', 'error');
+    return;
+  }
+  adminPassword = pw;
+  sessionStorage.setItem(AUTH_KEY, '1');
+  sessionStorage.setItem(PW_KEY, adminPassword);
+  showApp();
 });
-document.getElementById('logoutBtn').addEventListener('click', () => { sessionStorage.removeItem(AUTH_KEY); location.reload(); });
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(AUTH_KEY);
+  sessionStorage.removeItem(PW_KEY);
+  adminPassword = '';
+  location.reload();
+});
 document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
 function showApp() {
@@ -405,4 +416,11 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
   reader.readAsText(file);
 });
 
-(async () => { await loadStore(); if (sessionStorage.getItem(AUTH_KEY)) showApp(); })();
+(async () => {
+  await loadStore();
+  adminPassword = sessionStorage.getItem(PW_KEY) || '';
+  if (sessionStorage.getItem(AUTH_KEY) && adminPassword) showApp();
+  else if (sessionStorage.getItem(AUTH_KEY) && !adminPassword) {
+    sessionStorage.removeItem(AUTH_KEY);
+  }
+})();

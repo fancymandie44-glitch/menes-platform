@@ -6,7 +6,8 @@ echo  ==========================================
 echo    MENES VETEMENTS - Demarrage
 echo  ==========================================
 echo.
-echo  Mot de passe admin: menes2026
+echo  Mot de passe admin: variable ADMIN_PASSWORD (Netlify / env)
+echo  Aucun mot de passe par defaut — configure ADMIN_PASSWORD avant.
 echo.
 start http://localhost:8888/console/
 timeout /t 2 /nobreak >nul

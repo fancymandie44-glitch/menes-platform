@@ -1,17 +1,29 @@
-<!DOCTYPE html>
-<html lang="fr">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="MENES — Luxe streetwear. Vêtements premium, paiement sécurisé, livraison rapide au Québec et Canada.">
-  <meta name="theme-color" content="#0a0a0a">
-  <title>MENES — Luxe Streetwear</title>
+  <meta name="description" content="MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.">
+  <meta name="theme-color" content="#050505">
+  <meta property="og:title" content="MENES | Luxury Streetwear">
+  <meta property="og:description" content="Luxury streetwear. Premium clothing, secure checkout, shipping across Quebec and Canada.">
+  <meta property="og:url" content="https://boutiquemenes.netlify.app/">
+  <link rel="canonical" href="https://boutiquemenes.netlify.app/">
+  <title>MENES | Luxury Streetwear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260710">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shop.css?v=20260812en">
+  <script>
+    // Prefer English before shop.js loads (avoids French flash)
+    try {
+      var _ml = localStorage.getItem('menes_lang_v2');
+      if (_ml === 'fr' || _ml === 'en') document.documentElement.lang = _ml;
+      else document.documentElement.lang = 'en';
+    } catch (e) { document.documentElement.lang = 'en'; }
+  </script>
 </head>
-<body>
+<body class="theme-obsidian">
   <div id="announceBar" class="announce hidden"></div>
 
   <nav class="nav">
@@ -20,22 +32,26 @@
       <span id="navBrand">MENES</span>
     </a>
     <div class="nav-links">
-      <a href="#products" data-i18n="nav_shop">Boutique</a>
-      <a href="#gallery" data-i18n="nav_community">Communauté</a>
-      <a href="#why" data-i18n="nav_why">Pourquoi MENES</a>
+      <a href="#products" data-i18n="nav_shop">Shop</a>
+      <a href="#gallery" data-i18n="nav_community">Community</a>
+      <a href="#why" data-i18n="nav_why">Why MENES</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
-      <button id="cartBtn" class="cart-btn"><span data-i18n="cart">Panier</span> (<span id="cartCount">0</span>)</button>
+      <button type="button" id="langToggle" class="nav-lang-btn" aria-label="Passer en français">FR</button>
+      <button type="button" id="wishlistNavBtn" class="nav-wishlist-btn" aria-label="Wishlist" data-i18n-aria="wishlist"><span class="wishlist-nav-icon" aria-hidden="true">&#9825;</span><span id="wishlistNavCount" class="wishlist-nav-count hidden">0</span></button>
+      <button id="cartBtn" class="cart-btn"><span data-i18n="cart">Cart</span> (<span id="cartCount">0</span>)</button>
     </div>
   </nav>
 
   <header class="hero" id="heroSection">
-    <div class="hero-bg" id="heroBg"></div>
-    <div class="hero-inner">
+    <div class="hero-bg" id="heroBg">
+      <video id="heroVideo" class="hero-video hidden" autoplay muted loop playsinline poster=""></video>
+    </div>
+    <div class="hero-inner reveal">
       <p class="hero-tag" id="heroTag"></p>
       <h1 id="heroTitle">MENES</h1>
       <p class="hero-sub" id="heroSubtitle"></p>
-      <a href="#products" class="hero-cta" id="heroCta">Voir la collection</a>
+      <a href="#products" class="hero-cta" id="heroCta">Shop the collection</a>
     </div>
   </header>
 
@@ -45,9 +61,29 @@
     <div class="container">
       <div class="section-head">
         <span class="section-label" data-i18n="label_collection">Collection</span>
-        <h2 data-i18n="label_boutique">Boutique</h2>
+        <h2 data-i18n="label_boutique">Shop</h2>
       </div>
       <div class="filters" id="filtersBar"></div>
+      <div class="shop-discovery" id="shopDiscovery">
+        <div class="shop-search-wrap">
+          <label for="productSearch" class="sr-only" id="productSearchLabel" data-i18n="search_label">Search</label>
+          <input type="search" id="productSearch" class="shop-search-input" autocomplete="off" spellcheck="false" aria-labelledby="productSearchLabel">
+        </div>
+        <div class="shop-sort-wrap">
+          <label for="productSizeFilter" id="productSizeLabel" data-i18n="size_filter">Size</label>
+          <select id="productSizeFilter" class="shop-sort-select" aria-labelledby="productSizeLabel">
+            <option value="">Toutes les tailles</option>
+          </select>
+        </div>
+        <div class="shop-sort-wrap">
+          <label for="productSort" id="productSortLabel" data-i18n="sort_label">Sort by</label>
+          <select id="productSort" class="shop-sort-select" aria-labelledby="productSortLabel">
+            <option value="featured" data-i18n="sort_featured">Featured</option>
+            <option value="price-asc" data-i18n="sort_price_asc">Price: low to high</option>
+            <option value="price-desc" data-i18n="sort_price_desc">Price: high to low</option>
+          </select>
+        </div>
+      </div>
       <div id="productsGrid" class="products-grid"></div>
     </div>
   </section>
@@ -55,10 +91,10 @@
   <section id="bundle" class="bundle-section hidden">
     <div class="container bundle-inner">
       <div class="bundle-copy">
-        <span class="section-label">Signature MENES</span>
+        <span class="section-label" data-i18n="label_signature">Signature MENES</span>
         <h2 id="bundleTitle">Complete le look</h2>
         <p id="bundleText"></p>
-        <a href="#products" class="hero-cta" id="bundleCta">Voir la collection</a>
+        <a href="#products" class="hero-cta" id="bundleCta">Shop the collection</a>
       </div>
       <div class="bundle-tags">
         <span>Grillz</span><span>+</span><span>Streetwear</span><span>=</span><span>MENES</span>
@@ -69,20 +105,34 @@
   <section id="gallery" class="gallery-section hidden">
     <div class="container">
       <div class="section-head">
-        <span class="section-label">Communauté</span>
+        <span class="section-label" data-i18n="label_community">Community</span>
         <h2 id="galleryTitle">Ils portent MENES</h2>
         <p class="section-sub" id="gallerySubtitle"></p>
       </div>
       <div id="galleryGrid" class="gallery-grid"></div>
-      <p class="gallery-empty hidden" id="galleryEmpty">Photos clients bientôt disponibles — tag <a id="galleryIgLink" href="#" target="_blank" rel="noopener">@menes_jewelry</a> sur Instagram!</p>
+      <p class="gallery-empty hidden" id="galleryEmpty"><span data-i18n="gallery_empty">Customer photos coming soon. Tag</span> <a id="galleryIgLink" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">@menes_jewelry</a> <span data-i18n="gallery_empty_ig">on Instagram.</span></p>
+    </div>
+  </section>
+
+  <section id="reviews" class="reviews-section hidden">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label" data-i18n="reviews_label">Customer reviews</span>
+        <h2 data-i18n="reviews_title">What they say</h2>
+        <p class="section-sub" data-i18n="reviews_sub">Ratings verified by the MENES community.</p>
+      </div>
+      <div id="reviewsSummary" class="reviews-summary"></div>
+      <div id="reviewsGrid" class="reviews-grid"></div>
+      <p class="reviews-empty hidden" id="reviewsEmpty" data-i18n="reviews_empty">No reviews yet. Be the first.</p>
+      <button type="button" id="reviewsWriteBtn" class="btn-outline-block reviews-write-btn" data-i18n="reviews_write">Write a review</button>
     </div>
   </section>
 
   <section id="why" class="why-section hidden">
     <div class="container">
       <div class="section-head">
-        <span class="section-label">Pourquoi nous</span>
-        <h2 id="whyTitle">Pourquoi MENES</h2>
+        <span class="section-label" data-i18n="label_why">Why us</span>
+        <h2 id="whyTitle" data-i18n="why_title">Why MENES</h2>
       </div>
       <div id="whyGrid" class="why-grid"></div>
     </div>
@@ -95,7 +145,7 @@
         <p id="emailSubtitle"></p>
       </div>
       <form id="emailForm" class="email-form">
-        <input type="email" id="emailInput" required autocomplete="email">
+        <input type="email" id="emailInput" required autocomplete="email" data-i18n-placeholder="email_ph">
         <input type="text" id="emailHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button type="submit" id="emailBtn">M'inscrire</button>
       </form>
@@ -105,8 +155,8 @@
   <section id="faq" class="faq-section hidden">
     <div class="container">
       <div class="section-head">
-        <span class="section-label">Questions</span>
-        <h2>FAQ</h2>
+        <span class="section-label" data-i18n="label_questions">Questions</span>
+        <h2 data-i18n="label_faq">FAQ</h2>
       </div>
       <div id="faqList" class="faq-list"></div>
     </div>
@@ -115,10 +165,10 @@
   <section id="contact" class="contact-section">
     <div class="container">
       <h2 data-i18n="label_contact">Contact</h2>
-      <p class="contact-sub" data-i18n="contact_sub">Une question? On répond sous 24h.</p>
+      <p class="contact-sub" data-i18n="contact_sub">Got a question? We reply within 24h.</p>
       <div class="contact-links">
-        <a id="linkInstagram" href="#" target="_blank" rel="noopener">Instagram</a>
-        <a id="linkEmail" href="#">Email</a>
+        <a id="linkInstagram" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">Instagram</a>
+        <a id="linkEmail" href="mailto:contact@menes.store">Email</a>
         <a id="linkPhone" href="#" class="hidden">Téléphone</a>
       </div>
     </div>
@@ -126,7 +176,7 @@
 
   <section id="guarantee" class="guarantee-section hidden">
     <div class="container guarantee-box">
-      <span class="guarantee-icon">🛡</span>
+      <span class="guarantee-icon" aria-hidden="true">◆</span>
       <p id="guaranteeText"></p>
     </div>
   </section>
@@ -134,81 +184,152 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-trust">
-        <span data-i18n="foot_ssl">🔒 SSL Sécurisé</span>
-        <span data-i18n="foot_pay">💳 Paiement chiffré</span>
-        <span data-i18n="foot_pci">✓ PCI-DSS Compliant</span>
+        <span data-i18n="foot_ssl">SSL Secured</span>
+        <span data-i18n="foot_pay">Encrypted payment</span>
+        <span data-i18n="foot_pci">Secure checkout via Square / PayPal</span>
       </div>
       <nav class="footer-legal">
-        <a href="livraison.html" data-i18n="foot_shipping">Livraison</a>
-        <a href="retours.html" data-i18n="foot_returns">Retours & échanges</a>
-        <a href="confidentialite.html" data-i18n="foot_privacy">Confidentialité</a>
+        <a href="livraison.html" data-i18n="foot_shipping">Shipping</a>
+        <a href="retours.html" data-i18n="foot_returns">Returns & exchanges</a>
+        <a href="confidentialite.html" data-i18n="foot_privacy">Privacy</a>
       </nav>
-      <p>© 2026 <span id="footerBrand">MENES</span> · <span data-i18n="foot_rights">Tous droits réservés</span></p>
+      <p>© 2026 <span id="footerBrand">MENES</span> · <span data-i18n="foot_rights">All rights reserved</span></p>
     </div>
   </footer>
 
   <div id="cartOverlay" class="cart-overlay hidden"></div>
   <aside id="cartPanel" class="cart-panel hidden">
     <div class="cart-header">
-      <h3 data-i18n="cart_title">Panier</h3>
+      <h3 data-i18n="cart_title">Cart</h3>
       <button id="closeCart" aria-label="Fermer">✕</button>
     </div>
     <div id="cartItems" class="cart-items"></div>
+    <div id="cartShipUnlock" class="cart-ship-unlock hidden"></div>
+    <div id="cartUpsells" class="cart-upsells hidden">
+      <h4 class="cart-upsells-title" data-i18n="upsell_cart_title">Complete your cart</h4>
+      <div id="cartUpsellsList" class="cart-upsells-list"></div>
+    </div>
+    <div id="cartShippingBar" class="cart-shipping-bar hidden">
+      <p id="cartShippingText" class="cart-shipping-text"></p>
+      <div class="cart-shipping-track"><div id="cartShippingFill" class="cart-shipping-fill"></div></div>
+    </div>
     <div class="cart-footer">
-      <div class="cart-secure" data-i18n="cart_secure">🔒 Paiement 100% sécurisé</div>
+      <div class="cart-secure" data-i18n="cart_secure">100% secure checkout</div>
       <div class="cart-total"><span data-i18n="cart_total">Total:</span> <strong id="cartTotal">0$</strong> CAD</div>
-      <button id="checkoutBtn" class="btn-checkout" data-i18n="cart_checkout">Commander — Paiement sécurisé</button>
+      <button id="checkoutBtn" class="btn-checkout" data-i18n="cart_checkout">Checkout</button>
     </div>
   </aside>
 
+  <div id="pdpOverlay" class="pdp-overlay hidden"></div>
+  <aside id="pdpPanel" class="pdp-panel hidden" aria-hidden="true">
+    <button type="button" id="closePdp" class="pdp-close" aria-label="Fermer">✕</button>
+    <div class="pdp-media">
+      <div class="pdp-img-wrap">
+        <img id="pdpMainImg" alt="">
+        <video id="pdpVideo" class="pdp-video hidden" controls playsinline muted loop></video>
+      </div>
+      <div id="pdpThumbs" class="pdp-thumbs"></div>
+    </div>
+    <div class="pdp-body">
+      <p class="pdp-cat" id="pdpCat"></p>
+      <h2 id="pdpName"></h2>
+      <div class="pdp-price" id="pdpPrice"></div>
+      <p id="pdpUrgency" class="pdp-urgency hidden"></p>
+      <p class="pdp-desc" id="pdpDesc"></p>
+      <button type="button" class="link-btn pdp-size-btn" id="pdpSizeGuideBtn" data-i18n="size_guide_btn">Size guide</button>
+      <div id="pdpOptions" class="pdp-options"></div>
+      <div class="pdp-proof">
+        <span data-i18n="proof_pay">Secure payment</span>
+        <span data-i18n="proof_ship">Ships CA</span>
+        <span data-i18n="proof_ex">14-day exchange</span>
+      </div>
+      <div id="pdpReviews" class="pdp-reviews"></div>
+      <button type="button" class="btn-checkout" id="pdpAddBtn" data-i18n="add_to_cart">Add to cart</button>
+      <button type="button" class="btn-outline-block hidden" id="pdpAddLookBtn" data-i18n="upsell_add_look">Add the look (+1 piece)</button>
+      <div id="pdpRecs" class="pdp-recs hidden" aria-live="polite">
+        <h3 class="pdp-recs-title" data-i18n="complete_look">Complete the look</h3>
+        <div id="pdpRecsList" class="pdp-recs-list"></div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="stickyAtc" class="sticky-atc hidden">
+    <div class="sticky-atc-inner">
+      <img id="stickyAtcImg" alt="" class="sticky-atc-img">
+      <div class="sticky-atc-info">
+        <strong id="stickyAtcName"></strong>
+        <span id="stickyAtcPrice"></span>
+      </div>
+      <button type="button" class="btn-checkout sticky-atc-btn" id="stickyAtcBtn">Ajouter</button>
+    </div>
+  </div>
+
+  <div id="sizeGuideModal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="sizeGuideTitle" data-i18n="size_guide">Size guide</h3>
+      <div id="sizeGuideBody" class="size-guide-body"></div>
+      <button type="button" id="closeSizeGuide" class="btn-checkout">Fermer</button>
+    </div>
+  </div>
+
   <div id="checkoutModal" class="modal hidden">
     <div class="modal-box modal-checkout">
-      <h3 data-i18n="checkout_title">Finaliser la commande</h3>
-      <p class="checkout-secure" data-i18n="checkout_secure">🔒 Connexion chiffrée SSL · Données protégées</p>
+      <h3 data-i18n="checkout_title">Checkout</h3>
+      <p class="checkout-secure" data-i18n="checkout_secure">SSL encrypted connection · Data protected</p>
       <form id="checkoutForm">
-        <label><span data-i18n="f_name">Nom complet</span><input type="text" name="name" required autocomplete="name"></label>
+        <label><span data-i18n="f_name">Full name</span><input type="text" name="name" required autocomplete="name"></label>
         <div class="checkout-row-2">
-          <label><span data-i18n="f_email">Courriel</span><input type="email" name="email" required autocomplete="email"></label>
-          <label><span data-i18n="f_phone">Téléphone</span><input type="tel" name="phone" required autocomplete="tel"></label>
+          <label><span data-i18n="f_email">Email</span><input type="email" name="email" required autocomplete="email"></label>
+          <label><span data-i18n="f_phone">Phone</span><input type="tel" name="phone" required autocomplete="tel"></label>
         </div>
-        <label><span data-i18n="f_country">Pays</span>
+        <label><span data-i18n="f_country">Country</span>
           <select name="country" id="checkoutCountry">
             <option value="CA" selected>Canada</option>
-            <option value="US">États-Unis</option>
+            <option value="US">United States</option>
             <option value="FR">France</option>
-            <option value="BE">Belgique</option>
-            <option value="CH">Suisse</option>
-            <option value="OTHER">Autre</option>
+            <option value="BE">Belgium</option>
+            <option value="CH">Switzerland</option>
+            <option value="OTHER">Other</option>
           </select>
         </label>
-        <label class="addr-field"><span data-i18n="f_address">Adresse</span>
-          <input type="text" name="address" id="checkoutAddress" required autocomplete="off" placeholder="Commence à taper ton adresse...">
+        <label class="addr-field"><span data-i18n="f_address">Address</span>
+          <input type="text" name="address" id="checkoutAddress" required autocomplete="off" placeholder="Start typing your address..." data-i18n-placeholder="addr_ph">
           <div id="addrSuggestions" class="addr-suggestions hidden"></div>
         </label>
         <div class="checkout-row-3">
-          <label><span data-i18n="f_city">Ville</span><input type="text" name="city" id="checkoutCity" required></label>
+          <label><span data-i18n="f_city">City</span><input type="text" name="city" id="checkoutCity" required></label>
           <label><span data-i18n="f_province">Province</span><select name="province" id="checkoutProvince"></select></label>
-          <label><span data-i18n="f_postal">Code postal</span><input type="text" name="postal" id="checkoutPostal" required></label>
+          <label><span data-i18n="f_postal">Postal code</span><input type="text" name="postal" id="checkoutPostal" required></label>
+        </div>
+
+        <div class="promo-row">
+          <label class="promo-label"><span data-i18n="promo_label">Promo code</span>
+            <div class="promo-input-row">
+              <input type="text" id="promoCodeInput" name="promo" autocomplete="off" placeholder="Ambassador code" maxlength="32" data-i18n-placeholder="promo_ph">
+              <button type="button" id="applyPromoBtn" class="btn-outline-sm" data-i18n="promo_apply">Apply</button>
+            </div>
+          </label>
+          <p class="promo-msg" id="promoMsg"></p>
         </div>
 
         <div class="checkout-summary" id="checkoutSummary"></div>
 
-        <p class="pay-label" data-i18n="pay_label">Mode de paiement :</p>
+        <p class="pay-label" data-i18n="pay_label">Payment method:</p>
         <div class="pay-methods pay-methods-main">
-          <button type="button" class="pay-btn active" data-method="stripe">
-            <span class="pay-icon">💳</span><span data-i18n="pay_card">Carte</span><small>Stripe · Visa · MC · Amex</small>
+          <button type="button" class="pay-btn active" data-method="square">
+            <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Visa · MC · Amex</small>
           </button>
           <button type="button" class="pay-btn" data-method="crypto">
-            <span class="pay-icon">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
+            <span class="pay-icon" aria-hidden="true">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
           </button>
         </div>
-        <input type="hidden" name="method" id="payMethod" value="stripe">
-        <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Payer par carte — Sécurisé</button>
+        <input type="hidden" name="method" id="payMethod" value="square">
+        <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Pay by card</button>
         <p class="alt-pay">
-          <span data-i18n="alt_pay">Besoin de Klarna ou PayPal?</span>
-          <button type="button" id="altPayBtn" class="link-btn" data-i18n="alt_pay_btn">Continuer avec Klarna / PayPal →</button>
+          <span data-i18n="alt_pay">Need Klarna or PayPal?</span>
+          <button type="button" id="altPayBtn" class="link-btn" data-i18n="alt_pay_btn">Continue with Klarna / PayPal →</button>
         </p>
-        <button type="button" id="cancelCheckout" data-i18n="cancel">Annuler</button>
+        <button type="button" id="cancelCheckout" data-i18n="cancel">Cancel</button>
         <p class="checkout-note" id="checkoutNote"></p>
       </form>
     </div>
@@ -216,33 +337,67 @@
 
   <div id="cryptoModal" class="modal hidden">
     <div class="modal-box modal-crypto">
-      <h3>Paiement en crypto</h3>
-      <p class="checkout-secure">Envoie le montant exact avant la fin du minuteur</p>
+      <h3 data-i18n="crypto_title">Pay with crypto</h3>
+      <p class="checkout-secure" data-i18n="crypto_send">Send the exact amount before the timer ends</p>
 
       <div class="crypto-order">
-        <span>Commande <strong id="cryptoOrderId">#—</strong></span>
-        <span class="crypto-fiat">Total : <strong id="cryptoAmount">0$ CAD</strong></span>
+        <span><span data-i18n="crypto_order">Order</span> <strong id="cryptoOrderId">#</strong></span>
+        <span class="crypto-fiat"><span data-i18n="crypto_total">Total:</span> <strong id="cryptoAmount">0$ CAD</strong></span>
       </div>
 
       <div id="cryptoTimer" class="crypto-timer">
-        <span class="crypto-timer-label">Temps restant pour payer</span>
+        <span class="crypto-timer-label" data-i18n="crypto_timer">Time left to pay</span>
         <span class="crypto-timer-clock" id="cryptoClock">15:00</span>
         <div class="crypto-timer-bar"><div id="cryptoTimerFill" class="crypto-timer-fill"></div></div>
       </div>
 
       <div id="cryptoExpired" class="crypto-expired hidden">
-        <p>⏱ Le délai est écoulé. Le taux de change a peut-être changé.</p>
-        <button type="button" class="btn-checkout" id="cryptoRestartBtn">Recommencer le paiement</button>
+        <p data-i18n="crypto_expired">⏱ Time is up. The exchange rate may have changed.</p>
+        <button type="button" class="btn-checkout" id="cryptoRestartBtn" data-i18n="crypto_restart">Restart payment</button>
       </div>
 
       <div id="cryptoBody">
         <div id="cryptoTabs" class="crypto-tabs"></div>
         <div id="cryptoPanel" class="crypto-panel"></div>
-        <p class="crypto-help">Le paiement est confirmé automatiquement dès réception sur la blockchain. On expédie ensuite ta commande.</p>
-        <button type="button" class="btn-checkout" id="cryptoPaidBtn">J'ai envoyé le paiement ✓</button>
+        <p class="crypto-help" data-i18n="crypto_help">Payment confirms automatically once received on-chain. We then ship your order.</p>
+        <button type="button" class="btn-checkout" id="cryptoPaidBtn" data-i18n="crypto_paid">I sent the payment ✓</button>
       </div>
 
-      <button type="button" id="cryptoCloseBtn">Fermer</button>
+      <button type="button" id="cryptoCloseBtn" data-i18n="close">Close</button>
+    </div>
+  </div>
+
+  <div id="purchaseTicker" class="purchase-ticker hidden" role="status" aria-live="polite">
+    <span id="purchaseTickerText" class="purchase-ticker-text"></span>
+    <button type="button" id="purchaseTickerClose" class="purchase-ticker-close" aria-label="Close" data-i18n-aria="close">&times;</button>
+  </div>
+
+  <div id="vipOverlay" class="vip-overlay hidden" aria-hidden="true">
+    <div class="vip-overlay-box">
+      <button type="button" id="vipOverlayClose" class="vip-overlay-close" aria-label="Fermer">&times;</button>
+      <p class="vip-overlay-label" data-i18n="vip_overlay_label">Ambassador circle</p>
+      <h3 id="vipOverlayTitle" data-i18n="vip_overlay_title">Your 10% isn’t on the shelf</h3>
+      <p id="vipOverlaySub" data-i18n="vip_overlay_sub">MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off — the public codes are gone.</p>
+      <form id="vipOverlayForm" class="vip-overlay-form">
+        <input type="email" id="vipOverlayEmail" required autocomplete="email" placeholder="you@email.com">
+        <input type="text" id="vipOverlayHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" id="vipOverlayBtn" data-i18n="vip_overlay_btn">Get drop alerts</button>
+      </form>
+      <button type="button" id="vipOverlaySkip" class="vip-overlay-skip" data-i18n="vip_overlay_skip">I’ll find an ambassador</button>
+    </div>
+  </div>
+
+  <div id="upsellModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="upsellTitle">
+    <div class="modal-box upsell-box">
+      <button type="button" id="upsellClose" class="modal-x" aria-label="Close">&times;</button>
+      <p class="upsell-eyebrow" data-i18n="upsell_eyebrow">Before you continue</p>
+      <h3 id="upsellTitle" data-i18n="upsell_title">People also add this</h3>
+      <p id="upsellSub" class="upsell-sub" data-i18n="upsell_sub">One more piece. Stronger look. Closer to free shipping.</p>
+      <div id="upsellProduct" class="upsell-product"></div>
+      <div class="upsell-actions">
+        <button type="button" id="upsellAddBtn" class="btn-checkout" data-i18n="upsell_add">Add to cart</button>
+        <button type="button" id="upsellSkipBtn" class="link-btn" data-i18n="upsell_skip">No thanks, continue</button>
+      </div>
     </div>
   </div>
 
@@ -252,13 +407,60 @@
   <div id="successModal" class="modal hidden">
     <div class="modal-box modal-success">
       <div class="success-check">✓</div>
-      <h3 id="successTitle">Merci pour ta commande!</h3>
-      <p id="successMsg">Ta commande est confirmée. Tu vas recevoir un courriel avec les détails. On prépare ton colis avec soin.</p>
-      <button type="button" id="successCloseBtn" class="btn-checkout">Continuer mes achats</button>
+      <h3 id="successTitle" data-i18n="success_title">Thank you for your order!</h3>
+      <p id="successMsg" data-i18n="success_msg">Once payment is confirmed, you will receive a confirmation email. We then pack your order.</p>
+      <button type="button" id="successReviewBtn" class="btn-outline-block" data-i18n="reviews_after_order">Leave a review</button>
+      <button type="button" id="successCloseBtn" class="btn-checkout" data-i18n="success_close">Continue shopping</button>
     </div>
   </div>
 
-  <script src="config.js?v=20260710"></script>
-  <script src="shop.js?v=20260710"></script>
+  <div id="reviewModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+    <div class="modal-box review-modal-box">
+      <button type="button" id="reviewModalClose" class="modal-x" aria-label="Close">&times;</button>
+      <h3 id="reviewModalTitle" data-i18n="reviews_modal_title">Write a review</h3>
+      <p class="review-modal-sub" data-i18n="reviews_modal_sub">Share your MENES experience. Your review will go live after approval.</p>
+      <form id="reviewForm" class="review-form">
+        <label>
+          <span data-i18n="reviews_product">Product</span>
+          <select id="reviewProduct" name="productId" required></select>
+        </label>
+        <div class="review-stars-field">
+          <span class="review-stars-label" data-i18n="reviews_rating">Rating</span>
+          <div id="reviewStarInput" class="review-star-input" role="group" aria-label="Rating">
+            <button type="button" class="star-btn" data-star="1" aria-label="1">★</button>
+            <button type="button" class="star-btn" data-star="2" aria-label="2">★</button>
+            <button type="button" class="star-btn" data-star="3" aria-label="3">★</button>
+            <button type="button" class="star-btn" data-star="4" aria-label="4">★</button>
+            <button type="button" class="star-btn" data-star="5" aria-label="5">★</button>
+          </div>
+          <input type="hidden" id="reviewRating" name="rating" value="5">
+        </div>
+        <label>
+          <span data-i18n="reviews_name">Your name</span>
+          <input type="text" id="reviewName" name="authorName" required maxlength="60" autocomplete="name">
+        </label>
+        <label>
+          <span data-i18n="reviews_email">Email (optional)</span>
+          <input type="email" id="reviewEmail" name="authorEmail" maxlength="120" autocomplete="email">
+        </label>
+        <label>
+          <span data-i18n="reviews_title_field">Title</span>
+          <input type="text" id="reviewTitle" name="title" maxlength="80">
+        </label>
+        <label>
+          <span data-i18n="reviews_body">Your review</span>
+          <textarea id="reviewBody" name="body" required maxlength="1200" rows="4"></textarea>
+        </label>
+        <input type="text" id="reviewHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" id="reviewSubmitBtn" class="btn-checkout" data-i18n="reviews_submit">Submit review</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="menesCursorDot" class="menes-cursor-dot" aria-hidden="true"></div>
+  <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
+
+  <script src="config.js?v=20260805b"></script>
+  <script src="shop.js?v=20260805d"></script>
 </body>
 </html>
