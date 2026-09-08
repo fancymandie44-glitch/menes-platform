@@ -1104,15 +1104,21 @@ function renderCustomers() {
   if (segFilter) list = list.filter((c) => c.segment === segFilter);
   list.sort((a, b) => b.ltv - a.ltv);
   const segLabel = { vip: 'VIP', new: 'Nouveau', regular: 'Régulier' };
+  const passports = storeData.passports || [];
   document.getElementById('customersList').innerHTML = list.length ? `
-    <table class="data-table"><thead><tr><th>Client</th><th>Email</th><th>Commandes</th><th>LTV</th><th>Segment</th></tr></thead>
-    <tbody>${list.map((c) => `<tr>
+    <table class="data-table"><thead><tr><th>Client</th><th>Email</th><th>Passeport</th><th>Commandes</th><th>LTV</th><th>Segment</th></tr></thead>
+    <tbody>${list.map((c) => {
+      const pass = passports.find((p) => String(p.email || '').toLowerCase() === String(c.email || '').toLowerCase());
+      const code = pass ? `MENES-${String(pass.id || '').replace(/[^a-z0-9]/gi, '').slice(-6).toUpperCase()}` : '—';
+      return `<tr>
       <td>${esc(c.name)}</td>
       <td>${esc(c.email)}</td>
+      <td>${esc(code)}</td>
       <td>${c.orders}</td>
       <td>${c.ltv.toFixed(2)}$ CAD</td>
       <td><span class="badge badge-${c.segment}">${segLabel[c.segment] || c.segment}</span></td>
-    </tr>`).join('')}</tbody></table>`
+    </tr>`;
+    }).join('')}</tbody></table>`
     : '<p class="empty">Aucun client encore</p>';
 }
 

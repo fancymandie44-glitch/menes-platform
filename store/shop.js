@@ -5,6 +5,8 @@ const PROMO_KEY = 'menes_promo_code';
 const ATTR_KEY = 'menes_ambassador_attr';
 const WISHLIST_KEY = 'menes_wishlist';
 const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
+const PASSPORT_EMAIL_KEY = 'menes_passport_email';
+const PASSPORT_TOKEN_KEY = 'menes_passport_token';
 const VIP_DISMISS_DAYS = 14;
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
@@ -215,6 +217,17 @@ const I18N = {
     reviews_no_product: 'Aucun produit disponible pour un avis',
     reviews_error: 'Impossible d\'envoyer l\'avis. Réessaie.',
     size_guide_btn: 'Guide des tailles',
+    passport: 'Passeport',
+    passport_kicker: 'Passeport MENES',
+    passport_title: 'Ta carte membre',
+    passport_help: 'Entre le courriel utilisé à la caisse. Chaque client qui paie reçoit un passeport automatiquement.',
+    passport_open: 'Ouvrir le passeport',
+    passport_none: 'Aucun passeport pour cet email — il se crée dès le premier paiement.',
+    passport_member: 'Membre depuis',
+    passport_orders: 'Commandes',
+    passport_spent: 'Total dépensé',
+    passport_vip: 'VIP',
+    passport_created: 'Passeport créé. Tes commandes restent liées à cet email.',
     crypto_title: 'Paiement en crypto',
     crypto_send: 'Envoie le montant exact avant la fin du minuteur',
     crypto_order: 'Commande',
@@ -325,6 +338,17 @@ const I18N = {
     reviews_no_product: 'No products available to review',
     reviews_error: 'Could not submit your review. Try again.',
     size_guide_btn: 'Size guide',
+    passport: 'Passport',
+    passport_kicker: 'MENES Passport',
+    passport_title: 'Your member card',
+    passport_help: 'Enter the email used at checkout. Paying customers get a passport automatically.',
+    passport_open: 'Open passport',
+    passport_none: 'No passport for this email — it is created on the first paid order.',
+    passport_member: 'Member since',
+    passport_orders: 'Orders',
+    passport_spent: 'Total spent',
+    passport_vip: 'VIP',
+    passport_created: 'Passport created. Your orders stay linked to this email.',
     crypto_title: 'Pay with crypto',
     crypto_send: 'Send the exact amount before the timer ends',
     crypto_order: 'Order',
@@ -641,7 +665,7 @@ async function submitVipEmail(email, btn, source = 'vip') {
 }
 
 function isOverlayOpen() {
-  return ['cartPanel', 'pdpPanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal']
+  return ['cartPanel', 'pdpPanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal', 'passportPanel']
     .some((id) => !document.getElementById(id)?.classList.contains('hidden'));
 }
 
@@ -744,6 +768,103 @@ function cartSubtotal() {
 
 function isVipMember() {
   return localStorage.getItem(VIP_KEY) === '1';
+}
+
+function rememberedPassportEmail() {
+  try { return String(localStorage.getItem(PASSPORT_EMAIL_KEY) || '').trim().toLowerCase(); }
+  catch { return ''; }
+}
+
+function rememberedPassportToken() {
+  try { return String(localStorage.getItem(PASSPORT_TOKEN_KEY) || ''); }
+  catch { return ''; }
+}
+
+function rememberPassportIdentity(email, token) {
+  const clean = String(email || '').trim().toLowerCase();
+  if (!clean || clean.includes('*')) return;
+  try {
+    localStorage.setItem(PASSPORT_EMAIL_KEY, clean);
+    if (token) localStorage.setItem(PASSPORT_TOKEN_KEY, token);
+  } catch {}
+  document.getElementById('passportNavBtn')?.classList.add('has-pass');
+}
+
+function applyPassport(passport) {
+  if (!passport) return;
+  const email = (passport.email && !String(passport.email).includes('*'))
+    ? passport.email
+    : rememberedPassportEmail();
+  rememberPassportIdentity(email, passport.token);
+  renderPassportCard(passport);
+  const teaser = document.getElementById('successPassport');
+  if (teaser && passport.code) {
+    teaser.classList.remove('hidden');
+    teaser.innerHTML = `<strong>${esc(passport.code)}</strong>${esc(t('passport_created'))}`;
+  }
+  prefillCheckoutFromPassport({ ...passport, email });
+}
+
+function prefillCheckoutFromPassport(passport) {
+  const form = document.getElementById('checkoutForm');
+  if (!form) return;
+  const email = passport?.email || rememberedPassportEmail();
+  if (email && !form.email.value) form.email.value = email;
+  if (passport?.name && !form.name.value) form.name.value = passport.name;
+  if (passport?.phone && form.phone && !form.phone.value) form.phone.value = passport.phone;
+}
+
+function renderPassportCard(passport) {
+  const card = document.getElementById('passportCard');
+  const form = document.getElementById('passportForm');
+  if (!card || !passport) return;
+  const since = passport.memberSince ? String(passport.memberSince).slice(0, 10) : '';
+  const spent = Number(passport.totalSpent);
+  card.innerHTML = `
+    <div class="passport-card-code">${esc(passport.code || 'MENES')}</div>
+    <div class="passport-card-name">${esc(passport.name || '')}</div>
+    <div class="passport-card-meta">
+      ${esc(passport.email || rememberedPassportEmail())}<br>
+      ${esc(t('passport_orders'))}: ${Number(passport.orderCount) || 0}
+      ${Number.isFinite(spent) && spent > 0 ? `<br>${esc(t('passport_spent'))}: ${spent.toFixed(2)}$ CAD` : ''}
+      ${since ? `<br>${esc(t('passport_member'))}: ${esc(since)}` : ''}
+    </div>
+    ${passport.vip ? `<span class="passport-badge">${esc(t('passport_vip'))}</span>` : ''}`;
+  card.classList.remove('hidden');
+  if (form) form.classList.add('hidden');
+}
+
+async function fetchPassport(email, token) {
+  const res = await fetch(shopApi('/api/passport'), {
+    method: 'POST',
+    headers: shopHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ email, token: token || '' }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) return null;
+  return data.passport || null;
+}
+
+async function openPassportPanel() {
+  const panel = document.getElementById('passportPanel');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+  syncScrollLock();
+  const email = rememberedPassportEmail();
+  const token = rememberedPassportToken();
+  const emailInput = document.getElementById('passportEmail');
+  if (emailInput && email) emailInput.value = email;
+  if (email) {
+    try {
+      const passport = await fetchPassport(email, token);
+      if (passport) applyPassport(passport);
+    } catch {}
+  }
+}
+
+function closePassportPanel() {
+  document.getElementById('passportPanel')?.classList.add('hidden');
+  syncScrollLock();
 }
 
 function findDiscount(code) {
@@ -2510,7 +2631,7 @@ function getCheckoutCustomer(form) {
   const city = form.get('city') || '';
   const postal = form.get('postal') || '';
   const parts = [address, city, `${province} ${postal}`.trim(), country].filter(Boolean);
-  return {
+  const customer = {
     name: form.get('name'),
     email: form.get('email'),
     phone: form.get('phone'),
@@ -2518,6 +2639,8 @@ function getCheckoutCustomer(form) {
     address: parts.join(', '),
     addressLine: address,
   };
+  rememberPassportIdentity(customer.email);
+  return customer;
 }
 
 function syncPromoField() {
@@ -2742,6 +2865,7 @@ function showSuccess(opts = {}) {
   document.getElementById('successCloseBtn').textContent = t('success_close');
   const reviewBtn = document.getElementById('successReviewBtn');
   if (reviewBtn) reviewBtn.textContent = t('reviews_after_order');
+  if (opts.passport) applyPassport(opts.passport);
   document.getElementById('successModal').classList.remove('hidden');
   syncScrollLock();
 }
@@ -2770,6 +2894,7 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
   }
   populateProvinces();
   syncPromoField();
+  prefillCheckoutFromPassport({ email: rememberedPassportEmail() });
   renderCheckoutSummary();
   document.getElementById('checkoutModal').classList.remove('hidden');
   syncScrollLock();
@@ -2952,10 +3077,12 @@ async function confirmPaidOrderFromUrl(params) {
         continue;
       }
       if (data.ok && data.verified) {
+        if (data.passport) applyPassport(data.passport);
         showSuccess({
           msg: currentLang === 'en'
             ? 'Payment confirmed. A confirmation email is on its way.'
             : 'Paiement confirmé. Un courriel de confirmation est en route.',
+          passport: data.passport,
         });
         return data;
       }
@@ -3190,6 +3317,35 @@ async function init() {
     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
     renderProducts();
   });
+  document.getElementById('passportNavBtn')?.addEventListener('click', openPassportPanel);
+  document.getElementById('passportClose')?.addEventListener('click', closePassportPanel);
+  document.getElementById('passportPanel')?.addEventListener('click', (e) => {
+    if (e.target.id === 'passportPanel') closePassportPanel();
+  });
+  document.getElementById('passportForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('passportEmail')?.value.trim();
+    const msg = document.getElementById('passportMsg');
+    const btn = document.getElementById('passportOpenBtn');
+    if (!email) return;
+    rememberPassportIdentity(email);
+    const old = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = '...'; }
+    try {
+      const passport = await fetchPassport(email, rememberedPassportToken());
+      if (!passport) {
+        if (msg) { msg.textContent = t('passport_none'); msg.className = 'passport-msg err'; }
+        return;
+      }
+      applyPassport(passport);
+      if (msg) { msg.textContent = ''; msg.className = 'passport-msg'; }
+    } catch {
+      if (msg) { msg.textContent = t('passport_none'); msg.className = 'passport-msg err'; }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = old || t('passport_open'); }
+    }
+  });
+  if (rememberedPassportEmail()) document.getElementById('passportNavBtn')?.classList.add('has-pass');
   const params = new URLSearchParams(location.search);
   if (params.get('paid') === '1') {
     cart = []; localStorage.removeItem('menes_cart'); sessionStorage.removeItem(DRAFT_KEY);

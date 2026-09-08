@@ -36,8 +36,10 @@ function run() {
     'robots.txt',
     'api/store.js',
     'api/media.js',
+    'api/passport.js',
     'lib/cors.js',
     'lib/platform.js',
+    'lib/passport.js',
     'data/store.json',
   ];
 

@@ -120,10 +120,28 @@ exports.handler = async (event) => {
 
     const alreadyPaid = ['paid', 'processing', 'shipped', 'delivered'].includes(order.status);
     if (alreadyPaid) {
+      let passportView = null;
+      try {
+        const { upsertPassportFromOrder, clientView } = require('../lib/passport');
+        const result = upsertPassportFromOrder(store, order);
+        if (result?.passport) {
+          passportView = clientView(result.passport, { full: true });
+          await writeSiteStore(siteId, store);
+        }
+      } catch (e) {
+        console.error('passport alreadyPaid', e.message);
+      }
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ ok: true, orderId, status: order.status, alreadyPaid: true, verified: true }),
+        body: JSON.stringify({
+          ok: true,
+          orderId,
+          status: order.status,
+          alreadyPaid: true,
+          verified: true,
+          passport: passportView,
+        }),
       };
     }
 
@@ -169,8 +187,17 @@ exports.handler = async (event) => {
     order.method = order.method || method;
     order.verification = verification;
 
+    let passportView = null;
+    try {
+      const { upsertPassportFromOrder, clientView } = require('../lib/passport');
+      const result = upsertPassportFromOrder(store, order);
+      if (result?.passport) passportView = clientView(result.passport, { full: true });
+    } catch (e) {
+      console.error('passport hook', e.message);
+    }
+
     const merchant = await notifyMerchant(order, method || order.payment || 'Paiement', 'PAYÉ ✓', store);
-    const customer = await notifyCustomer(order, method || order.payment || 'Paiement');
+    const customer = await notifyCustomer(order, method || order.payment || 'Paiement', passportView);
     order.merchantNotifiedAt = new Date().toISOString();
     order.merchantNotify = merchant;
     order.customerNotify = customer;
@@ -206,6 +233,7 @@ exports.handler = async (event) => {
         verified: true,
         notified: Boolean(merchant?.ok),
         customerNotified: Boolean(customer?.ok),
+        passport: passportView,
         commission: commissionResult
           ? { created: commissionResult.created?.length || 0, skipped: commissionResult.skipped, reason: commissionResult.reason }
           : null,

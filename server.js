@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { readStoreFile, writeStoreFile } = require('./lib/store-data');
+const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
 const port = 8888;
@@ -40,6 +41,29 @@ http.createServer(async (req, res) => {
       writeStoreFile(root, JSON.parse(body));
       return sendJson(res, 200, { ok: true });
     }
+  }
+
+  if (urlPath === '/api/passport') {
+    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+    const body = req.method === 'POST' ? JSON.parse((await readBody(req)) || '{}') : {};
+    const q = Object.fromEntries(url.searchParams);
+    const email = cleanEmail(body.email || q.email);
+    const token = String(body.token || q.token || '');
+    if (!isEmail(email)) return sendJson(res, 400, { error: 'Email invalide' });
+    const store = readStoreFile(root);
+    let passport = findPassport(store, email);
+    let created = false;
+    if (!passport) {
+      const result = upsertPassportFromPaidOrders(store, email);
+      if (result?.passport) {
+        passport = result.passport;
+        created = Boolean(result.created);
+        writeStoreFile(root, store);
+      }
+    }
+    if (!passport) return sendJson(res, 404, { ok: false, exists: false });
+    const full = tokenMatches(passport, token);
+    return sendJson(res, 200, { ok: true, exists: true, created, full, passport: clientView(passport, { full }) });
   }
 
   if ((urlPath === '/api/pay' || urlPath === '/api/create-checkout') && req.method === 'POST') {

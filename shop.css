@@ -77,6 +77,42 @@ body {
   padding: 6px 10px; cursor: pointer; border-radius: var(--radius); opacity: 0.85;
 }
 .nav-lang-btn:hover { border-color: var(--gold); color: var(--gold); opacity: 1; }
+.nav-passport-btn {
+  background: transparent; border: 1px solid var(--hairline); color: inherit;
+  font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.14em;
+  padding: 6px 9px; cursor: pointer; border-radius: var(--radius); opacity: 0.9;
+}
+.nav-passport-btn:hover, .nav-passport-btn.has-pass { border-color: var(--gold); color: var(--gold); opacity: 1; }
+.passport-box { max-width: 420px; }
+.passport-kicker {
+  font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+}
+.passport-help { color: var(--gray-600); font-size: 0.9rem; margin-bottom: 16px; }
+.passport-form label { display: block; margin-bottom: 12px; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.passport-form input {
+  width: 100%; margin-top: 6px; padding: 12px; background: var(--surface-1); border: 1px solid var(--hairline);
+  color: var(--white); font: inherit;
+}
+.passport-msg { min-height: 1.2em; margin-top: 10px; font-size: 0.85rem; color: var(--gray-600); }
+.passport-msg.err { color: #c45c5c; }
+.passport-card {
+  border: 1px solid var(--gold); background: linear-gradient(160deg, #161208 0%, #0a0a0a 60%);
+  padding: 22px 20px; margin: 12px 0 18px; border-radius: 2px;
+}
+.passport-card-code {
+  font-family: var(--font-display); letter-spacing: 0.18em; font-size: 1.15rem; color: var(--gold); margin: 6px 0 14px;
+}
+.passport-card-name { font-size: 1.05rem; margin-bottom: 4px; }
+.passport-card-meta { color: var(--gray-600); font-size: 0.88rem; line-height: 1.6; }
+.passport-badge {
+  display: inline-block; margin-top: 12px; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--gold); color: var(--gold); padding: 4px 8px;
+}
+.success-passport {
+  margin: 16px 0; padding: 14px; border: 1px solid var(--gold); color: var(--gold);
+  font-size: 0.88rem; letter-spacing: 0.04em;
+}
+.success-passport strong { display: block; font-family: var(--font-display); letter-spacing: 0.16em; margin-bottom: 6px; }
 .nav-wishlist-btn {
   position: relative; background: none; border: none; cursor: pointer; padding: 8px;
   color: inherit; font: inherit; line-height: 1; opacity: 0.78; transition: color 0.2s, opacity 0.2s;
