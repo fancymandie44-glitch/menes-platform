@@ -69,9 +69,12 @@ Langue du site = défaut admin (FR/EN). Les visiteurs gardent leur choix via le 
 DEPLOIEMENT CODE
 ----------------
 1. Modifs root (index, shop.js, shop.css, console.*)
-2. Sync dist (DEPLOY-BOUTIQUE.bat le fait)
-3. Admin : admin-site/DEPLOY-ADMIN.bat (copie console → deploy)
-4. Grillz : grillz-site/DEPLOY-GRILLZ.bat
+2. Git push : Netlify lance `npm run build` (scripts/build-boutique.js)
+   qui remplit dist/. Sans ce build, mymenes.com affiche "Page not found"
+   parce que dist/ n'est pas dans Git.
+3. Ou en local : DEPLOY-BOUTIQUE.bat (même build, puis netlify deploy)
+4. Admin : admin-site/DEPLOY-ADMIN.bat (copie console → deploy)
+5. Grillz : grillz-site/DEPLOY-GRILLZ.bat
 
 IMPORTANT GRILLZ
 ----------------
