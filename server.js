@@ -7,7 +7,7 @@ const { passwordsMatch } = require('./lib/admin-auth');
 const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
-const port = 8888;
+const port = Number(process.env.PORT) || 8888;
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '').trim();
 
 const types = {
