@@ -30,6 +30,26 @@ const STATIC_FILES = [
   'console.css',
 ];
 
+const REQUIRED_FILES = [
+  'index.html',
+  'shop.js',
+  'shop.css',
+  'config.js',
+  'paiement.html',
+  'api/store.js',
+  'api/media.js',
+  'api/pay.js',
+  'api/confirm-order.js',
+  'api/passport.js',
+  'api/health.js',
+  'api/create-checkout.js',
+  'lib/platform.js',
+  'lib/cors.js',
+  'lib/order-pricing.js',
+  'lib/admin-auth.js',
+  'lib/public-catalog.js',
+];
+
 const STATIC_DIRS = ['data', 'api', 'lib'];
 
 function copyFile(rel) {
@@ -60,9 +80,24 @@ function main() {
     if (copyDir(dir)) copied.push(dir + '/');
   }
 
-  const indexPath = path.join(DIST, 'index.html');
-  if (!fs.existsSync(indexPath)) {
-    throw new Error('build-boutique: dist/index.html missing — boutique would 404');
+  for (const rel of REQUIRED_FILES) {
+    const full = path.join(DIST, rel);
+    if (!fs.existsSync(full) || fs.statSync(full).size === 0) {
+      throw new Error(`build-boutique: missing or empty dist/${rel} — refusing to publish a broken shop`);
+    }
+  }
+
+  const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+  if (!html.includes('<title>MENES') || html.toLowerCase().includes('page not found')) {
+    throw new Error('build-boutique: dist/index.html is not the boutique homepage');
+  }
+  if (!html.includes('passportNavBtn')) {
+    throw new Error('build-boutique: homepage is missing the passport nav — stale template');
+  }
+
+  const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
+  if (!shopJs.includes('LOW_STOCK_LIMIT') || !shopJs.includes('PASSPORT_EMAIL_KEY')) {
+    throw new Error('build-boutique: shop.js is missing required features');
   }
 
   console.log('Boutique dist ready:', DIST);

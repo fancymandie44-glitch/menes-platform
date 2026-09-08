@@ -187,6 +187,13 @@ exports.handler = async (event) => {
     order.method = order.method || method;
     order.verification = verification;
 
+    try {
+      const { decrementStockForOrder } = require('../lib/order-pricing');
+      decrementStockForOrder(store, order);
+    } catch (e) {
+      console.error('stock decrement', e.message);
+    }
+
     let passportView = null;
     try {
       const { upsertPassportFromOrder, clientView } = require('../lib/passport');
@@ -240,6 +247,6 @@ exports.handler = async (event) => {
       }),
     };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Erreur confirmation' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur confirmation' }) };
   }
 };
