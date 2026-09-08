@@ -35,6 +35,7 @@ function run() {
     '_redirects',
     'robots.txt',
     'api/store.js',
+    'api/media.js',
     'lib/cors.js',
     'lib/platform.js',
     'data/store.json',
@@ -53,6 +54,11 @@ function run() {
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
   assert(ALLOWED_ORIGINS.includes('https://mymenes.com'), 'CORS missing https://mymenes.com');
   assert(ALLOWED_ORIGINS.includes('https://www.mymenes.com'), 'CORS missing https://www.mymenes.com');
+
+  const { mediaKeys } = require(path.join(DIST, 'api/media.js'));
+  const keys = mediaKeys('menes', 'ef27c16f55add5fcccee');
+  assert(keys.includes('media:menes:ef27c16f55add5fcccee'), 'media key should include site-prefixed blob key');
+  assert(keys.includes('media:ef27c16f55add5fcccee'), 'media key should include id-only blob key');
 
   console.log('ok: boutique dist contains the shop homepage and API');
 }
