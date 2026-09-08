@@ -77,6 +77,42 @@ body {
   padding: 6px 10px; cursor: pointer; border-radius: var(--radius); opacity: 0.85;
 }
 .nav-lang-btn:hover { border-color: var(--gold); color: var(--gold); opacity: 1; }
+.nav-passport-btn {
+  background: transparent; border: 1px solid var(--hairline); color: inherit;
+  font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.14em;
+  padding: 6px 9px; cursor: pointer; border-radius: var(--radius); opacity: 0.9;
+}
+.nav-passport-btn:hover, .nav-passport-btn.has-pass { border-color: var(--gold); color: var(--gold); opacity: 1; }
+.passport-box { max-width: 420px; }
+.passport-kicker {
+  font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+}
+.passport-help { color: var(--gray-600); font-size: 0.9rem; margin-bottom: 16px; }
+.passport-form label { display: block; margin-bottom: 12px; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.passport-form input {
+  width: 100%; margin-top: 6px; padding: 12px; background: var(--surface-1); border: 1px solid var(--hairline);
+  color: var(--white); font: inherit;
+}
+.passport-msg { min-height: 1.2em; margin-top: 10px; font-size: 0.85rem; color: var(--gray-600); }
+.passport-msg.err { color: #c45c5c; }
+.passport-card {
+  border: 1px solid var(--gold); background: linear-gradient(160deg, #161208 0%, #0a0a0a 60%);
+  padding: 22px 20px; margin: 12px 0 18px; border-radius: 2px;
+}
+.passport-card-code {
+  font-family: var(--font-display); letter-spacing: 0.18em; font-size: 1.15rem; color: var(--gold); margin: 6px 0 14px;
+}
+.passport-card-name { font-size: 1.05rem; margin-bottom: 4px; }
+.passport-card-meta { color: var(--gray-600); font-size: 0.88rem; line-height: 1.6; }
+.passport-badge {
+  display: inline-block; margin-top: 12px; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--gold); color: var(--gold); padding: 4px 8px;
+}
+.success-passport {
+  margin: 16px 0; padding: 14px; border: 1px solid var(--gold); color: var(--gold);
+  font-size: 0.88rem; letter-spacing: 0.04em;
+}
+.success-passport strong { display: block; font-family: var(--font-display); letter-spacing: 0.16em; margin-bottom: 6px; }
 .nav-wishlist-btn {
   position: relative; background: none; border: none; cursor: pointer; padding: 8px;
   color: inherit; font: inherit; line-height: 1; opacity: 0.78; transition: color 0.2s, opacity 0.2s;
@@ -206,9 +242,16 @@ body {
   padding: 4px 10px; border-radius: 2px; z-index: 1;
 }
 .stock-badge {
-  position: absolute; top: 12px; right: 12px; background: var(--black); color: var(--white);
-  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.04em; padding: 4px 10px;
-  border-radius: 2px; z-index: 1; border: 1px solid var(--hairline);
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+  background: #8b1e1e; color: #fff8f0;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  padding: 6px 10px; border-radius: 2px;
+  border: 1px solid rgba(255, 220, 170, 0.35);
+  text-transform: uppercase;
+  max-width: calc(100% - 24px);
+  text-align: right;
+  line-height: 1.25;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
 }
 .wishlist-btn {
   position: absolute; top: 12px; right: 12px; z-index: 2; width: 34px; height: 34px;
@@ -218,7 +261,15 @@ body {
 }
 .wishlist-btn:hover { border-color: var(--gold); color: var(--gold); }
 .wishlist-btn.active { color: #e05a4f; border-color: rgba(224,90,79,0.5); background: rgba(5,5,5,0.88); }
-.product-card.has-stock-badge .wishlist-btn { top: 44px; }
+.product-card.has-stock-badge .wishlist-btn { top: 52px; }
+.product-stock-left {
+  margin: -6px 0 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e8b86d;
+}
 .filter-wishlist { display: inline-flex; align-items: center; gap: 6px; }
 .filter-wishlist-count {
   min-width: 18px; height: 18px; padding: 0 5px; background: rgba(201,168,76,0.15);
@@ -285,6 +336,15 @@ body {
   color: var(--gold);
   font-size: 0.85em;
 }
+.opt-chip .left-n {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+.opt-chip.active .left-n { color: inherit; opacity: 0.85; }
 .opt-chip .oos-tag {
   display: block;
   font-size: 0.62rem;
@@ -842,6 +902,13 @@ body.scroll-locked .pdp-body {
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green);
   flex-shrink: 0; animation: urgencyPulse 2s ease-in-out infinite;
 }
+.pdp-urgency.is-low {
+  color: #e8b86d;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.pdp-urgency.is-low::before { background: #c9a84c; }
 @keyframes urgencyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .pdp-desc { color: var(--gray-600); font-size: 0.92rem; line-height: 1.65; }
 .pdp-size-btn { align-self: flex-start; margin: 4px 0 8px; }

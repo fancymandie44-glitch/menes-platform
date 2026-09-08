@@ -2,85 +2,7 @@ const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent, getBlobSto
 const { corsHeaders } = require('../lib/cors');
 const { checkAdminAuth } = require('../lib/admin-auth');
 const { readProgram, mergeAmbassadorDiscounts } = require('../lib/ambassador-data');
-
-function publicProduct(p) {
-  if (!p || p.active === false) return null;
-  return {
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    price: p.price,
-    comparePrice: p.comparePrice,
-    category: p.category,
-    collection: p.collection,
-    image: p.image,
-    images: p.images,
-    videoUrl: p.videoUrl,
-    options: p.options,
-    sizes: p.sizes,
-    stock: p.stock,
-    variants: Array.isArray(p.variants)
-      ? p.variants.map((v) => ({
-        key: v.key,
-        label: v.label,
-        options: v.options,
-        stock: Number(v.stock) || 0,
-      }))
-      : undefined,
-    featured: p.featured,
-    preorder: !!p.preorder,
-    preorderNote: p.preorderNote || '',
-    active: true,
-  };
-}
-
-function publicSite(site = {}) {
-  const {
-    announcement, name, tagline, heroTitle, heroSubtitle, heroCta, heroImage, heroVideo,
-    logo, favicon, currency, language, sections, sectionOrder, trust, why, faq, guarantee,
-    gallery, galleryTitle, gallerySubtitle, emailCapture, bundle, instagram, instagramHandle,
-    email, phone, freeShippingThreshold, theme, seo, i18n, appearance, crypto,
-  } = site;
-  return {
-    announcement, name, tagline, heroTitle, heroSubtitle, heroCta, heroImage, heroVideo,
-    logo, favicon, currency, language: language === 'fr' ? 'fr' : 'en',
-    sections: { ...(sections || {}), bundle: false },
-    sectionOrder: Array.isArray(sectionOrder) ? sectionOrder.filter((id) => id !== 'bundle') : sectionOrder,
-    trust, why, faq, guarantee,
-    gallery, galleryTitle, gallerySubtitle, emailCapture, bundle, instagram, instagramHandle,
-    email, phone, freeShippingThreshold, theme, seo, i18n, appearance,
-    crypto: Array.isArray(crypto) ? crypto.map((w) => ({
-      label: w.label, symbol: w.symbol, network: w.network, address: w.address,
-    })) : [],
-  };
-}
-
-function publicStore(data) {
-  return {
-    site: publicSite(data.site || {}),
-    products: (data.products || []).map(publicProduct).filter(Boolean),
-    collections: (data.collections || []).filter((c) => c.active !== false),
-    discounts: (data.discounts || [])
-      .filter((d) => d.active !== false)
-      .filter((d) => {
-        const code = String(d.code || '').toUpperCase();
-        return code !== 'VIP10' && code !== 'WELCOME10';
-      })
-      .map((d) => ({
-        code: d.code,
-        type: d.type,
-        value: d.value,
-        minCart: d.minCart || 0,
-        active: true,
-        ambassadorId: d.ambassadorId || null,
-        source: d.source || null,
-      })),
-    reviews: (data.reviews || [])
-      .filter((r) => r.status === 'approved')
-      .map(({ authorEmail, ...pub }) => pub),
-    _siteId: data._siteId,
-  };
-}
+const { publicStore } = require('../lib/public-catalog');
 
 function storeMeta(data, extra = {}) {
   const products = Array.isArray(data?.products) ? data.products : [];
@@ -163,8 +85,8 @@ exports.handler = async (event) => {
       if (!auth.ok) {
         return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
       }
-      const payload = JSON.parse(event.body);
-      const targetSite = payload._siteId || headerSiteId || siteId;
+      const payload = JSON.parse(event.body || '{}');
+      const targetSite = await resolveSiteId(host, payload._siteId || headerSiteId);
       delete payload._siteId;
       const current = await readSiteStore(targetSite);
       const incomingProducts = Array.isArray(payload.products) ? payload.products : [];
@@ -196,6 +118,6 @@ exports.handler = async (event) => {
 
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur serveur catalogue' }) };
   }
 };

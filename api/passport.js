@@ -10,6 +10,7 @@ const {
   clientView,
   tokenMatches,
 } = require('../lib/passport');
+const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
 
 exports.handler = async (event) => {
   setLambdaEvent(event);
@@ -20,6 +21,9 @@ exports.handler = async (event) => {
   }
 
   try {
+    if (!allowRequest(`passport:${clientIp(event)}`, { limit: 20, windowMs: 60_000 })) {
+      return tooManyRequests(headers);
+    }
     const host = event.headers['x-forwarded-host'] || event.headers.host || '';
     const params = event.queryStringParameters || {};
     const headerSiteId = event.headers['x-site-id'] || event.headers['X-Site-Id'];
@@ -59,6 +63,6 @@ exports.handler = async (event) => {
       }),
     };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Erreur passeport' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur passeport' }) };
   }
 };

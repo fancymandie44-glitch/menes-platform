@@ -1,5 +1,6 @@
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
+const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
 
 function cleanEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -22,6 +23,9 @@ exports.handler = async (event) => {
   }
 
   try {
+    if (!allowRequest(`subscribe:${clientIp(event)}`, { limit: 8, windowMs: 60_000 })) {
+      return tooManyRequests(headers);
+    }
     const host = event.headers['x-forwarded-host'] || event.headers.host || '';
     const params = event.queryStringParameters || {};
     const headerSiteId = event.headers['x-site-id'] || event.headers['X-Site-Id'];
@@ -75,6 +79,6 @@ exports.handler = async (event) => {
       body: JSON.stringify({ ok: true, already: !!existing }),
     };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Erreur inscription' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur inscription' }) };
   }
 };
