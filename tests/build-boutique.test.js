@@ -66,6 +66,13 @@ function run() {
   assert(keys.includes('media:menes:ef27c16f55add5fcccee'), 'media key should include site-prefixed blob key');
   assert(keys.includes('media:ef27c16f55add5fcccee'), 'media key should include id-only blob key');
 
+  const redirects = fs.readFileSync(path.join(DIST, '_redirects'), 'utf8');
+  assert(redirects.includes('/r/*'), 'dist/_redirects missing /r/* ambassador rewrite');
+  assert(/\/\*\s+\/index\.html\s+200/.test(redirects), 'dist/_redirects missing SPA fallback for /{slug}');
+
+  const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
+  assert(shopJs.includes('parts.length === 1'), 'shop.js must capture /{slug} ambassador links');
+
   console.log('ok: boutique dist contains the shop homepage and API');
 }
 

@@ -42,9 +42,20 @@ function saveAmbassadorAttribution(attr) {
 async function captureAmbassadorRef() {
   const params = new URLSearchParams(location.search);
   let slug = params.get('ref') || params.get('amb') || '';
+  const reserved = new Set([
+    'r', 'console', 'admin', 'platform', 'paiement', 'api',
+    'livraison', 'retours', 'confidentialite',
+  ]);
   if (!slug) {
     const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
     if (parts[0] === 'r' && parts[1]) slug = parts[1];
+    else if (
+      parts.length === 1
+      && !reserved.has(parts[0].toLowerCase())
+      && !parts[0].includes('.')
+    ) {
+      slug = parts[0];
+    }
   }
   if (!slug) return;
   try {
@@ -55,8 +66,10 @@ async function captureAmbassadorRef() {
       const clean = new URL(location.href);
       clean.searchParams.delete('ref');
       clean.searchParams.delete('amb');
-      if (location.pathname.startsWith('/r/')) {
-        history.replaceState({}, '', `/${clean.search}`);
+      const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+      const prettyLink = parts[0] === 'r' || (parts.length === 1 && !parts[0].includes('.'));
+      if (prettyLink) {
+        history.replaceState({}, '', `/${clean.search}${clean.hash || ''}`);
       } else {
         history.replaceState({}, '', clean.pathname + (clean.search || '') + clean.hash);
       }

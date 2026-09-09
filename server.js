@@ -79,6 +79,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/admin' || urlPath === '/admin/') urlPath = '/console.html';
   if (urlPath === '/console' || urlPath === '/console/') urlPath = '/console.html';
   if (urlPath === '/platform' || urlPath === '/platform/') urlPath = '/console.html';
+  if (urlPath === '/paiement' || urlPath === '/paiement/') urlPath = '/paiement.html';
 
   const filePath = path.join(root, urlPath === '/' ? 'index.html' : urlPath.slice(1));
   if (!filePath.startsWith(root)) {
@@ -88,6 +89,17 @@ http.createServer(async (req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      const spa = urlPath.startsWith('/r/') || !path.extname(urlPath);
+      if (spa) {
+        return fs.readFile(path.join(root, 'index.html'), (e2, html) => {
+          if (e2) {
+            res.writeHead(404);
+            return res.end('Not found');
+          }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(html);
+        });
+      }
       res.writeHead(404);
       return res.end('Not found');
     }

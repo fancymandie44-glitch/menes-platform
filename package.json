@@ -5,7 +5,7 @@
   "description": "MENES boutique en ligne (vetements, grillz, accessoires)",
   "scripts": {
     "build": "node scripts/build-boutique.js",
-    "test": "node tests/ambassador-engine.test.js && node tests/ambassador-qa.test.js && node tests/passport.test.js && node tests/build-boutique.test.js && node tests/security.test.js && node tests/public-stock.test.js"
+    "test": "node tests/ambassador-engine.test.js && node tests/ambassador-qa.test.js && node tests/passport.test.js && node tests/build-boutique.test.js && node tests/security.test.js && node tests/public-stock.test.js && node tests/ambassador-links.test.js"
   },
   "dependencies": {
     "@netlify/blobs": "^8.1.0",

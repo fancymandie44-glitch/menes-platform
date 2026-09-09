@@ -6,7 +6,7 @@
 const { setLambdaEvent, readSiteStore, writeSiteStore, resolveSiteId } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const {
-  readProgram, writeProgram, uid, slugify, pushAudit,
+  readProgram, writeProgram, uid, slugify, pushAudit, ambassadorShopLink,
 } = require('../lib/ambassador-data');
 const {
   hashPassword, verifyPassword, signToken, requireAmbassador, publicAmbassador,
@@ -156,7 +156,7 @@ function dashboardPayload(program, amb) {
       paidCommission: Math.round(paid * 100) / 100,
     },
     tools: {
-      link: `${settings.shopBaseUrl || 'https://boutiquemenes.netlify.app'}/${amb.slug}`,
+      link: ambassadorShopLink(settings, amb.slug),
       slug: amb.slug,
       promoCode: amb.promoCode,
       inviteLink: `${settings.ambassadorAppUrl || 'https://menesambassador.netlify.app'}/join?ref=${amb.slug}`,
