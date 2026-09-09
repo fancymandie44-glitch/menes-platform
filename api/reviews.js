@@ -2,6 +2,7 @@ const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require
 const { corsHeaders } = require('../lib/cors');
 const { checkAdminAuth } = require('../lib/admin-auth');
 const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
+const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
 
 function uid(prefix) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -29,9 +30,11 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'GET') {
       const store = await readSiteStore(siteId);
       const list = Array.isArray(store.reviews) ? store.reviews : [];
+      const isAdmin = checkAdminAuth(event).ok;
+      let status = params.status || 'approved';
+      if (!isAdmin) status = 'approved';
       const productId = params.productId || '';
-      const status = params.status || 'approved';
-      let out = list.filter((r) => (status === 'all' ? true : r.status === status));
+      let out = list.filter((r) => (status === 'all' && isAdmin ? true : r.status === status));
       if (productId) out = out.filter((r) => r.productId === productId);
       out = out
         .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
@@ -60,6 +63,9 @@ exports.handler = async (event) => {
       }
 
       // Public submit
+      if (!allowRequest(`reviews:${clientIp(event)}`, { limit: 8, windowMs: 60_000 })) {
+        return tooManyRequests(headers);
+      }
       const productId = String(body.productId || '').trim();
       const authorName = String(body.authorName || '').trim().slice(0, 60);
       const authorEmail = cleanEmail(body.authorEmail);
@@ -125,6 +131,6 @@ exports.handler = async (event) => {
 
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Erreur avis' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur avis' }) };
   }
 };

@@ -36,7 +36,11 @@ function run() {
     'robots.txt',
     'api/store.js',
     'api/media.js',
-    'api/passport.js',
+    'api/health.js',
+    'api/pay.js',
+    'api/confirm-order.js',
+    'lib/public-catalog.js',
+    'lib/order-pricing.js',
     'lib/cors.js',
     'lib/platform.js',
     'lib/passport.js',
@@ -61,6 +65,16 @@ function run() {
   const keys = mediaKeys('menes', 'ef27c16f55add5fcccee');
   assert(keys.includes('media:menes:ef27c16f55add5fcccee'), 'media key should include site-prefixed blob key');
   assert(keys.includes('media:ef27c16f55add5fcccee'), 'media key should include id-only blob key');
+
+  const redirects = fs.readFileSync(path.join(DIST, '_redirects'), 'utf8');
+  assert(redirects.includes('/r/*'), 'dist/_redirects missing /r/* ambassador rewrite');
+  assert(/\/\*\s+\/index\.html\s+200/.test(redirects), 'dist/_redirects missing SPA fallback for /{slug}');
+
+  const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
+  assert(shopJs.includes('parts.length === 1'), 'shop.js must capture /{slug} ambassador links');
+
+  const home = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+  assert(home.includes('href="/shop.css') || home.includes('<base href="/"'), 'homepage assets must be root-absolute for /r/{slug} links');
 
   console.log('ok: boutique dist contains the shop homepage and API');
 }

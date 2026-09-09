@@ -2,10 +2,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { readStoreFile, writeStoreFile } = require('./lib/store-data');
+const { publicStore } = require('./lib/public-catalog');
+const { passwordsMatch } = require('./lib/admin-auth');
 const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
-const port = 8888;
+const port = Number(process.env.PORT) || 8888;
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '').trim();
 
 const types = {
@@ -33,11 +35,11 @@ http.createServer(async (req, res) => {
   let urlPath = decodeURIComponent(url.pathname);
 
   if (urlPath === '/api/store') {
-    if (req.method === 'GET') return sendJson(res, 200, readStoreFile(root));
+    if (req.method === 'GET') return sendJson(res, 200, publicStore(readStoreFile(root)));
     if (req.method === 'POST') {
       if (!ADMIN_PASSWORD) return sendJson(res, 503, { error: 'ADMIN_PASSWORD non configuré sur le serveur' });
       const body = await readBody(req);
-      if (req.headers['x-admin-password'] !== ADMIN_PASSWORD) return sendJson(res, 401, { error: 'Mot de passe incorrect' });
+      if (!passwordsMatch(req.headers['x-admin-password'] || '', ADMIN_PASSWORD)) return sendJson(res, 401, { error: 'Mot de passe incorrect' });
       writeStoreFile(root, JSON.parse(body));
       return sendJson(res, 200, { ok: true });
     }
@@ -66,6 +68,10 @@ http.createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, exists: true, created, full, passport: clientView(passport, { full }) });
   }
 
+  if (urlPath === '/api/health') {
+    return sendJson(res, 200, { ok: true, service: 'menes' });
+  }
+
   if ((urlPath === '/api/pay' || urlPath === '/api/create-checkout') && req.method === 'POST') {
     return sendJson(res, 200, { error: 'Paiements en ligne actifs sur Netlify. En local: commande par email.' });
   }
@@ -73,6 +79,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/admin' || urlPath === '/admin/') urlPath = '/console.html';
   if (urlPath === '/console' || urlPath === '/console/') urlPath = '/console.html';
   if (urlPath === '/platform' || urlPath === '/platform/') urlPath = '/console.html';
+  if (urlPath === '/paiement' || urlPath === '/paiement/') urlPath = '/paiement.html';
 
   const filePath = path.join(root, urlPath === '/' ? 'index.html' : urlPath.slice(1));
   if (!filePath.startsWith(root)) {
@@ -82,6 +89,17 @@ http.createServer(async (req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      const spa = !path.extname(urlPath);
+      if (spa) {
+        return fs.readFile(path.join(root, 'index.html'), (e2, html) => {
+          if (e2) {
+            res.writeHead(404);
+            return res.end('Not found');
+          }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(html);
+        });
+      }
       res.writeHead(404);
       return res.end('Not found');
     }
