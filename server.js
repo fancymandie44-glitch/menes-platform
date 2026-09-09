@@ -89,7 +89,7 @@ http.createServer(async (req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      const spa = urlPath.startsWith('/r/') || !path.extname(urlPath);
+      const spa = !path.extname(urlPath);
       if (spa) {
         return fs.readFile(path.join(root, 'index.html'), (e2, html) => {
           if (e2) {

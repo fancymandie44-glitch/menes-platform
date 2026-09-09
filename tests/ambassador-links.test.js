@@ -26,6 +26,7 @@ const toml = fs.readFileSync(path.join(__dirname, '../netlify.toml'), 'utf8');
 assert.ok(toml.includes('from = "/*"'), 'netlify.toml missing /* SPA rewrite');
 
 const api = fs.readFileSync(path.join(__dirname, '../api/ambassador.js'), 'utf8');
+assert.ok(/href="\/shop\.css/.test(fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')), 'index.css must be root-absolute');
 assert.ok(api.includes('ambassadorShopLink(settings, amb.slug)'), 'dashboard link must use /r/{slug}');
 
 console.log('ok: ambassador personal links');

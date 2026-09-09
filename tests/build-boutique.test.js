@@ -73,6 +73,9 @@ function run() {
   const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
   assert(shopJs.includes('parts.length === 1'), 'shop.js must capture /{slug} ambassador links');
 
+  const home = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+  assert(home.includes('href="/shop.css') || home.includes('<base href="/"'), 'homepage assets must be root-absolute for /r/{slug} links');
+
   console.log('ok: boutique dist contains the shop homepage and API');
 }
 
