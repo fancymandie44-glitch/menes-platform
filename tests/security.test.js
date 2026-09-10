@@ -12,6 +12,7 @@ const path = require('path');
 assert.strictEqual(passwordsMatch('secret', 'secret'), true);
 assert.strictEqual(passwordsMatch('secret', 'other'), false);
 assert.strictEqual(passwordsMatch('', 'secret'), false);
+assert.strictEqual(passwordsMatch(' secret ', 'secret'), true);
 
 const store = {
   site: { name: 'MENES', language: 'fr' },
