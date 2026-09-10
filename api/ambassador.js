@@ -6,7 +6,7 @@
 const { setLambdaEvent, readSiteStore, writeSiteStore, resolveSiteId } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const {
-  readProgram, writeProgram, uid, slugify, pushAudit, ambassadorShopLink,
+  readProgram, writeProgram, uid, slugify, pushAudit, ambassadorPublicTools,
 } = require('../lib/ambassador-data');
 const {
   hashPassword, verifyPassword, signToken, requireAmbassador, publicAmbassador,
@@ -155,12 +155,7 @@ function dashboardPayload(program, amb) {
       availableCommission: Math.round(available * 100) / 100,
       paidCommission: Math.round(paid * 100) / 100,
     },
-    tools: {
-      link: ambassadorShopLink(settings, amb.slug),
-      slug: amb.slug,
-      promoCode: amb.promoCode,
-      inviteLink: `${settings.ambassadorAppUrl || 'https://menesambassador.netlify.app'}/join?ref=${amb.slug}`,
-    },
+    tools: ambassadorPublicTools(settings, amb),
     team,
     leaderboard: weeklyContest.leaderboard,
     weeklyXpContest: weeklyContest,
@@ -356,7 +351,7 @@ exports.handler = async (event) => {
     if (action === 'invite-info' && event.httpMethod === 'GET') {
       const ref = String(event.queryStringParameters?.ref || '').trim();
       const byInvite = program.invites.find((i) => i.code === ref && i.status === 'open');
-      const bySlug = program.ambassadors.find((a) => a.slug === slugify(ref) && a.status === 'active');
+      const bySlug = program.ambassadors.find((a) => a.slug === slugify(ref) && (a.status === 'active' || a.status === 'pending'));
       if (!byInvite && !bySlug) return json(headers, 404, { error: 'Invitation invalide' });
       const inviter = bySlug || program.ambassadors.find((a) => a.id === byInvite?.createdBy);
       return json(headers, 200, {
@@ -377,6 +372,7 @@ exports.handler = async (event) => {
           ok: true,
           pending: true,
           ambassador: publicAmbassador(amb, { private: true }),
+          tools: ambassadorPublicTools(program.settings, amb),
           message: 'Compte en attente d\'approbation',
         });
       }

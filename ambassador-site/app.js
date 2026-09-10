@@ -35,6 +35,13 @@
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === id));
   }
 
+  function shopLinkFor(amb, tools) {
+    const shop = (CFG.SHOP_URL || 'https://www.mymenes.com').replace(/\/$/, '');
+    const slug = String(amb?.slug || tools?.slug || '').replace(/^\/+|\/+$/g, '');
+    if (slug) return `${shop}/r/${slug}`;
+    return shop;
+  }
+
   async function api(action, { method = 'GET', body, auth = true } = {}) {
     const url = `${API}/api/ambassador?action=${encodeURIComponent(action)}`;
     const headers = { 'Content-Type': 'application/json' };
@@ -434,8 +441,7 @@
           <input type="checkbox" id="obAgree" style="width:auto;margin-top:3px" ${a.agreementAcceptedAt ? 'checked' : ''}> J'accepte les règles Ambassador
         </label>`;
     } else if (cfg.type === 'tools') {
-      const shop = (CFG.SHOP_URL || 'https://www.mymenes.com').replace(/\/$/, '');
-      const link = tools?.link || (a.slug ? `${shop}/r/${a.slug}` : shop);
+      const link = shopLinkFor(a, tools);
       box.innerHTML = `
         <div class="tool-row"><div><strong>Lien</strong><br><span>${esc(link)}</span></div></div>
         <div class="tool-row" style="margin-top:8px"><div><strong>Code</strong><br><span>${esc(a.promoCode || tools?.promoCode || '')}</span></div></div>`;
@@ -607,7 +613,7 @@
       <p class="section-title">Outils promo</p>
       <div class="tools-list">
         <div class="tool-row">
-          <div><strong>Lien boutique</strong><br><span class="tool-url">${esc(d.tools?.link || '')}</span></div>
+          <div><strong>Lien boutique</strong><br><span class="tool-url">${esc(shopLinkFor(d.ambassador, d.tools))}</span></div>
           <button type="button" class="btn-ghost" data-copy-target="link">Copier</button>
         </div>
         <div class="tool-row">
@@ -655,8 +661,8 @@
 
   function bindHomeActions(main, d) {
     const copyMap = {
-      link: d.tools?.link,
-      code: d.tools?.promoCode,
+      link: shopLinkFor(d.ambassador, d.tools),
+      code: d.tools?.promoCode || d.ambassador?.promoCode,
       invite: d.tools?.inviteLink || getInviteLink(),
     };
     main.querySelectorAll('[data-copy-target]').forEach((btn) => {
@@ -692,7 +698,7 @@
     });
     main.querySelectorAll('[data-share]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const link = d.tools?.link || '';
+        const link = shopLinkFor(d.ambassador, d.tools);
         const code = d.tools?.promoCode || '';
         if (btn.dataset.share === 'wa') {
           window.open(`https://wa.me/?text=${encodeURIComponent(`MENES — ${link} · code ${code}`)}`, '_blank');
