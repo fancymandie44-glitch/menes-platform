@@ -72,8 +72,23 @@ const TAB_TITLES = {
   sections: 'Sections page', payments: 'Paiements', settings: 'Paramètres', publish: 'Déploiement',
 };
 
-function headers() {
-  return { 'Content-Type': 'application/json', 'X-Admin-Password': adminPassword, 'X-Site-Id': activeSiteId };
+/** Session via httpOnly cookie — password is not stored in the browser after login. */
+function headers(extra = {}) {
+  const h = {
+    'Content-Type': 'application/json',
+    'X-Site-Id': activeSiteId,
+    ...extra,
+  };
+  if (adminPassword) h['X-Admin-Password'] = adminPassword;
+  return h;
+}
+
+function apiFetch(path, opts = {}) {
+  return fetch(apiUrl(path), {
+    credentials: 'include',
+    ...opts,
+    headers: { ...headers(), ...(opts.headers || {}) },
+  });
 }
 
 function esc(s) {
@@ -289,7 +304,7 @@ function setupMobileNav() {
 }
 
 async function loadPlatform() {
-  const res = await fetch(apiUrl('/api/platform'), { headers: headers() });
+  const res = await apiFetch('/api/platform', { headers: headers() });
   if (!res.ok) throw new Error('Erreur chargement platform');
   platform = await res.json();
   if (!platform.sites?.some((s) => s.id === activeSiteId)) activeSiteId = platform.defaultSiteId || 'menes';
@@ -323,7 +338,7 @@ function normalizeLoadedStore(data) {
 async function loadStore() {
   hideCatalogRestoreBanner();
   const localBackup = findLocalCatalogBackup();
-  const res = await fetch(apiUrl(`/api/store?site=${activeSiteId}&admin=1`), {
+  const res = await apiFetch(`/api/store?site=${activeSiteId}&admin=1`, {
     cache: 'no-store',
     headers: headers(),
   });
@@ -365,7 +380,7 @@ async function saveStore(msg = 'Sauvegardé') {
         have.add(code);
       }
     }
-    const res = await fetch(apiUrl('/api/store'), { method: 'POST', headers: headers(), body: JSON.stringify({ ...storeData, _siteId: activeSiteId }) });
+    const res = await apiFetch('/api/store', { method: 'POST', headers: headers(), body: JSON.stringify({ ...storeData, _siteId: activeSiteId }) });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       toast(msg, 'success');
@@ -402,22 +417,47 @@ document.getElementById('siteSelector')?.addEventListener('change', async (e) =>
   toast(`Boutique : ${platform.sites.find((s) => s.id === activeSiteId)?.name}`);
 });
 
-// Auth
+// Auth — server session cookie (httpOnly). Password is not kept in the browser.
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  adminPassword = document.getElementById('loginPassword').value;
+  const password = document.getElementById('loginPassword').value;
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) btn.disabled = true;
   try {
-    const res = await fetch(apiUrl('/api/platform'), { headers: headers() });
-    if (res.ok) {
+    sessionStorage.removeItem('menes_admin_pw');
+    adminPassword = '';
+    const res = await apiFetch('/api/auth?action=login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
       sessionStorage.setItem(AUTH_KEY, '1');
-      sessionStorage.setItem('menes_admin_pw', adminPassword);
-      showApp();
-    } else toast('Mot de passe incorrect', 'error');
-  } catch { toast('Erreur connexion', 'error'); }
+      document.getElementById('loginPassword').value = '';
+      await showApp();
+    } else if (res.status === 429) {
+      toast(data.error || 'Trop de tentatives', 'error');
+    } else if (res.status === 503) {
+      toast(data.error || 'Mot de passe admin non configuré sur le serveur', 'error');
+    } else if (res.status >= 500 || res.status === 404) {
+      toast(data.error || 'Connexion admin indisponible. Réessaie dans un instant.', 'error');
+    } else {
+      toast(data.error || 'Mot de passe incorrect', 'error');
+    }
+  } catch {
+    toast('Erreur connexion', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  sessionStorage.clear();
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  try {
+    await apiFetch('/api/auth?action=logout', { method: 'POST', body: '{}' });
+  } catch { /* ignore */ }
+  sessionStorage.removeItem(AUTH_KEY);
+  sessionStorage.removeItem('menes_admin_pw');
+  adminPassword = '';
   location.reload();
 });
 
@@ -520,7 +560,7 @@ window.selectSite = async (id) => {
 
 window.archiveSite = async (id) => {
   if (!confirm('Archiver cette boutique?')) return;
-  await fetch(apiUrl('/api/platform'), { method: 'POST', headers: headers(), body: JSON.stringify({ action: 'delete-site', id }) });
+  await apiFetch('/api/platform', { method: 'POST', headers: headers(), body: JSON.stringify({ action: 'delete-site', id }) });
   await loadPlatform();
   renderSites();
   toast('Boutique archivée');
@@ -544,7 +584,7 @@ document.getElementById('newSiteForm')?.addEventListener('submit', async (e) => 
     netlifyUrl,
     duplicateFrom: document.getElementById('duplicateFrom').value || null,
   };
-  const res = await fetch(apiUrl('/api/platform'), { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+  const res = await apiFetch('/api/platform', { method: 'POST', headers: headers(), body: JSON.stringify(body) });
   const data = await res.json();
   if (data.ok) {
     document.getElementById('siteModal').classList.add('hidden');
@@ -573,7 +613,7 @@ document.getElementById('addDomainBtn')?.addEventListener('click', async () => {
   if (!domain) return;
   const site = platform.sites.find((s) => s.id === activeSiteId);
   const domains = [...new Set([...(site.domains || []), domain])];
-  await fetch(apiUrl('/api/platform'), { method: 'POST', headers: headers(), body: JSON.stringify({ action: 'update-site', id: activeSiteId, domains }) });
+  await apiFetch('/api/platform', { method: 'POST', headers: headers(), body: JSON.stringify({ action: 'update-site', id: activeSiteId, domains }) });
   await loadPlatform();
   renderDomains();
   document.getElementById('newDomainInput').value = '';
@@ -1280,7 +1320,7 @@ async function refreshMktResendStatus() {
   const el = document.getElementById('mktResendStatus');
   if (!el) return;
   try {
-    const res = await fetch(apiUrl('/api/campaigns'), { headers: headers() });
+    const res = await apiFetch('/api/campaigns', { headers: headers() });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       el.textContent = data.error || 'Resend indisponible';
@@ -1306,7 +1346,7 @@ async function refreshMktResendStatus() {
 
 async function moderateReview(id, action) {
   try {
-    const res = await fetch(apiUrl('/api/reviews'), {
+    const res = await apiFetch('/api/reviews', {
       method: 'POST',
       headers: headers(),
       body: JSON.stringify({ id, action }),
@@ -1343,7 +1383,7 @@ async function runCampaign(action) {
   }
   if (action === 'send' && !confirm(`Envoyer la campagne au segment « ${payload.segment} » ?`)) return;
   try {
-    const res = await fetch(apiUrl('/api/campaigns'), {
+    const res = await apiFetch('/api/campaigns', {
       method: 'POST',
       headers: headers(),
       body: JSON.stringify(payload),
@@ -1736,7 +1776,7 @@ function upsertGalleryRow({ image, caption, handle, postUrl }) {
 }
 
 async function fetchIgPost(url, extra = {}) {
-  const res = await fetch(apiUrl('/api/instagram-post'), {
+  const res = await apiFetch('/api/instagram-post', {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({ url, ...extra }),
@@ -2734,7 +2774,7 @@ function setupUploadWithCrop(zoneId, fileId, previewId, aspectFn, cb) {
 // ——— Ambassadors ———
 async function ambApi(action, { method = 'GET', body } = {}) {
   const q = method === 'GET' ? `?action=${encodeURIComponent(action)}` : '?action=' + encodeURIComponent(action);
-  const res = await fetch(apiUrl(`/api/ambassador-admin${q}`), {
+  const res = await apiFetch(`/api/ambassador-admin${q}`, {
     method,
     headers: headers(),
     body: body ? JSON.stringify({ ...body, action }) : undefined,
@@ -3115,7 +3155,7 @@ document.getElementById('ambSyncPromosBtn')?.addEventListener('click', async () 
 });
 document.getElementById('ambExportBtn')?.addEventListener('click', async () => {
   try {
-    const res = await fetch(apiUrl('/api/ambassador-admin?action=export&type=ambassadors'), { headers: headers() });
+    const res = await apiFetch('/api/ambassador-admin?action=export&type=ambassadors', { headers: headers() });
     const data = await res.json();
     const rows = data.rows || [];
     if (!rows.length) { toast('Rien à exporter'); return; }
@@ -3189,12 +3229,20 @@ document.getElementById('importFile')?.addEventListener('change', async (e) => {
   reader.readAsText(file);
 });
 
-// Init
+// Init — session verified server-side via httpOnly cookie
 initAdminTheme();
 setupMobileNav();
 (async () => {
-  if (sessionStorage.getItem(AUTH_KEY)) {
-    adminPassword = sessionStorage.getItem('menes_admin_pw') || '';
-    try { await showApp(); } catch { sessionStorage.clear(); }
-  }
+  sessionStorage.removeItem('menes_admin_pw');
+  adminPassword = '';
+  try {
+    const res = await apiFetch('/api/auth?action=me');
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.authenticated) {
+      sessionStorage.setItem(AUTH_KEY, '1');
+      await showApp();
+      return;
+    }
+  } catch { /* fall through to login */ }
+  sessionStorage.removeItem(AUTH_KEY);
 })();

@@ -42,6 +42,7 @@ const REQUIRED_FILES = [
   'api/confirm-order.js',
   'api/passport.js',
   'api/health.js',
+  'api/auth.js',
   'api/create-checkout.js',
   'lib/platform.js',
   'lib/cors.js',
