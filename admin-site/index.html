@@ -47,16 +47,17 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-group-label">Principal</div>
+        <div class="nav-group-label">Accueil</div>
         <button class="nav-btn active" data-tab="dashboard">Tableau de bord</button>
-        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
-        <button class="nav-btn" data-tab="domains">Domaines</button>
 
         <div class="nav-group-label">Commerce</div>
-        <button class="nav-btn" data-tab="products">Produits</button>
-        <button class="nav-btn" data-tab="collections">Collections</button>
         <button class="nav-btn" data-tab="orders">Commandes</button>
+        <button class="nav-btn" data-tab="products">Produits</button>
+        <button class="nav-btn" data-tab="inventory">Inventaire</button>
+        <button class="nav-btn" data-tab="collections">Collections</button>
         <button class="nav-btn" data-tab="customers">Clients</button>
+
+        <div class="nav-group-label">Acquisition</div>
         <button class="nav-btn" data-tab="marketing">Marketing</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
 
@@ -65,9 +66,11 @@
         <button class="nav-btn" data-tab="design">Design & contenu</button>
         <button class="nav-btn" data-tab="sections">Sections page</button>
 
-        <div class="nav-group-label">Système</div>
+        <div class="nav-group-label">Paramètres</div>
+        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
+        <button class="nav-btn" data-tab="domains">Domaines</button>
         <button class="nav-btn" data-tab="payments">Paiements</button>
-        <button class="nav-btn" data-tab="settings">Paramètres</button>
+        <button class="nav-btn" data-tab="settings">Réglages</button>
         <button class="nav-btn" data-tab="publish">Déploiement</button>
       </nav>
 
@@ -135,9 +138,13 @@
               <span class="stat-num" id="statCustomers">0</span>
               <span class="stat-label">Clients</span>
             </div>
-            <div class="stat-card">
-              <span class="stat-num" id="statSites">1</span>
-              <span class="stat-label">Boutiques</span>
+            <div class="stat-card clickable" data-jump="orders">
+              <span class="stat-num" id="statFulfill">0</span>
+              <span class="stat-label">À expédier</span>
+            </div>
+            <div class="stat-card clickable" data-jump="inventory">
+              <span class="stat-num" id="statLowStock">0</span>
+              <span class="stat-label">Stock bas</span>
             </div>
           </div>
           <div class="grid-2">
@@ -160,13 +167,17 @@
             <div class="card">
               <h3>Actions rapides</h3>
               <div class="quick-grid">
+                <button onclick="switchTab('orders')" class="quick-card">Commandes à traiter</button>
                 <button onclick="switchTab('products')" class="quick-card">Nouveau produit</button>
-                <button onclick="switchTab('orders')" class="quick-card">Commandes</button>
-                <button onclick="switchTab('sites')" class="quick-card">Nouvelle marque</button>
-                <button onclick="switchTab('domains')" class="quick-card">Ajouter domaine</button>
+                <button onclick="switchTab('inventory')" class="quick-card">Inventaire</button>
+                <button onclick="switchTab('customers')" class="quick-card">Clients</button>
                 <button onclick="switchTab('marketing')" class="quick-card">Code promo</button>
                 <button onclick="switchTab('design')" class="quick-card">Modifier design</button>
               </div>
+            </div>
+            <div class="card">
+              <h3>Attention</h3>
+              <div id="opsAlerts" class="mini-list"></div>
             </div>
             <div class="card">
               <h3>Commandes récentes</h3>
@@ -222,10 +233,35 @@
         <section id="tab-products" class="tab">
           <div class="tab-header"><h2>Produits</h2><button id="addProductBtn" class="btn-primary">+ Nouveau produit</button></div>
           <div class="toolbar">
-            <input type="search" id="productSearch" placeholder="Rechercher un produit...">
+            <input type="search" id="productSearch" placeholder="Rechercher nom, SKU, tag…">
             <select id="productFilterCat"><option value="">Toutes catégories</option></select>
+            <select id="productFilterStock">
+              <option value="">Tous les stocks</option>
+              <option value="low">Stock bas (≤ 5)</option>
+              <option value="oos">Rupture</option>
+              <option value="hidden">Masqués</option>
+            </select>
+            <div class="bulk-bar hidden" id="productBulkBar">
+              <span id="productBulkCount">0 sélectionné</span>
+              <button type="button" class="btn-outline btn-sm" id="bulkActivateBtn">Activer</button>
+              <button type="button" class="btn-outline btn-sm" id="bulkHideBtn">Masquer</button>
+            </div>
           </div>
           <div id="productsList" class="data-table-wrap"></div>
+        </section>
+
+        <section id="tab-inventory" class="tab">
+          <div class="tab-header"><h2>Inventaire</h2></div>
+          <p class="hint">Ajuste le stock par variante sans ouvrir chaque fiche produit. Sauvegarde automatique à chaque changement.</p>
+          <div class="toolbar">
+            <input type="search" id="inventorySearch" placeholder="Filtrer un produit ou une variante…">
+            <select id="inventoryFilter">
+              <option value="">Tous</option>
+              <option value="low">Stock bas</option>
+              <option value="oos">Rupture</option>
+            </select>
+          </div>
+          <div id="inventoryList" class="data-table-wrap"></div>
         </section>
 
         <!-- Collections -->
@@ -238,6 +274,7 @@
         <section id="tab-orders" class="tab">
           <div class="tab-header"><h2>Commandes</h2></div>
           <div class="toolbar">
+            <input type="search" id="orderSearch" placeholder="N° commande, email, nom, tracking…">
             <select id="orderFilterStatus">
               <option value="">Tous statuts</option>
               <option value="pending">En attente</option>
@@ -246,6 +283,7 @@
               <option value="processing">En préparation</option>
               <option value="shipped">Expédiée</option>
               <option value="delivered">Livrée</option>
+              <option value="refunded">Remboursée</option>
               <option value="cancelled">Annulée</option>
             </select>
           </div>
@@ -254,8 +292,9 @@
 
         <!-- Customers -->
         <section id="tab-customers" class="tab">
-          <div class="tab-header"><h2>Clients (CRM)</h2></div>
+          <div class="tab-header"><h2>Clients</h2></div>
           <div class="toolbar">
+            <input type="search" id="customerSearch" placeholder="Nom, email, téléphone…">
             <select id="customerSegmentFilter">
               <option value="">Tous segments</option>
               <option value="vip">VIP</option>
@@ -263,7 +302,7 @@
               <option value="regular">Réguliers</option>
             </select>
           </div>
-          <p class="hint">LTV = total des commandes payées (hors en attente / paiement en cours). VIP = 2+ commandes payées ou LTV ≥ seuil livraison offerte. Nouveau = 1 commande payée.</p>
+          <p class="hint">LTV = commandes payées. VIP = 2+ commandes ou LTV ≥ seuil livraison offerte. Les notes client sont sauvegardées sur la fiche.</p>
           <div id="customersList" class="data-table-wrap"></div>
         </section>
 
@@ -696,8 +735,18 @@
 
         <!-- Settings -->
         <section id="tab-settings" class="tab">
-          <h2>Paramètres</h2>
+          <h2>Réglages</h2>
           <div class="grid-2">
+            <div class="card">
+              <h3>Livraison</h3>
+              <p class="hint">Seuil de livraison offerte et grilles tarifaires. Sans grille, la livraison reste à 0 $ (comportement actuel).</p>
+              <label>Livraison offerte dès (CAD)
+                <input type="number" id="shipThresholdInput" min="0" step="1" placeholder="150">
+              </label>
+              <div id="shippingRatesList"></div>
+              <button type="button" id="addShippingRateBtn" class="btn-outline btn-sm">+ Tarif</button>
+              <button type="button" id="saveShippingBtn" class="btn-primary btn-sm">Sauvegarder la livraison</button>
+            </div>
             <div class="card">
               <h3>Console</h3>
               <p class="hint">Mot de passe admin : variable Netlify <code>ADMIN_PASSWORD</code></p>
@@ -780,12 +829,25 @@
     </div>
   </div>
 
+  <!-- Customer detail modal -->
+  <div id="customerModal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="customerModalTitle">Client</h3>
+      <div id="customerModalBody"></div>
+      <div class="modal-actions">
+        <button type="button" id="closeCustomerBtn" class="btn-outline">Fermer</button>
+        <button type="button" id="saveCustomerBtn" class="btn-primary">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Order detail modal -->
   <div id="orderModal" class="modal hidden">
     <div class="modal-content modal-lg">
       <h3 id="orderModalTitle">Commande</h3>
       <div id="orderModalBody"></div>
       <div class="modal-actions">
+        <button type="button" id="printOrderBtn" class="btn-outline">Bon de livraison</button>
         <button type="button" id="closeOrderBtn" class="btn-outline">Fermer</button>
       </div>
     </div>

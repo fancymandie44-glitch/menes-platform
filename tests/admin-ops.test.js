@@ -119,4 +119,7 @@ assert.match(consoleHtml, /id="orderSearch"/);
 assert.match(consoleHtml, /id="shipThresholdInput"/);
 assert.match(consoleHtml, /data-tab="inventory"/);
 
+const adminIndex = fs.readFileSync(path.join(__dirname, '../admin-site/index.html'), 'utf8');
+assert.match(adminIndex, /id="tab-inventory"/, 'menesadmin homepage must include inventory tab');
+
 console.log('ok: admin ops, shipping, restock, cart contrast');
