@@ -5,7 +5,7 @@
 
 const { setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
-const { readProgram, writeProgram, uid, slugify, ambassadorShopLink } = require('../lib/ambassador-data');
+const { readProgram, writeProgram, uid, slugify, ambassadorShopLink, findAmbassadorByLinkToken } = require('../lib/ambassador-data');
 const { awardLinkClickXp } = require('../lib/ambassador-engine');
 
 function json(headers, status, body) {
@@ -22,12 +22,13 @@ exports.handler = async (event) => {
     let body = {};
     try { body = JSON.parse(event.body || '{}'); } catch {}
 
-    const slug = slugify(params.slug || body.slug || '');
+    const rawToken = String(params.slug || body.slug || '').trim();
+    const slug = slugify(rawToken);
     const campaignId = params.campaign || body.campaign || null;
     if (!slug) return json(headers, 400, { error: 'slug requis' });
 
     const program = await readProgram();
-    const amb = program.ambassadors.find((a) => a.slug === slug && a.status === 'active');
+    const amb = findAmbassadorByLinkToken(program, rawToken);
     if (!amb) return json(headers, 404, { error: 'Ambassadeur introuvable' });
 
     const click = {
@@ -44,11 +45,16 @@ exports.handler = async (event) => {
     if (program.attributionClicks.length > 5000) program.attributionClicks.length = 5000;
 
     awardLinkClickXp(amb, program);
-    await writeProgram(program);
+    try {
+      await writeProgram(program);
+    } catch (err) {
+      console.error('ambassador-track persist', err.message);
+    }
 
     const attribution = {
       ambassadorId: amb.id,
       slug: amb.slug,
+      displayName: amb.displayName || '',
       promoCode: amb.promoCode,
       method: 'ambassador_link',
       campaignId,

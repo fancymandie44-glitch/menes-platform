@@ -39,6 +39,23 @@ function saveAmbassadorAttribution(attr) {
   }
 }
 
+function showAmbassadorLinkBanner(attr, displayName) {
+  if (!attr?.promoCode) return;
+  let el = document.getElementById('ambRefBar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'ambRefBar';
+    el.setAttribute('role', 'status');
+    const nav = document.querySelector('.nav');
+    if (nav) nav.after(el);
+    else document.body.prepend(el);
+  }
+  const who = displayName || attr.displayName || '';
+  el.textContent = currentLang === 'fr'
+    ? `${who ? who + ' · ' : ''}Code ${attr.promoCode} appliqué — 10 % avec ce lien ambassadeur`
+    : `${who ? who + ' · ' : ''}Code ${attr.promoCode} applied — 10% off with this ambassador link`;
+}
+
 async function captureAmbassadorRef() {
   const params = new URLSearchParams(location.search);
   let slug = params.get('ref') || params.get('amb') || '';
@@ -63,16 +80,15 @@ async function captureAmbassadorRef() {
     const data = await res.json().catch(() => ({}));
     if (data.ok && data.attribution) {
       saveAmbassadorAttribution(data.attribution);
+      showAmbassadorLinkBanner(data.attribution, data.displayName);
       const clean = new URL(location.href);
       clean.searchParams.delete('ref');
       clean.searchParams.delete('amb');
       const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
-      const prettyLink = parts[0] === 'r' || (parts.length === 1 && !parts[0].includes('.'));
-      if (prettyLink) {
-        history.replaceState({}, '', `/${clean.search}${clean.hash || ''}`);
-      } else {
-        history.replaceState({}, '', clean.pathname + (clean.search || '') + clean.hash);
-      }
+      let path = location.pathname;
+      if (parts[0] === 'r' && parts[1]) path = `/r/${parts[1]}`;
+      else if (parts.length === 1 && !parts[0].includes('.')) path = `/${parts[0]}`;
+      history.replaceState({}, '', path + (clean.search || '') + (clean.hash || ''));
     }
   } catch {}
 }
@@ -3360,6 +3376,8 @@ document.getElementById('cryptoCloseBtn').addEventListener('click', () => {
 async function init() {
   initCustomCursor();
   await captureAmbassadorRef();
+  const existingAttr = getAmbassadorAttribution();
+  if (existingAttr) showAmbassadorLinkBanner(existingAttr, existingAttr.displayName);
   await refreshStore();
   updateCartUI();
   updateWishlistUI();

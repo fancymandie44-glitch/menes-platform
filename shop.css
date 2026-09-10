@@ -55,6 +55,16 @@ body {
   border-bottom: 1px solid var(--hairline);
 }
 
+#ambRefBar {
+  background: var(--gold);
+  color: #050505;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  padding: 9px 16px;
+}
+
 .nav {
   position: sticky; top: 0; z-index: 100;
   display: flex; justify-content: space-between; align-items: center;
