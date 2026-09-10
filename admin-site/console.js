@@ -66,10 +66,10 @@ let pendingLogo = null;
 
 const TAB_TITLES = {
   dashboard: 'Tableau de bord', sites: 'Boutiques & marques', domains: 'Domaines',
-  products: 'Produits', collections: 'Collections', orders: 'Commandes',
+  products: 'Produits', inventory: 'Inventaire', collections: 'Collections', orders: 'Commandes',
   customers: 'Clients', marketing: 'Marketing', ambassadors: 'Ambassadeurs',
   appearance: 'Apparence & thème', design: 'Design & contenu',
-  sections: 'Sections page', payments: 'Paiements', settings: 'Paramètres', publish: 'Déploiement',
+  sections: 'Sections page', payments: 'Paiements', settings: 'Réglages', publish: 'Déploiement',
 };
 
 /** Session via httpOnly cookie — password is not stored in the browser after login. */
@@ -132,6 +132,72 @@ function initAdminTheme() {
     applyAdminTheme(getAdminTheme() === 'dark' ? 'light' : 'dark');
   });
 }
+
+function productThumbUrl(p) {
+  if (!p) return '';
+  if (p.image) return String(p.image);
+  const first = Array.isArray(p.images) ? p.images[0] : null;
+  if (!first) return '';
+  return typeof first === 'string' ? first : String(first.url || '');
+}
+
+function productStockTotal(p) {
+  const variants = Array.isArray(p?.variants) ? p.variants : [];
+  if (variants.length) return variants.reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0);
+  const n = Number(p?.stock);
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
+function isLowStockProduct(p, threshold = 5) {
+  if (!p || p.active === false) return false;
+  const n = productStockTotal(p);
+  return n > 0 && n <= threshold;
+}
+
+function pushOrderEvent(order, type, note) {
+  if (!order) return;
+  if (!Array.isArray(order.events)) order.events = [];
+  order.events.unshift({
+    id: `evt_${Date.now().toString(36)}`,
+    type: String(type || 'note').slice(0, 40),
+    note: String(note || '').slice(0, 400),
+    at: new Date().toISOString(),
+  });
+  if (order.events.length > 40) order.events.length = 40;
+}
+
+function restockOrderLocal(order) {
+  if (!order || !order.stockDecremented || order.stockRestocked) return false;
+  const products = storeData.products || [];
+  for (const line of order.items || []) {
+    const product = products.find((p) => p.id === line.id || p.id === line.productId);
+    if (!product) continue;
+    const qty = Math.max(1, parseInt(line.qty, 10) || 1);
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    if (variants.length) {
+      const size = String(line.size || line.variantStr || '');
+      const hit = variants.find((v) => v.label === size || v.key === line.variantKey)
+        || variants.find((v) => Object.values(v.options || {}).join(' / ') === size);
+      if (hit) hit.stock = Math.max(0, (Number(hit.stock) || 0) + qty);
+      product.stock = variants.reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0);
+    } else {
+      product.stock = Math.max(0, (Number(product.stock) || 0) + qty);
+    }
+  }
+  order.stockRestocked = true;
+  return true;
+}
+
+function emptyState(title, body, ctaLabel, tab) {
+  return `<div class="empty-state">
+    <strong>${esc(title)}</strong>
+    <p>${esc(body)}</p>
+    ${ctaLabel ? `<button type="button" class="btn-primary btn-sm" onclick="switchTab('${tab}')">${esc(ctaLabel)}</button>` : ''}
+  </div>`;
+}
+
+const productSelectSet = new Set();
+function selectedProductIds() { return productSelectSet; }
 
 function isPaidOrder(o) {
   return PAID_STATUSES.includes(o.status);
@@ -230,11 +296,13 @@ function switchTab(tab) {
   document.getElementById('pageTitle').textContent = TAB_TITLES[tab] || tab;
   closeMobileNav();
   const renders = {
-    dashboard: updateDashboard, products: renderProducts, collections: renderCollections,
+    dashboard: updateDashboard, products: renderProducts, inventory: renderInventory,
+    collections: renderCollections,
     orders: renderOrders, customers: renderCustomers, marketing: renderMarketing,
     ambassadors: renderAmbassadors,
     sites: renderSites, domains: renderDomains, design: loadDesignForm, appearance: loadAppearanceForm,
     sections: () => { renderSectionEditors(); renderGalleryEditor(); },
+    settings: renderSettings,
   };
   // Paint tab chrome first, then heavy content — feels instant on click
   requestAnimationFrame(() => {
@@ -372,6 +440,17 @@ async function saveStore(msg = 'Sauvegardé') {
     if (document.querySelector('#discountsList .discount-row')) {
       storeData.discounts = readDiscountsFromDOM();
     }
+    if (document.querySelector('.ship-rate-row') || document.getElementById('shipThresholdInput')) {
+      const threshold = Number(document.getElementById('shipThresholdInput')?.value);
+      if (Number.isFinite(threshold) && document.getElementById('shipThresholdInput')) {
+        storeData.site = storeData.site || {};
+        storeData.site.freeShippingThreshold = threshold;
+      }
+      if (document.querySelector('.ship-rate-row')) {
+        storeData.site = storeData.site || {};
+        storeData.site.shippingRates = readShippingRatesFromDom();
+      }
+    }
     const have = new Set((storeData.discounts || []).map((d) => String(d.code || '').toUpperCase()));
     for (const d of keptAmb) {
       const code = String(d.code || '').toUpperCase();
@@ -462,6 +541,11 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 });
 
 document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+document.querySelectorAll('.stat-card.clickable').forEach((card) => {
+  card.addEventListener('click', () => {
+    if (card.dataset.jump) switchTab(card.dataset.jump);
+  });
+});
 document.getElementById('saveAllBtn').addEventListener('click', () => saveStore('Tout sauvegardé'));
 document.getElementById('catalogRestoreBtn')?.addEventListener('click', async () => {
   const backup = window.__menesCatalogBackup;
@@ -496,6 +580,8 @@ function updateDashboard() {
   const paidRevenue = paidOrders.reduce((s, o) => s + (o.total || 0), 0);
   const pendingCount = orders.filter((o) => o.status === 'pending' || o.status === 'awaiting_payment').length;
   const aov = paidOrders.length ? paidRevenue / paidOrders.length : 0;
+  const fulfillCount = orders.filter((o) => o.status === 'paid' || o.status === 'processing').length;
+  const lowStockCount = p.filter((x) => isLowStockProduct(x) || (x.active !== false && productStockTotal(x) <= 0)).length;
 
   document.getElementById('statProducts').textContent = p.filter((x) => x.active).length;
   document.getElementById('statOrders').textContent = orders.length;
@@ -504,7 +590,10 @@ function updateDashboard() {
   document.getElementById('statPaid').textContent = paidOrders.length;
   document.getElementById('statRevenue').textContent = formatMoney(paidRevenue);
   document.getElementById('statAov').textContent = formatMoney(aov);
-  document.getElementById('statSites').textContent = platform?.sites?.length || 1;
+  const fulfillEl = document.getElementById('statFulfill');
+  if (fulfillEl) fulfillEl.textContent = String(fulfillCount);
+  const lowEl = document.getElementById('statLowStock');
+  if (lowEl) lowEl.textContent = String(lowStockCount);
 
   const buckets7 = revenueBuckets(orders, 7);
   const buckets30 = revenueBuckets(orders, 30);
@@ -524,7 +613,19 @@ function updateDashboard() {
   const recent = orders.slice(-5).reverse();
   document.getElementById('recentOrders').innerHTML = recent.length
     ? recent.map((o) => `<div class="mini-item"><span>#${esc(o.id)} · ${esc(o.customer?.name || 'Client')}<br><span class="mini-item-status">${esc(orderStatusLabel(o.status || 'pending'))}</span></span><span>${formatMoney(o.total || 0)}</span></div>`).join('')
-    : '<p class="empty">Aucune commande</p>';
+    : emptyState('Aucune commande', 'Les ventes apparaissent ici dès le premier paiement.', 'Voir les produits', 'products');
+
+  const alerts = [];
+  if (fulfillCount) alerts.push({ tab: 'orders', text: `${fulfillCount} commande(s) à préparer / expédier` });
+  if (lowStockCount) alerts.push({ tab: 'inventory', text: `${lowStockCount} produit(s) en stock bas ou rupture` });
+  const unpaid = orders.filter((o) => o.status === 'awaiting_payment').length;
+  if (unpaid) alerts.push({ tab: 'orders', text: `${unpaid} paiement(s) en cours` });
+  const alertsEl = document.getElementById('opsAlerts');
+  if (alertsEl) {
+    alertsEl.innerHTML = alerts.length
+      ? alerts.map((a) => `<button type="button" class="mini-item alert-row" onclick="switchTab('${a.tab}')"><span>${esc(a.text)}</span><span>→</span></button>`).join('')
+      : '<p class="empty">Rien à traiter. La boutique est à jour.</p>';
+  }
 }
 
 // Sites
@@ -624,9 +725,19 @@ document.getElementById('addDomainBtn')?.addEventListener('click', async () => {
 function renderProducts() {
   const search = (document.getElementById('productSearch')?.value || '').toLowerCase();
   const cat = document.getElementById('productFilterCat')?.value || '';
+  const stockFilter = document.getElementById('productFilterStock')?.value || '';
   let products = storeData.products || [];
-  if (search) products = products.filter((p) => p.name.toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
+  if (search) {
+    products = products.filter((p) =>
+      p.name.toLowerCase().includes(search)
+      || (p.sku || '').toLowerCase().includes(search)
+      || (p.tags || []).join(' ').toLowerCase().includes(search)
+    );
+  }
   if (cat) products = products.filter((p) => p.category === cat);
+  if (stockFilter === 'low') products = products.filter((p) => isLowStockProduct(p));
+  if (stockFilter === 'oos') products = products.filter((p) => productStockTotal(p) <= 0);
+  if (stockFilter === 'hidden') products = products.filter((p) => p.active === false);
 
   const catSel = document.getElementById('productFilterCat');
   if (catSel) {
@@ -635,21 +746,120 @@ function renderProducts() {
     catSel.value = cat;
   }
 
+  const selected = selectedProductIds();
+  const bulk = document.getElementById('productBulkBar');
+  if (bulk) bulk.classList.toggle('hidden', selected.size === 0);
+  const bulkCount = document.getElementById('productBulkCount');
+  if (bulkCount) bulkCount.textContent = `${selected.size} sélectionné${selected.size > 1 ? 's' : ''}`;
+
   document.getElementById('productsList').innerHTML = products.length ? `
-    <table class="data-table"><thead><tr><th>Produit</th><th>SKU</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Statut</th><th></th></tr></thead>
-    <tbody>${products.map((p) => `<tr class="${p.active ? '' : 'inactive'}">
+    <table class="data-table"><thead><tr>
+      <th class="col-check"><input type="checkbox" id="productSelectAll" ${products.length && products.every((p) => selected.has(p.id)) ? 'checked' : ''}></th>
+      <th></th><th>Produit</th><th>SKU</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Statut</th><th></th>
+    </tr></thead>
+    <tbody>${products.map((p) => {
+      const thumb = productThumbUrl(p);
+      const stock = productStockTotal(p);
+      const stockClass = stock <= 0 ? 'is-oos' : (isLowStockProduct(p) ? 'is-low' : '');
+      return `<tr class="${p.active ? '' : 'inactive'}">
+      <td><input type="checkbox" class="product-select" data-id="${esc(p.id)}" ${selected.has(p.id) ? 'checked' : ''}></td>
+      <td>${thumb ? `<img class="table-thumb" src="${esc(thumb)}" alt="">` : `<span class="table-thumb table-thumb-empty">M</span>`}</td>
       <td><strong>${esc(p.name)}</strong></td><td>${esc(p.sku || '-')}</td><td>${esc(p.category)}</td>
       <td>${p.price}$${p.comparePrice ? ` <s>${p.comparePrice}$</s>` : ''}</td>
-      <td>${formatProductStockCell(p)}</td>
+      <td class="${stockClass}">${formatProductStockCell(p)}</td>
       <td>${p.active ? '<span class="badge paid">Actif</span>' : '<span class="badge cancelled">Masqué</span>'}${p.preorder ? ' <span class="badge pending">Précommande</span>' : ''}</td>
       <td><button onclick="editProduct('${p.id}')">Modifier</button> <button class="btn-danger" onclick="deleteProduct('${p.id}')">Suppr.</button></td>
-    </tr>`).join('')}</tbody></table>` : '<p class="empty">Aucun produit</p>';
+    </tr>`;
+    }).join('')}</tbody></table>` : emptyState('Aucun produit', 'Crée ta première pièce. Photos, variantes et stock se gèrent dans la fiche.', '+ Nouveau produit', 'products');
+
+  document.getElementById('productSelectAll')?.addEventListener('change', (e) => {
+    const on = e.target.checked;
+    products.forEach((p) => {
+      if (on) productSelectSet.add(p.id);
+      else productSelectSet.delete(p.id);
+    });
+    renderProducts();
+  });
+  document.querySelectorAll('.product-select').forEach((box) => {
+    box.addEventListener('change', () => {
+      if (box.checked) productSelectSet.add(box.dataset.id);
+      else productSelectSet.delete(box.dataset.id);
+      renderProducts();
+    });
+  });
 }
 
 document.getElementById('productSearch')?.addEventListener('input', renderProducts);
 document.getElementById('productFilterCat')?.addEventListener('change', renderProducts);
+document.getElementById('productFilterStock')?.addEventListener('change', renderProducts);
 document.getElementById('addProductBtn')?.addEventListener('click', () => openProductModal());
 document.getElementById('cancelProductBtn')?.addEventListener('click', () => document.getElementById('productModal').classList.add('hidden'));
+document.getElementById('bulkActivateBtn')?.addEventListener('click', () => bulkSetProductActive(true));
+document.getElementById('bulkHideBtn')?.addEventListener('click', () => bulkSetProductActive(false));
+
+async function bulkSetProductActive(active) {
+  const ids = [...productSelectSet];
+  if (!ids.length) return;
+  (storeData.products || []).forEach((p) => {
+    if (ids.includes(p.id)) p.active = active;
+  });
+  productSelectSet.clear();
+  await saveStore(active ? 'Produits activés' : 'Produits masqués');
+  renderProducts();
+  renderInventory();
+}
+
+function renderInventory() {
+  const q = (document.getElementById('inventorySearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('inventoryFilter')?.value || '';
+  const rows = [];
+  (storeData.products || []).forEach((p) => {
+    const variants = Array.isArray(p.variants) && p.variants.length ? p.variants : [{ key: '', label: 'Stock global', stock: p.stock, _global: true }];
+    variants.forEach((v, vi) => {
+      const stock = Number(v.stock) || 0;
+      const label = `${p.name} ${v.label || ''} ${p.sku || ''}`.toLowerCase();
+      if (q && !label.includes(q)) return;
+      if (filter === 'low' && !(stock > 0 && stock <= 5)) return;
+      if (filter === 'oos' && stock > 0) return;
+      rows.push({ p, v, vi, stock });
+    });
+  });
+  const box = document.getElementById('inventoryList');
+  if (!box) return;
+  box.innerHTML = rows.length ? `
+    <table class="data-table"><thead><tr><th>Produit</th><th>Variante</th><th>SKU</th><th>Stock</th><th></th></tr></thead>
+    <tbody>${rows.map((r) => `
+      <tr class="${r.stock <= 0 ? 'inactive' : ''}">
+        <td><strong>${esc(r.p.name)}</strong></td>
+        <td>${esc(r.v.label || '—')}</td>
+        <td>${esc(r.p.sku || '—')}</td>
+        <td><input type="number" min="0" class="inv-stock" data-pid="${esc(r.p.id)}" data-vkey="${esc(r.v.key || '')}" data-global="${r.v._global ? '1' : '0'}" value="${r.stock}"></td>
+        <td class="${r.stock <= 0 ? 'is-oos' : (r.stock <= 5 ? 'is-low' : '')}">${r.stock <= 0 ? 'Rupture' : (r.stock <= 5 ? 'Bas' : 'OK')}</td>
+      </tr>`).join('')}</tbody></table>`
+    : emptyState('Inventaire vide', 'Ajoute des produits pour gérer le stock ici.', '+ Produit', 'products');
+
+  box.querySelectorAll('.inv-stock').forEach((inp) => {
+    inp.addEventListener('change', async () => {
+      const product = (storeData.products || []).find((x) => x.id === inp.dataset.pid);
+      if (!product) return;
+      const n = Math.max(0, parseInt(inp.value, 10) || 0);
+      if (inp.dataset.global === '1') {
+        product.stock = n;
+      } else {
+        const hit = (product.variants || []).find((v) => (v.key || '') === inp.dataset.vkey);
+        if (hit) hit.stock = n;
+        product.stock = (product.variants || []).reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0);
+      }
+      await saveStore('Stock mis à jour');
+      renderInventory();
+      renderProducts();
+      updateDashboard();
+    });
+  });
+}
+
+document.getElementById('inventorySearch')?.addEventListener('input', renderInventory);
+document.getElementById('inventoryFilter')?.addEventListener('change', renderInventory);
 
 let productImagesState = [];
 let productOptionsState = [];
@@ -985,12 +1195,22 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
 // Collections
 function renderCollections() {
   const cols = storeData.collections || [];
-  document.getElementById('collectionsList').innerHTML = cols.map((c, i) => `
-    <div class="card" style="padding:16px;display:flex;gap:12px;align-items:center">
-      <input value="${esc(c.name)}" data-i="${i}" class="col-name" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px">
-      <code>${esc(c.id)}</code>
-      <label class="checkbox"><input type="checkbox" class="col-active" data-i="${i}" ${c.active !== false ? 'checked' : ''}> Active</label>
-    </div>`).join('') || '<p class="empty">Aucune collection</p>';
+  const products = storeData.products || [];
+  document.getElementById('collectionsList').innerHTML = cols.map((c, i) => {
+    const members = products.filter((p) => p.category === c.id);
+    return `
+    <div class="card collection-card">
+      <div class="collection-head">
+        <input value="${esc(c.name)}" data-i="${i}" class="col-name">
+        <code>${esc(c.id)}</code>
+        <label class="checkbox"><input type="checkbox" class="col-active" data-i="${i}" ${c.active !== false ? 'checked' : ''}> Active</label>
+        <span class="muted">${members.length} produit(s)</span>
+      </div>
+      <div class="collection-products">
+        ${members.length ? members.map((p) => `<span class="chip">${esc(p.name)}</span>`).join('') : '<span class="muted">Aucun produit dans cette collection — assigne la catégorie dans la fiche produit.</span>'}
+      </div>
+    </div>`;
+  }).join('') || emptyState('Aucune collection', 'Les collections groupent tes produits (Vêtements, Grillz…).', '', '');
 }
 
 document.getElementById('addCollectionBtn')?.addEventListener('click', async () => {
@@ -1010,9 +1230,10 @@ const ORDER_STATUS_LABELS = {
   processing: 'En préparation',
   shipped: 'Expédiée',
   delivered: 'Livrée',
+  refunded: 'Remboursée',
   cancelled: 'Annulée',
 };
-const ORDER_STATUS_FLOW = ['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
+const ORDER_STATUS_FLOW = ['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'delivered', 'refunded', 'cancelled'];
 
 function orderStatusLabel(status) {
   return ORDER_STATUS_LABELS[status] || status || 'En attente';
@@ -1036,10 +1257,20 @@ function formatOrderDate(iso) {
 
 function renderOrders() {
   const status = document.getElementById('orderFilterStatus')?.value || '';
+  const q = (document.getElementById('orderSearch')?.value || '').toLowerCase().trim();
   let orders = [...(storeData.orders || [])].reverse();
   if (status) orders = orders.filter((o) => o.status === status);
+  if (q) {
+    orders = orders.filter((o) => {
+      const blob = [
+        o.id, o.customer?.name, o.customer?.email, o.customer?.phone,
+        o.trackingNumber, o.carrier, o.payment, o.method,
+      ].join(' ').toLowerCase();
+      return blob.includes(q);
+    });
+  }
   document.getElementById('ordersList').innerHTML = orders.length ? `
-    <table class="data-table"><thead><tr><th>#</th><th>Client</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Date</th><th></th><th></th></tr></thead>
+    <table class="data-table"><thead><tr><th>#</th><th>Client</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Suivi</th><th>Date</th><th></th><th></th></tr></thead>
     <tbody>${orders.map((o) => {
       const st = o.status || 'pending';
       return `<tr>
@@ -1048,13 +1279,14 @@ function renderOrders() {
       <td>${(o.total || 0).toFixed(2)}$</td>
       <td>${esc(o.payment || o.method || '-')}</td>
       <td><span class="badge ${esc(st)}">${esc(orderStatusLabel(st))}</span></td>
+      <td>${o.trackingNumber ? esc(`${o.carrier || ''} ${o.trackingNumber}`.trim()) : '—'}</td>
       <td>${o.date ? new Date(o.date).toLocaleDateString('fr-CA') : '-'}</td>
       <td><button type="button" class="btn-link" onclick="openOrderDetail('${esc(o.id)}')">Détail</button></td>
       <td><select onchange="updateOrderStatus('${esc(o.id)}', this.value)">
         ${ORDER_STATUS_FLOW.map((s) => `<option value="${s}" ${st === s ? 'selected' : ''}>${ORDER_STATUS_LABELS[s]}</option>`).join('')}
       </select></td>
     </tr>`;
-    }).join('')}</tbody></table>` : '<p class="empty">Aucune commande pour l\'instant. Elles apparaîtront ici après achat.</p>';
+    }).join('')}</tbody></table>` : emptyState('Aucune commande', 'Les commandes apparaissent ici après un achat sur la boutique.', 'Voir la boutique', 'publish');
 }
 
 window.openOrderDetail = (id) => {
@@ -1064,14 +1296,16 @@ window.openOrderDetail = (id) => {
   const st = o.status || 'pending';
   const items = o.items || [];
   const itemsHtml = items.length
-    ? `<table class="data-table order-items-table"><thead><tr><th>Article</th><th>Qté</th><th>Prix</th></tr></thead>
+    ? `<table class="data-table order-items-table"><thead><tr><th></th><th>Article</th><th>Qté</th><th>Prix</th></tr></thead>
         <tbody>${items.map((i) => {
           const line = (Number(i.price) || 0) * (Number(i.qty) || 1);
           const variant = i.size && i.size !== '—' ? ` · ${esc(i.size)}` : '';
           const pre = i.preorder ? ' <span class="badge pending">Précommande</span>' : '';
-          return `<tr><td>${esc(i.name)}${variant}${pre}${i.preorderNote ? `<br><span class="hint">${esc(i.preorderNote)}</span>` : ''}</td><td>${esc(i.qty)}</td><td>${line.toFixed(2)}$</td></tr>`;
+          const thumb = i.image ? `<img class="table-thumb" src="${esc(i.image)}" alt="">` : '';
+          return `<tr><td>${thumb}</td><td>${esc(i.name)}${variant}${pre}${i.preorderNote ? `<br><span class="hint">${esc(i.preorderNote)}</span>` : ''}</td><td>${esc(i.qty)}</td><td>${line.toFixed(2)}$</td></tr>`;
         }).join('')}</tbody></table>`
     : '<p class="empty">Aucun article</p>';
+  const events = Array.isArray(o.events) ? o.events : [];
   const title = document.getElementById('orderModalTitle');
   const body = document.getElementById('orderModalBody');
   if (title) title.textContent = `Commande ${o.id}`;
@@ -1081,6 +1315,7 @@ window.openOrderDetail = (id) => {
         <div><span class="muted">Statut</span><div><span class="badge ${esc(st)}">${esc(orderStatusLabel(st))}</span></div></div>
         <div><span class="muted">Total</span><div><strong>${(o.total || 0).toFixed(2)}$ CAD</strong></div></div>
         <div><span class="muted">Paiement</span><div>${esc(o.payment || o.method || '—')}</div></div>
+        <div><span class="muted">Livraison</span><div>${Number(o.shipping) > 0 ? `${Number(o.shipping).toFixed(2)}$` : 'Offerte'}</div></div>
         <div><span class="muted">Créée</span><div>${esc(formatOrderDate(o.date))}</div></div>
         <div><span class="muted">Payée</span><div>${esc(formatOrderDate(o.paidAt))}</div></div>
         <div><span class="muted">Client</span><div>${esc(c.name || '—')}</div></div>
@@ -1088,11 +1323,68 @@ window.openOrderDetail = (id) => {
         <div><span class="muted">Téléphone</span><div>${esc(c.phone || '—')}</div></div>
         <div class="order-detail-full"><span class="muted">Adresse</span><div>${esc(formatOrderAddress(c))}</div></div>
       </div>
+      <h4 class="modal-subhead">Expédition</h4>
+      <div class="form-grid-2">
+        <label>Transporteur<input type="text" id="orderCarrier" value="${esc(o.carrier || '')}" placeholder="Canada Post, Purolator…"></label>
+        <label>N° de suivi<input type="text" id="orderTracking" value="${esc(o.trackingNumber || '')}" placeholder="Tracking"></label>
+        <label>URL suivi<input type="url" id="orderTrackingUrl" value="${esc(o.trackingUrl || '')}" placeholder="https://"></label>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn-primary btn-sm" onclick="saveOrderFulfillment('${esc(o.id)}')">Enregistrer l'expédition</button>
+        <button type="button" class="btn-outline btn-sm" onclick="markOrderShipped('${esc(o.id)}')">Marquer expédiée</button>
+        ${st !== 'refunded' && st !== 'cancelled' ? `<button type="button" class="btn-danger btn-sm" onclick="refundOrder('${esc(o.id)}')">Rembourser + restock</button>` : ''}
+      </div>
       <h4 class="modal-subhead">Articles</h4>
       ${itemsHtml}
-      ${o.tax?.amount != null ? `<p class="hint">Taxes (${esc(o.tax.label || '')}) : ${Number(o.tax.amount).toFixed(2)}$ · Sous-total : ${Number(o.subtotal ?? 0).toFixed(2)}$</p>` : ''}`;
+      ${o.tax?.amount != null ? `<p class="hint">Taxes (${esc(o.tax.label || '')}) : ${Number(o.tax.amount).toFixed(2)}$ · Sous-total : ${Number(o.subtotal ?? 0).toFixed(2)}$${o.discount ? ` · Remise : ${Number(o.discount).toFixed(2)}$` : ''}</p>` : ''}
+      <h4 class="modal-subhead">Historique</h4>
+      ${events.length ? `<ul class="timeline">${events.map((ev) => `<li><strong>${esc(ev.type)}</strong> · ${esc(formatOrderDate(ev.at))}<br>${esc(ev.note || '')}</li>`).join('')}</ul>` : '<p class="hint">Pas encore d’événement.</p>'}`;
   }
   document.getElementById('orderModal')?.classList.remove('hidden');
+};
+
+window.saveOrderFulfillment = async (id) => {
+  const o = storeData.orders.find((x) => x.id === id);
+  if (!o) return;
+  o.carrier = document.getElementById('orderCarrier')?.value.trim() || '';
+  o.trackingNumber = document.getElementById('orderTracking')?.value.trim() || '';
+  o.trackingUrl = document.getElementById('orderTrackingUrl')?.value.trim() || '';
+  if (o.trackingNumber && !o.shippedAt) o.shippedAt = new Date().toISOString();
+  pushOrderEvent(o, 'fulfillment', `${o.carrier || 'Colis'} ${o.trackingNumber}`.trim());
+  await saveStore('Expédition enregistrée');
+  openOrderDetail(id);
+  renderOrders();
+};
+
+window.markOrderShipped = async (id) => {
+  const o = storeData.orders.find((x) => x.id === id);
+  if (!o) return;
+  o.carrier = document.getElementById('orderCarrier')?.value.trim() || o.carrier || '';
+  o.trackingNumber = document.getElementById('orderTracking')?.value.trim() || o.trackingNumber || '';
+  o.trackingUrl = document.getElementById('orderTrackingUrl')?.value.trim() || o.trackingUrl || '';
+  o.status = 'shipped';
+  o.shippedAt = new Date().toISOString();
+  pushOrderEvent(o, 'status', 'Expédiée');
+  await saveStore('Commande expédiée');
+  openOrderDetail(id);
+  renderOrders();
+  updateDashboard();
+};
+
+window.refundOrder = async (id) => {
+  const o = storeData.orders.find((x) => x.id === id);
+  if (!o) return;
+  if (!confirm(`Rembourser ${id} et remettre le stock ? Le remboursement argent se fait dans Stripe/Square.`)) return;
+  o.status = 'refunded';
+  o.refundedAt = new Date().toISOString();
+  restockOrderLocal(o);
+  pushOrderEvent(o, 'refund', o.stockRestocked ? 'Remboursée · stock remis' : 'Remboursée');
+  await saveStore('Commande remboursée');
+  openOrderDetail(id);
+  renderOrders();
+  renderProducts();
+  renderInventory();
+  updateDashboard();
 };
 
 document.getElementById('closeOrderBtn')?.addEventListener('click', () => {
@@ -1113,12 +1405,28 @@ window.updateOrderStatus = async (id, status) => {
     }
   }
   o.status = status;
+  if (status === 'refunded') restockOrderLocal(o);
+  if (status === 'shipped' && !o.shippedAt) o.shippedAt = new Date().toISOString();
+  pushOrderEvent(o, 'status', orderStatusLabel(status));
   await saveStore('Statut mis à jour');
   renderOrders();
   updateDashboard();
 };
 
 document.getElementById('orderFilterStatus')?.addEventListener('change', renderOrders);
+document.getElementById('orderSearch')?.addEventListener('input', renderOrders);
+document.getElementById('printOrderBtn')?.addEventListener('click', () => {
+  const title = document.getElementById('orderModalTitle')?.textContent || 'Commande';
+  const body = document.getElementById('orderModalBody')?.innerHTML || '';
+  const w = window.open('', '_blank');
+  if (!w) return;
+  w.document.write(`<!DOCTYPE html><html><head><title>${esc(title)}</title>
+    <style>body{font-family:sans-serif;padding:24px;color:#111} table{width:100%;border-collapse:collapse} td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left} .badge{font-size:12px}</style>
+    </head><body><h1>${esc(title)}</h1>${body}</body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+});
 
 // Customers CRM — LTV / counts from paid statuses only (excludes awaiting_payment, pending, cancelled)
 function customerSegment(c) {
@@ -1138,15 +1446,34 @@ function renderCustomers() {
     const c = map.get(email);
     c.orders++;
     c.total += o.total || 0;
+    c.name = o.customer.name || c.name;
+    c.phone = o.customer.phone || c.phone;
+  });
+  (storeData.customers || []).forEach((saved) => {
+    const email = String(saved.email || '').toLowerCase();
+    if (!email) return;
+    if (!map.has(email)) {
+      map.set(email, {
+        name: saved.name, email, phone: saved.phone, orders: 0, total: 0,
+      });
+    }
+    const row = map.get(email);
+    row.notes = saved.notes || '';
+    row.tags = saved.tags || [];
+    if (saved.name && !row.name) row.name = saved.name;
   });
   const segFilter = document.getElementById('customerSegmentFilter')?.value || '';
+  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase().trim();
   let list = [...map.values()].map((c) => ({ ...c, segment: customerSegment(c), ltv: c.total }));
   if (segFilter) list = list.filter((c) => c.segment === segFilter);
+  if (q) {
+    list = list.filter((c) => `${c.name} ${c.email} ${c.phone} ${c.notes || ''}`.toLowerCase().includes(q));
+  }
   list.sort((a, b) => b.ltv - a.ltv);
   const segLabel = { vip: 'VIP', new: 'Nouveau', regular: 'Régulier' };
   const passports = storeData.passports || [];
   document.getElementById('customersList').innerHTML = list.length ? `
-    <table class="data-table"><thead><tr><th>Client</th><th>Email</th><th>Passeport</th><th>Commandes</th><th>LTV</th><th>Segment</th></tr></thead>
+    <table class="data-table"><thead><tr><th>Client</th><th>Email</th><th>Passeport</th><th>Commandes</th><th>LTV</th><th>Segment</th><th>Notes</th><th></th></tr></thead>
     <tbody>${list.map((c) => {
       const pass = passports.find((p) => String(p.email || '').toLowerCase() === String(c.email || '').toLowerCase());
       const code = pass ? `MENES-${String(pass.id || '').replace(/[^a-z0-9]/gi, '').slice(-6).toUpperCase()}` : '—';
@@ -1157,12 +1484,58 @@ function renderCustomers() {
       <td>${c.orders}</td>
       <td>${c.ltv.toFixed(2)}$ CAD</td>
       <td><span class="badge badge-${c.segment}">${segLabel[c.segment] || c.segment}</span></td>
+      <td>${esc((c.notes || '').slice(0, 48))}${c.notes && c.notes.length > 48 ? '…' : ''}</td>
+      <td><button type="button" class="btn-link" onclick="openCustomer('${esc(c.email)}')">Fiche</button></td>
     </tr>`;
     }).join('')}</tbody></table>`
-    : '<p class="empty">Aucun client encore</p>';
+    : emptyState('Aucun client', 'Les clients s’ajoutent automatiquement dès une commande payée.', 'Commandes', 'orders');
 }
 
+window.openCustomer = (email) => {
+  const key = String(email || '').toLowerCase();
+  const saved = (storeData.customers || []).find((c) => String(c.email || '').toLowerCase() === key) || { email: key, name: '', notes: '', tags: [] };
+  const paid = (storeData.orders || []).filter((o) => isPaidOrder(o) && String(o.customer?.email || '').toLowerCase() === key);
+  const title = document.getElementById('customerModalTitle');
+  const body = document.getElementById('customerModalBody');
+  if (title) title.textContent = saved.name || key;
+  if (body) {
+    body.innerHTML = `
+      <p class="hint">${esc(key)} · ${paid.length} commande(s) payée(s) · ${paid.reduce((s, o) => s + (o.total || 0), 0).toFixed(2)}$ CAD</p>
+      <label>Nom<input type="text" id="customerNameInput" value="${esc(saved.name || paid[0]?.customer?.name || '')}"></label>
+      <label>Téléphone<input type="text" id="customerPhoneInput" value="${esc(saved.phone || paid[0]?.customer?.phone || '')}"></label>
+      <label>Notes internes<textarea id="customerNotesInput" rows="4" placeholder="Préférences, taille, suivi…">${esc(saved.notes || '')}</textarea></label>
+      <input type="hidden" id="customerEmailInput" value="${esc(key)}">
+    `;
+  }
+  document.getElementById('customerModal')?.classList.remove('hidden');
+};
+
+document.getElementById('closeCustomerBtn')?.addEventListener('click', () => {
+  document.getElementById('customerModal')?.classList.add('hidden');
+});
+document.getElementById('customerModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'customerModal') e.currentTarget.classList.add('hidden');
+});
+document.getElementById('saveCustomerBtn')?.addEventListener('click', async () => {
+  const email = document.getElementById('customerEmailInput')?.value.trim().toLowerCase();
+  if (!email) return;
+  if (!Array.isArray(storeData.customers)) storeData.customers = [];
+  let row = storeData.customers.find((c) => String(c.email || '').toLowerCase() === email);
+  if (!row) {
+    row = { id: `cus_${email.replace(/[^a-z0-9]/g, '').slice(0, 20)}`, email, createdAt: new Date().toISOString() };
+    storeData.customers.push(row);
+  }
+  row.name = document.getElementById('customerNameInput')?.value.trim() || row.name || '';
+  row.phone = document.getElementById('customerPhoneInput')?.value.trim() || row.phone || '';
+  row.notes = document.getElementById('customerNotesInput')?.value.trim() || '';
+  row.updatedAt = new Date().toISOString();
+  await saveStore('Fiche client enregistrée');
+  document.getElementById('customerModal')?.classList.add('hidden');
+  renderCustomers();
+});
+
 document.getElementById('customerSegmentFilter')?.addEventListener('change', renderCustomers);
+document.getElementById('customerSearch')?.addEventListener('input', renderCustomers);
 
 // Marketing
 const MKT_TEMPLATE_DEFAULTS = {
@@ -3209,6 +3582,58 @@ document.getElementById('ambContentBtn')?.addEventListener('click', async () => 
     });
     toast('Contenu ajouté', 'ok');
   } catch (err) { toast(err.message, 'error'); }
+});
+
+function renderSettings() {
+  if (!storeData.site) storeData.site = {};
+  const threshold = document.getElementById('shipThresholdInput');
+  if (threshold) threshold.value = storeData.site.freeShippingThreshold ?? 150;
+  const rates = Array.isArray(storeData.site.shippingRates) ? storeData.site.shippingRates : [];
+  const box = document.getElementById('shippingRatesList');
+  if (!box) return;
+  box.innerHTML = rates.length ? rates.map((r, i) => `
+    <div class="ship-rate-row" data-i="${i}">
+      <input class="ship-name" value="${esc(r.name || '')}" placeholder="Standard">
+      <input class="ship-price" type="number" min="0" step="0.01" value="${Number(r.price) || 0}" placeholder="Prix">
+      <input class="ship-min" type="number" min="0" step="1" value="${Number(r.minCart) || 0}" placeholder="Min panier">
+      <input class="ship-countries" value="${esc(r.countries || '')}" placeholder="CA,US ou ALL">
+      <label class="checkbox"><input type="checkbox" class="ship-active" ${r.active !== false ? 'checked' : ''}> Actif</label>
+      <button type="button" class="btn-link ship-del" data-i="${i}">Retirer</button>
+    </div>`).join('') : '<p class="hint">Aucun tarif. Sans tarif, la livraison reste gratuite (0 $).</p>';
+  box.querySelectorAll('.ship-del').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      storeData.site.shippingRates.splice(+btn.dataset.i, 1);
+      renderSettings();
+    });
+  });
+}
+
+function readShippingRatesFromDom() {
+  const rows = [...document.querySelectorAll('.ship-rate-row')];
+  return rows.map((row) => ({
+    name: row.querySelector('.ship-name')?.value.trim() || 'Livraison',
+    price: Number(row.querySelector('.ship-price')?.value) || 0,
+    minCart: Number(row.querySelector('.ship-min')?.value) || 0,
+    countries: row.querySelector('.ship-countries')?.value.trim() || '',
+    active: row.querySelector('.ship-active')?.checked !== false,
+  }));
+}
+
+document.getElementById('addShippingRateBtn')?.addEventListener('click', () => {
+  if (!storeData.site) storeData.site = {};
+  if (!Array.isArray(storeData.site.shippingRates)) storeData.site.shippingRates = [];
+  storeData.site.shippingRates = readShippingRatesFromDom();
+  storeData.site.shippingRates.push({ name: 'Standard', price: 12, minCart: 0, countries: 'CA', active: true });
+  renderSettings();
+});
+document.getElementById('saveShippingBtn')?.addEventListener('click', async () => {
+  if (!storeData.site) storeData.site = {};
+  const threshold = Number(document.getElementById('shipThresholdInput')?.value);
+  if (Number.isFinite(threshold)) storeData.site.freeShippingThreshold = threshold;
+  storeData.site.shippingRates = readShippingRatesFromDom();
+  const fs = document.getElementById('siteFreeShipping');
+  if (fs) fs.value = storeData.site.freeShippingThreshold;
+  await saveStore('Livraison sauvegardée');
 });
 
 // Export/import

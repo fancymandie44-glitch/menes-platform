@@ -1006,7 +1006,7 @@ function loadGoogleFont(family) {
 
 const THEME_MODES = {
   light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#555555', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
-  dark: { bg: '#050505', surface: '#0f0f0f', text: '#f4f2ee', muted: '#a8a8a8', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505' },
+  dark: { bg: '#0a0a0a', surface: '#161410', text: '#f5f0e6', muted: '#c4bba8', border: '#6b6356', navbg: 'rgba(10,10,10,0.92)', btnBg: '', btnText: '#0a0a0a' },
 };
 
 const ASPECT_MAP = { '': '', square: '1 / 1', portrait45: '4 / 5', portrait34: '3 / 4', landscape: '16 / 9', wide: '3 / 2' };
@@ -1022,8 +1022,8 @@ function applyTheme() {
   let pal;
   if (mode === 'custom') {
     pal = {
-      bg: th.bg || '#050505', surface: th.surface || '#0f0f0f', text: th.text || '#f4f2ee',
-      muted: th.muted || 'rgba(168,168,168,0.9)', border: th.border || '#2a2a2a',
+      bg: th.bg || '#0a0a0a', surface: th.surface || '#161410', text: th.text || '#f5f0e6',
+      muted: th.muted || '#c4bba8', border: th.border || '#6b6356',
       navbg: th.surface || 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505',
     };
   } else {
@@ -1046,16 +1046,26 @@ function applyTheme() {
   const annBg = th.announceBg || '#050505';
   const annColor = th.announceColor || accent;
 
+  const isLight = mode === 'light' || /^#(?:f|e|d)/i.test(String(pal.bg || ''));
+  const surface2 = isLight ? '#ffffff' : '#1e1b16';
+  const surface3 = isLight ? '#f3efe6' : '#26221c';
+  const controlBorder = isLight ? '#c4bba8' : '#8a7f6c';
   const css = `
-:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; }
+:root {
+  --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px;
+  --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border};
+  --surface-1: ${pal.surface}; --surface-2: ${surface2}; --surface-3: ${surface3};
+  --control-border: ${controlBorder}; --gray-400: ${pal.muted}; --gray-600: ${pal.muted};
+}
 body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero h1, .section-head h2, .nav-brand span, .product-price, .bundle-copy h2, .cart-header h3, .modal-box h3, .contact-section h2, .pdp-body h2, .product-title-btn { font-family: ${headingFont}; }
 .nav { background: ${pal.navbg}; border-bottom-color: ${pal.border}; }
 .nav-brand span, .nav-links a { color: ${pal.text}; }
-.product-card, .modal-box, .cart-panel, .pdp-panel, .why-card { background: ${pal.surface}; border-color: ${pal.border}; color: ${pal.text}; }
-.product-title-btn, .cart-item, .cart-total { color: ${pal.text}; }
-.product-body p, .section-sub, .contact-sub, .pdp-desc { color: ${pal.muted}; }
-.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${mode === 'dark' ? '#161616' : '#fff'}; color: ${pal.text}; border-color: ${pal.border}; }
+.product-card, .modal-box, .cart-panel, .pdp-panel, .why-card { background: ${pal.surface}; border-color: ${controlBorder}; color: ${pal.text}; }
+.product-title-btn, .cart-item, .cart-total, .cart-item-name, .cart-qty-val, .cart-item-price, .cart-header h3 { color: ${pal.text}; }
+.product-body p, .section-sub, .contact-sub, .pdp-desc, .cart-item-variant, .cart-remove-btn { color: ${pal.muted}; }
+.cart-qty-btn { background: ${surface3}; color: ${pal.text}; border-color: ${controlBorder}; }
+.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${isLight ? '#fff' : surface2}; color: ${pal.text}; border-color: ${controlBorder}; }
 .products-grid { grid-template-columns: repeat(auto-fill, minmax(${gridMin}px, 1fr)); }
 .product-img { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
 .product-img img { object-fit: ${imgFit}; }
@@ -1901,6 +1911,7 @@ function quickAddProduct(id) {
       variantStr: 'Unique',
       size: 'Unique',
       qty: 1,
+      image: product.image || product.images?.[0]?.url || '',
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2521,6 +2532,7 @@ window.addToCart = (id, card) => {
       variantStr,
       size: variantStr,
       qty: 1,
+      image: product.image || product.images?.[0]?.url || '',
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2608,7 +2620,13 @@ function ensureCartDelegation() {
     const inc = e.target.closest('[data-cart-inc]');
     if (inc) { e.preventDefault(); changeCartQty(inc.dataset.cartInc, 1); return; }
     const rem = e.target.closest('[data-cart-remove]');
-    if (rem) { e.preventDefault(); removeCartItem(rem.dataset.cartRemove); }
+    if (rem) { e.preventDefault(); removeCartItem(rem.dataset.cartRemove); return; }
+    const shop = e.target.closest('[data-cart-shop]');
+    if (shop) {
+      e.preventDefault();
+      document.getElementById('closeCart')?.click();
+      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 }
 
@@ -2645,12 +2663,17 @@ function updateCartUI(opts = {}) {
   }
 
   if (!cart.length) {
-    box.innerHTML = `<p style="color:#888;padding:40px 0;text-align:center">${t('cart_empty')}</p>`;
+    box.innerHTML = `<div class="cart-empty">
+      <p>${t('cart_empty')}</p>
+      <button type="button" class="btn-checkout" data-cart-shop="1">${esc(t('hero_cta'))}</button>
+    </div>`;
   } else {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const img = cartLineImage(c);
       return `<div class="cart-item" data-cart-i="${i}">
+        <div class="cart-item-thumb">${img ? `<img src="${esc(img)}" alt="">` : '<span>MENES</span>'}</div>
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -2669,21 +2692,54 @@ function updateCartUI(opts = {}) {
   renderCartUpsells();
 }
 
+function cartLineImage(c) {
+  if (c?.image) return c.image;
+  const p = (storeData?.products || []).find((x) => x.id === c?.id);
+  if (!p) return '';
+  if (p.image) return p.image;
+  const first = Array.isArray(p.images) ? p.images[0] : null;
+  if (!first) return '';
+  return typeof first === 'string' ? first : (first.url || '');
+}
+
+function shopComputeShipping(subtotal) {
+  const amount = Number(subtotal) || 0;
+  const threshold = Number(storeData?.site?.freeShippingThreshold);
+  if (Number.isFinite(threshold) && threshold > 0 && amount >= threshold) return 0;
+  const rates = Array.isArray(storeData?.site?.shippingRates) ? storeData.site.shippingRates : [];
+  const country = (document.getElementById('checkoutCountry')?.value || 'CA').trim().toUpperCase();
+  const eligible = rates.filter((r) => {
+    if (!r || r.active === false) return false;
+    const min = Number(r.minCart) || 0;
+    const maxRaw = r.maxCart;
+    const max = maxRaw == null || maxRaw === '' ? Infinity : Number(maxRaw);
+    if (amount < min || amount > max) return false;
+    const countries = String(r.countries || '').trim();
+    if (!countries) return true;
+    const list = countries.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+    return list.includes('ALL') || list.includes(country);
+  });
+  if (!eligible.length) return 0;
+  eligible.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+  return Math.max(0, Number(eligible[0].price) || 0);
+}
+
 function currentTotals() {
   const subtotal = cartSubtotal();
   const discountInfo = getActiveDiscount();
   const discount = computeDiscount(subtotal, discountInfo);
-  const taxable = Math.max(0, subtotal - discount.amount);
+  const shipping = shopComputeShipping(subtotal);
+  const taxable = Math.max(0, subtotal - discount.amount + shipping);
   const country = document.getElementById('checkoutCountry')?.value || 'CA';
   const province = document.getElementById('checkoutProvince')?.value || '';
   const tax = computeTax(country, province, taxable);
-  return { subtotal, discount, tax, total: taxable + tax.amount };
+  return { subtotal, discount, shipping, tax, total: taxable + tax.amount };
 }
 
 function renderCheckoutSummary() {
   const box = document.getElementById('checkoutSummary');
   if (!box) return;
-  const { subtotal, discount, tax, total } = currentTotals();
+  const { subtotal, discount, shipping, tax, total } = currentTotals();
   const country = document.getElementById('checkoutCountry')?.value || 'CA';
   const taxRow = tax.amount > 0
     ? `<div class="sum-row"><span>${t('taxes')} · ${esc(tax.label)}</span><span>${tax.amount.toFixed(2)}$</span></div>`
@@ -2691,6 +2747,9 @@ function renderCheckoutSummary() {
   const discRow = discount.amount > 0
     ? `<div class="sum-row sum-discount"><span>${t('discount')} · ${esc(discount.code)}</span><span>−${discount.amount.toFixed(2)}$</span></div>`
     : '';
+  const shipRow = shipping > 0
+    ? `<div class="sum-row"><span>${t('shipping')}</span><span>${shipping.toFixed(2)}$</span></div>`
+    : `<div class="sum-row"><span>${t('shipping')}</span><span>${t('free')}</span></div>`;
   box.innerHTML = `
     <div class="sum-title">${t('sum_title')}</div>
     <div class="sum-items">${cart.map((c) => {
@@ -2703,7 +2762,7 @@ function renderCheckoutSummary() {
     <div class="sum-row"><span>${t('subtotal')}</span><span>${subtotal.toFixed(2)}$</span></div>
     ${discRow}
     ${taxRow}
-    <div class="sum-row"><span>${t('shipping')}</span><span>${t('free')}</span></div>
+    ${shipRow}
     <div class="sum-row sum-total"><span>${t('grand_total')}</span><span>${total.toFixed(2)}$ CAD</span></div>`;
 }
 

@@ -194,6 +194,13 @@ exports.handler = async (event) => {
       console.error('stock decrement', e.message);
     }
 
+    try {
+      const { upsertCustomerFromOrder } = require('../lib/admin-ops');
+      upsertCustomerFromOrder(store, order);
+    } catch (e) {
+      console.error('customer upsert', e.message);
+    }
+
     let passportView = null;
     try {
       const { upsertPassportFromOrder, clientView } = require('../lib/passport');
