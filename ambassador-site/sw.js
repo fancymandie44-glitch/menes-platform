@@ -1,5 +1,5 @@
 /* MENES Ambassador — offline shell + push */
-const CACHE = 'menes-amb-v7';
+const CACHE = 'menes-amb-v8';
 const SHELL = [
   '/',
   '/index.html',

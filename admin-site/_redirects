@@ -1,0 +1,3 @@
+# /api is reserved for Netlify Functions on this static admin site.
+# Browser calls /store-api/api/... ; a function proxies that to the boutique.
+/store-api/*  /.netlify/functions/store-proxy  200!
