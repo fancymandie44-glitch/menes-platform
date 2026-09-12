@@ -1045,34 +1045,61 @@ function variantValuesList() {
   return vals;
 }
 
+const PHOTO_KINDS = ['Face', 'Dos', 'Côté', 'Lifestyle', 'Mannequin'];
+
 function renderProductImagesEditor() {
   const box = document.getElementById('productImagesEditor');
   if (!box) return;
-  if (!productImagesState.length) {
-    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Ajoute-en ci-dessous.</p>';
+  const n = productImagesState.length;
+  if (!n) {
+    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Ajoute face, dos, lifestyle ou mannequin ci-dessous — tu peux en sélectionner plusieurs d’un coup.</p>';
     return;
   }
   const variants = variantValuesList();
-  box.innerHTML = productImagesState.map((im, i) => `
+  box.innerHTML = `<p class="images-editor-head">${n} photo${n > 1 ? 's' : ''} · ↑ ↓ pour l’ordre · la 1re s’affiche en premier dans la boutique</p>`
+    + productImagesState.map((im, i) => `
     <div class="image-edit-row" data-i="${i}">
       <img src="${esc(im.url)}" alt="">
       <div class="image-edit-fields">
         ${i === 0 ? '<span class="badge-main">Principale</span>' : `<button type="button" class="btn-link makeMain" data-i="${i}">Définir principale</button>`}
-        <label class="img-var-label">Associer à la variante
-          <input list="variantOptionsList" class="image-variant" data-i="${i}" value="${esc(im.label || '')}" placeholder="ex: Olive Green">
+        <div class="img-kind-row">
+          ${PHOTO_KINDS.map((k) => `<button type="button" class="img-kind${(im.label || '') === k ? ' active' : ''}" data-i="${i}" data-kind="${esc(k)}">${esc(k)}</button>`).join('')}
+        </div>
+        <label class="img-var-label">Ou associer à une variante / couleur
+          <input list="variantOptionsList" class="image-variant" data-i="${i}" value="${esc(im.label || '')}" placeholder="ex: Olive Green, Lifestyle, Dos">
         </label>
       </div>
       <div class="image-edit-actions">
+        <button type="button" class="btn-link moveImgUp" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
+        <button type="button" class="btn-link moveImgDown" data-i="${i}" ${i === n - 1 ? 'disabled' : ''} aria-label="Descendre">↓</button>
         <button type="button" class="btn-link studioImg" data-i="${i}">Studio</button>
         <button type="button" class="btn-link recropImg" data-i="${i}">Recadrer</button>
         <button type="button" class="del-row delImg" data-i="${i}">Suppr.</button>
       </div>
     </div>`).join('')
-    + `<datalist id="variantOptionsList">${variants.map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
+    + `<datalist id="variantOptionsList">${[...new Set([...PHOTO_KINDS, ...variants])].map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
 
   box.querySelectorAll('.image-variant').forEach((inp) => inp.addEventListener('input', () => { productImagesState[+inp.dataset.i].label = inp.value; }));
+  box.querySelectorAll('.img-kind').forEach((b) => b.addEventListener('click', () => {
+    const i = +b.dataset.i;
+    const kind = b.dataset.kind || '';
+    productImagesState[i].label = productImagesState[i].label === kind ? '' : kind;
+    renderProductImagesEditor();
+  }));
   box.querySelectorAll('.delImg').forEach((b) => b.addEventListener('click', () => { productImagesState.splice(+b.dataset.i, 1); renderProductImagesEditor(); }));
   box.querySelectorAll('.makeMain').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.i; const [im] = productImagesState.splice(i, 1); productImagesState.unshift(im); renderProductImagesEditor(); }));
+  box.querySelectorAll('.moveImgUp').forEach((b) => b.addEventListener('click', () => {
+    const i = +b.dataset.i;
+    if (i < 1) return;
+    [productImagesState[i - 1], productImagesState[i]] = [productImagesState[i], productImagesState[i - 1]];
+    renderProductImagesEditor();
+  }));
+  box.querySelectorAll('.moveImgDown').forEach((b) => b.addEventListener('click', () => {
+    const i = +b.dataset.i;
+    if (i >= productImagesState.length - 1) return;
+    [productImagesState[i], productImagesState[i + 1]] = [productImagesState[i + 1], productImagesState[i]];
+    renderProductImagesEditor();
+  }));
   box.querySelectorAll('.recropImg').forEach((b) => b.addEventListener('click', () => {
     const i = +b.dataset.i;
     openCropper(productImagesState[i].url, defaultAspectFor(), (dataUrl) => { productImagesState[i].url = dataUrl; renderProductImagesEditor(); }, { studio: false });
@@ -2360,13 +2387,41 @@ function defaultAspectFor() {
   return storeData?.site?.theme?.productAspect || 'square';
 }
 
-// Product photo upload → studio (fond + crop) → append to the product gallery
+// Product photos: multi-file add (lifestyle / sides) or optional studio crop
 (function initProductPhotoUpload() {
   const zone = document.getElementById('productUploadZone');
   const fileInput = document.getElementById('productImageFile');
+  const studioZone = document.getElementById('productStudioZone');
+  const studioInput = document.getElementById('productImageStudioFile');
+
+  async function addImageFiles(fileList) {
+    const files = [...(fileList || [])].filter((f) => f && String(f.type || '').startsWith('image/'));
+    if (!files.length) return;
+    for (const file of files) {
+      const url = await compressImage(file, 1400, 0.82);
+      productImagesState.push({ url, label: '' });
+    }
+    renderProductImagesEditor();
+    toast(files.length > 1 ? `${files.length} photos ajoutées` : 'Photo ajoutée');
+  }
+
   zone?.addEventListener('click', () => fileInput?.click());
-  fileInput?.addEventListener('change', () => {
-    if (!fileInput.files[0]) return;
+  zone?.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone?.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    addImageFiles(e.dataTransfer?.files);
+  });
+  fileInput?.addEventListener('change', async () => {
+    await addImageFiles(fileInput.files);
+    fileInput.value = '';
+  });
+
+  studioZone?.addEventListener('click', () => studioInput?.click());
+  studioInput?.addEventListener('change', () => {
+    const file = studioInput.files && studioInput.files[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
       openCropper(e.target.result, defaultAspectFor(), (dataUrl) => {
@@ -2374,8 +2429,8 @@ function defaultAspectFor() {
         renderProductImagesEditor();
       }, { studio: true });
     };
-    reader.readAsDataURL(fileInput.files[0]);
-    fileInput.value = '';
+    reader.readAsDataURL(file);
+    studioInput.value = '';
   });
 })();
 

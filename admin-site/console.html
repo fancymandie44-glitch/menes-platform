@@ -806,10 +806,20 @@
         <div class="modal-subhead">Stock par variante <small>(ex: Vert = 0 → les clients voient « épuisé » pour le vert seulement)</small></div>
         <div id="variantsStockEditor" class="variants-stock-editor"></div>
 
-        <div class="modal-subhead">Photos <small>(la 1<sup>re</sup> = principale · studio : fond, recadrage · associe une photo à une variante)</small></div>
+        <div class="modal-subhead">Photos <small>Face, dos, lifestyle, mannequins — autant que tu veux · la 1<sup>re</sup> = principale</small></div>
+        <p class="hint">Sélectionne plusieurs fichiers d’un coup. Pastille Face / Dos / Lifestyle, ou associe une photo à une couleur.</p>
         <div id="productImagesEditor" class="images-editor"></div>
         <div class="images-add-row">
-          <div class="upload-zone small" id="productUploadZone"><span>Ajouter une photo (fond + crop)</span><input type="file" id="productImageFile" accept="image/*" hidden></div>
+          <div class="upload-zone small" id="productUploadZone">
+            <span>Ajouter plusieurs photos</span>
+            <small>Côtés, lifestyle, mannequins — telles quelles</small>
+            <input type="file" id="productImageFile" accept="image/*" multiple hidden>
+          </div>
+          <div class="upload-zone small" id="productStudioZone">
+            <span>Studio fond + recadrage</span>
+            <small>Une photo à la fois</small>
+            <input type="file" id="productImageStudioFile" accept="image/*" hidden>
+          </div>
           <div class="url-add">
             <input type="url" id="productImageUrl" placeholder="ou coller une URL d'image">
             <button type="button" id="addImageUrlBtn" class="btn-outline btn-sm">Ajouter l'URL</button>
@@ -931,7 +941,7 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js?v=20260912d"></script>
-  <script src="console.js?v=20260912d"></script>
+  <script src="config.js?v=20260912e"></script>
+  <script src="console.js?v=20260912e"></script>
 </body>
 </html>

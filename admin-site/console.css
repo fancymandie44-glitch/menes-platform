@@ -381,15 +381,23 @@ a.btn-outline { text-decoration: none; display: inline-block; color: var(--text)
 .gallery-edit-fields input { margin-top: 0 !important; }
 .gallery-edit-row .gallery-upload { margin-top: 0; min-height: 88px; display: grid; place-items: center; }
 .gallery-edit-row .gallery-preview { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; margin: 0; }
-.image-edit-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
-.image-edit-row img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
-.image-edit-fields { display: flex; flex-direction: column; gap: 4px; }
+.image-edit-row { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; align-items: start; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+.image-edit-row img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
+.image-edit-fields { display: flex; flex-direction: column; gap: 6px; }
+.images-editor-head { margin: 0 0 8px; font-size: 0.78rem; color: var(--muted, #888); }
+.img-kind-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.img-kind { font: inherit; font-size: 0.68rem; font-weight: 600; padding: 3px 8px; border: 1px solid var(--border); background: transparent; border-radius: 999px; cursor: pointer; color: inherit; }
+.img-kind.active { border-color: var(--gold, #c9a84c); color: var(--gold, #c9a84c); }
 .img-var-label { margin: 0 !important; font-size: 0.72rem !important; }
 .img-var-label input { margin-top: 2px !important; padding: 6px 8px !important; }
 .badge-main { font-size: 0.72rem; font-weight: 700; color: var(--green); }
 .btn-link { background: none; border: none; color: var(--blue); cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 600; padding: 2px; text-align: left; }
-.image-edit-actions { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.btn-link:disabled { opacity: 0.35; cursor: default; }
+.image-edit-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 160px; justify-content: flex-end; }
 .images-add-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.images-add-row .url-add { grid-column: 1 / -1; }
+.upload-zone.small small { display: block; margin-top: 4px; opacity: 0.7; font-size: 0.72rem; }
+.upload-zone.dragover { outline: 2px dashed var(--gold, #c9a84c); }
 .url-add { display: flex; flex-direction: column; gap: 6px; }
 .url-add input { margin-top: 0 !important; }
 
