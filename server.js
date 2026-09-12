@@ -9,10 +9,16 @@ const {
   clearSessionCookieHeader,
 } = require('./lib/admin-auth');
 const { DEFAULT_PLATFORM } = require('./lib/platform');
+const platform = require('./lib/platform');
 const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
 const port = Number(process.env.PORT) || 8888;
+
+platform.setLambdaEvent = () => {};
+platform.resolveSiteId = async () => 'menes';
+platform.readSiteStore = async () => readStoreFile(root);
+platform.writeSiteStore = async (_id, data) => writeStoreFile(root, data);
 
 const types = {
   '.html': 'text/html; charset=utf-8',
