@@ -2234,6 +2234,7 @@ function renderProducts() {
       ? `<div class="product-thumbs">${imgs.map((im, i) => `
           <button type="button" class="pg-thumb ${i === 0 ? 'active' : ''}" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}" aria-label="${esc(im.label || p.name)}">
             <img src="${esc(im.url)}" alt="" loading="lazy">
+            ${im.label ? `<span class="pg-thumb-label">${esc(im.label)}</span>` : ''}
           </button>`).join('')}</div>`
       : '';
 
@@ -2376,6 +2377,19 @@ function openPdp(id) {
   `;
   const imgEl = document.getElementById('pdpMainImg');
   const videoEl = document.getElementById('pdpVideo');
+  const showPdpImage = (url) => {
+    if (videoEl) {
+      videoEl.classList.add('hidden');
+      videoEl.pause?.();
+    }
+    if (imgEl && url) {
+      imgEl.src = url;
+      imgEl.classList.remove('hidden');
+    }
+    document.getElementById('pdpThumbs')?.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('active', b.dataset.url === url);
+    });
+  };
   if (product.videoUrl && videoEl) {
     videoEl.src = product.videoUrl;
     videoEl.classList.remove('hidden');
@@ -2390,8 +2404,9 @@ function openPdp(id) {
     else { imgEl.removeAttribute('src'); imgEl.classList.add('hidden'); }
   }
   document.getElementById('pdpThumbs').innerHTML = imgs.map((im, i) => `
-    <button type="button" class="${i === 0 && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}">
+    <button type="button" class="${i === 0 && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}" aria-label="${esc(im.label || product.name)}">
       <img src="${esc(im.url)}" alt="">
+      ${im.label ? `<span class="pdp-thumb-label">${esc(im.label)}</span>` : ''}
     </button>`).join('')
     + (product.videoUrl ? `<button type="button" class="active" data-video="${esc(product.videoUrl)}">Video</button>` : '');
   document.getElementById('pdpThumbs').querySelectorAll('button').forEach((btn) => {
@@ -2402,9 +2417,7 @@ function openPdp(id) {
         videoEl.classList.remove('hidden');
         imgEl.classList.add('hidden');
       } else {
-        if (videoEl) { videoEl.classList.add('hidden'); }
-        imgEl.src = btn.dataset.url;
-        imgEl.classList.remove('hidden');
+        showPdpImage(btn.dataset.url);
       }
     });
   });
@@ -2420,6 +2433,9 @@ function openPdp(id) {
       if (chip.classList.contains('is-oos') || chip.disabled) return;
       opt.querySelectorAll('.opt-chip').forEach((c) => c.classList.remove('active'));
       chip.classList.add('active');
+      const val = (chip.dataset.value || '').toLowerCase();
+      const match = imgs.find((im) => String(im.label || '').toLowerCase() === val);
+      if (match) showPdpImage(match.url);
       applyVariantStockUi(document.getElementById('pdpPanel'), product);
       renderPdpUrgency(product);
     }));
