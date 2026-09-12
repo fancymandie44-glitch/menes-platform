@@ -58,6 +58,18 @@
   status = 200
 
 [[redirects]]
+  from = "/api/v1"
+  to = "/.netlify/functions/v1"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/v1/*"
+  to = "/.netlify/functions/v1"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200

@@ -4,6 +4,7 @@ const VIP_KEY = 'menes_vip';
 const PROMO_KEY = 'menes_promo_code';
 const ATTR_KEY = 'menes_ambassador_attr';
 const WISHLIST_KEY = 'menes_wishlist';
+const VIEWED_KEY = 'menes_recently_viewed';
 const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
 const PASSPORT_EMAIL_KEY = 'menes_passport_email';
 const PASSPORT_TOKEN_KEY = 'menes_passport_token';
@@ -180,6 +181,7 @@ const I18N = {
     search_label: 'Rechercher', search_placeholder: 'Rechercher par nom, description ou catégorie...',
     sort_label: 'Trier par', sort_featured: 'En vedette', sort_price_asc: 'Prix croissant', sort_price_desc: 'Prix décroissant',
     complete_look: 'Complète le look', no_results: 'Aucun produit ne correspond à ta recherche.',
+    recent_title: 'Vu récemment',
     badge_featured: 'Populaire', view_product: 'Voir le produit',
     badge_preorder: 'Précommande',
     preorder_btn: 'Précommander',
@@ -301,6 +303,7 @@ const I18N = {
     search_label: 'Search', search_placeholder: 'Search by name, description, or category...',
     sort_label: 'Sort by', sort_featured: 'Featured', sort_price_asc: 'Price low to high', sort_price_desc: 'Price high to low',
     complete_look: 'Complete the look', no_results: 'No products match your search.',
+    recent_title: 'Recently viewed',
     badge_featured: 'Popular', view_product: 'View product',
     badge_preorder: 'Pre-order',
     preorder_btn: 'Pre-order',
@@ -2203,12 +2206,73 @@ function applyVariantStockUi(root, product) {
   }
 }
 
+function rememberViewed(id) {
+  const pid = String(id || '');
+  if (!pid) return;
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem(VIEWED_KEY) || '[]'); } catch { ids = []; }
+  if (!Array.isArray(ids)) ids = [];
+  ids = [pid, ...ids.filter((x) => x !== pid)].slice(0, 8);
+  try { localStorage.setItem(VIEWED_KEY, JSON.stringify(ids)); } catch { /* ignore */ }
+}
+
+function viewedProducts(excludeId) {
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem(VIEWED_KEY) || '[]'); } catch { ids = []; }
+  const catalog = storeData?.products || [];
+  return ids
+    .filter((id) => id && id !== excludeId)
+    .map((id) => catalog.find((p) => p && p.id === id && p.active !== false))
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function fillViewedRail(listEl, products) {
+  if (!listEl) return;
+  listEl.innerHTML = products.map((p) => {
+    const thumb = productImages(p)[0]?.url || '';
+    return `<button type="button" class="pdp-rec-card" data-open="${esc(p.id)}" aria-label="${esc(p.name)}">
+      <span class="pdp-rec-img">${thumb ? `<img src="${esc(thumb)}" alt="" loading="lazy">` : '<span class="placeholder">◆</span>'}</span>
+      <span class="pdp-rec-meta">
+        <span class="pdp-rec-name">${esc(p.name)}</span>
+        <span class="pdp-rec-price">${p.price}$ CAD</span>
+      </span>
+    </button>`;
+  }).join('');
+  listEl.querySelectorAll('[data-open]').forEach((btn) => {
+    btn.addEventListener('click', () => openPdp(btn.dataset.open));
+  });
+}
+
+function renderRecentlyViewed() {
+  const wrap = document.getElementById('recentViewed');
+  const list = document.getElementById('recentViewedList');
+  if (!wrap || !list) return;
+  const items = viewedProducts();
+  wrap.classList.toggle('hidden', !items.length);
+  const title = wrap.querySelector('.recent-viewed-title');
+  if (title) title.textContent = t('recent_title');
+  fillViewedRail(list, items);
+}
+
+function renderPdpRecentlyViewed(currentId) {
+  const wrap = document.getElementById('pdpRecent');
+  const list = document.getElementById('pdpRecentList');
+  if (!wrap || !list) return;
+  const items = viewedProducts(currentId);
+  wrap.classList.toggle('hidden', !items.length);
+  const title = wrap.querySelector('.pdp-recs-title');
+  if (title) title.textContent = t('recent_title');
+  fillViewedRail(list, items);
+}
+
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
   const products = getVisibleProducts();
 
   if (!products.length) {
     grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#888;padding:60px 0">${currentFilter === 'wishlist' ? t('wishlist_empty') : (searchQuery.trim() ? t('no_results') : t('coming'))}</p>`;
+    renderRecentlyViewed();
     return;
   }
 
@@ -2283,6 +2347,7 @@ function renderProducts() {
 
   grid.querySelectorAll('.product-card').forEach(wireProductCard);
   observeRevealNodes([...grid.querySelectorAll('.product-card')]);
+  renderRecentlyViewed();
 }
 
 function wireProductCard(card) {
@@ -2446,6 +2511,8 @@ function openPdp(id) {
   renderPdpUrgency(product);
   renderPdpReviews(product.id);
   renderPdpRecommendations(product);
+  rememberViewed(id);
+  renderPdpRecentlyViewed(id);
   document.getElementById('pdpPanel').classList.remove('hidden');
   document.getElementById('pdpOverlay').classList.remove('hidden');
   document.getElementById('pdpPanel').setAttribute('aria-hidden', 'false');

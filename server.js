@@ -9,10 +9,16 @@ const {
   clearSessionCookieHeader,
 } = require('./lib/admin-auth');
 const { DEFAULT_PLATFORM } = require('./lib/platform');
+const platform = require('./lib/platform');
 const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
 const port = Number(process.env.PORT) || 8888;
+
+platform.setLambdaEvent = () => {};
+platform.resolveSiteId = async () => 'menes';
+platform.readSiteStore = async () => readStoreFile(root);
+platform.writeSiteStore = async (_id, data) => writeStoreFile(root, data);
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -92,6 +98,31 @@ http.createServer(async (req, res) => {
       return sendJson(res, 200, DEFAULT_PLATFORM);
     }
     return sendJson(res, 405, { error: 'Method not allowed' });
+  }
+
+  if (urlPath === '/api/keys' || urlPath === '/api/merchant-jobs' || urlPath === '/api/v1' || urlPath.startsWith('/api/v1/')) {
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Password, Authorization, X-Menes-Api-Key, X-Site-Id',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+      });
+      return res.end();
+    }
+    const body = ['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) ? await readBody(req) : '';
+    const event = asEvent(req, { body, url });
+    event.path = urlPath;
+    event.rawUrl = `http://localhost:${port}${urlPath}${url.search}`;
+    const handler = urlPath === '/api/keys'
+      ? require('./api/keys').handler
+      : urlPath === '/api/merchant-jobs'
+        ? require('./api/merchant-jobs').handler
+        : require('./api/v1').handler;
+    const result = await handler(event);
+    let payload = {};
+    try { payload = JSON.parse(result.body || '{}'); } catch { payload = { error: result.body }; }
+    const extra = { ...(result.headers || {}) };
+    delete extra['Content-Type'];
+    return sendJson(res, result.statusCode, payload, extra);
   }
 
   if (urlPath === '/api/store') {

@@ -71,6 +71,7 @@
         <button class="nav-btn" data-tab="domains">Domaines</button>
         <button class="nav-btn" data-tab="payments">Paiements</button>
         <button class="nav-btn" data-tab="settings">Réglages</button>
+        <button class="nav-btn" data-tab="developers">Apps &amp; API</button>
         <button class="nav-btn" data-tab="publish">Déploiement</button>
       </nav>
 
@@ -92,6 +93,9 @@
           </div>
         </div>
         <div class="topbar-right">
+          <button type="button" id="omniToggle" class="theme-toggle" title="Rechercher (Ctrl K)">
+            <span class="theme-toggle-text">Rechercher</span>
+          </button>
           <button type="button" id="themeToggle" class="theme-toggle" aria-label="Changer le thème">
             <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
             <span id="themeToggleLabel" class="theme-toggle-text">Clair</span>
@@ -172,8 +176,17 @@
                 <button onclick="switchTab('inventory')" class="quick-card">Inventaire</button>
                 <button onclick="switchTab('customers')" class="quick-card">Clients</button>
                 <button onclick="switchTab('marketing')" class="quick-card">Code promo</button>
+                <button onclick="switchTab('developers')" class="quick-card">Clés API / IA</button>
                 <button onclick="switchTab('design')" class="quick-card">Modifier design</button>
               </div>
+            </div>
+            <div class="card today-card">
+              <div class="chart-header">
+                <h3>À faire aujourd’hui</h3>
+                <button type="button" id="runJobsBtn" class="btn-outline btn-sm">Relancer paniers &amp; avis</button>
+              </div>
+              <p class="hint" id="jobsHint" style="margin-bottom:10px">Commandes à expédier, paiements incomplets, stock. Les relances email partent d’ici (pas de spam : une fois par commande).</p>
+              <div id="todayWork" class="mini-list"></div>
             </div>
             <div class="card">
               <h3>Attention</h3>
@@ -239,12 +252,16 @@
               <option value="">Tous les stocks</option>
               <option value="low">Stock bas (≤ 5)</option>
               <option value="oos">Rupture</option>
-              <option value="hidden">Masqués</option>
+              <option value="hidden">Brouillons (masqués)</option>
             </select>
             <div class="bulk-bar hidden" id="productBulkBar">
               <span id="productBulkCount">0 sélectionné</span>
-              <button type="button" class="btn-outline btn-sm" id="bulkActivateBtn">Activer</button>
-              <button type="button" class="btn-outline btn-sm" id="bulkHideBtn">Masquer</button>
+              <button type="button" class="btn-outline btn-sm" id="bulkActivateBtn">Publier</button>
+              <button type="button" class="btn-outline btn-sm" id="bulkHideBtn">Brouillon</button>
+              <input type="number" id="bulkPriceInput" class="bulk-price-input" min="0" step="0.01" placeholder="Prix $">
+              <button type="button" class="btn-outline btn-sm" id="bulkPriceBtn">Prix</button>
+              <input type="number" id="bulkPctInput" class="bulk-price-input" step="1" placeholder="-10%">
+              <button type="button" class="btn-outline btn-sm" id="bulkPctBtn">Drop %</button>
             </div>
           </div>
           <div id="productsList" class="data-table-wrap"></div>
@@ -763,6 +780,51 @@
           </div>
         </section>
 
+        <!-- Developers / API keys -->
+        <section id="tab-developers" class="tab">
+          <h2>Apps &amp; API</h2>
+          <p class="hint">Crée une clé pour une IA ou un script. Elle lit et met à jour produits, commandes et stock sans le mot de passe admin. La clé secrète n’est affichée qu’une fois.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Nouvelle clé</h3>
+              <label>Nom
+                <input type="text" id="apiKeyName" placeholder="ex: Assistant IA, Zapier, inventaire">
+              </label>
+              <p class="hint" style="margin-top:8px">Permissions</p>
+              <div id="apiKeyScopes" class="scope-grid"></div>
+              <div class="publish-actions" style="margin-top:14px">
+                <button type="button" id="apiKeyPresetBtn" class="btn-outline btn-sm">Preset IA gestion</button>
+                <button type="button" id="apiKeyCreateBtn" class="btn-primary btn-sm">Créer la clé</button>
+              </div>
+              <div id="apiKeySecretBox" class="api-secret-box hidden">
+                <strong>Copie cette clé maintenant — elle ne sera plus visible.</strong>
+                <code id="apiKeySecretValue"></code>
+                <button type="button" id="apiKeyCopyBtn" class="btn-outline btn-sm">Copier</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Pour une IA</h3>
+              <p class="hint">Donne-lui la clé + cette base. Elle n’a pas besoin du mot de passe console.</p>
+              <pre class="api-docs" id="apiKeyDocs">Authorization: Bearer menes_live_…
+Base: https://www.mymenes.com/api/v1
+
+GET  /api/v1                 documentation
+GET  /api/v1/products
+POST /api/v1/products        { "name", "price", "stock" }
+PATCH /api/v1/products/:id
+GET  /api/v1/orders
+PATCH /api/v1/orders/:id     { "status": "shipped", "trackingNumber" }
+GET  /api/v1/inventory
+PATCH /api/v1/inventory      { "productId", "stock" }
+GET  /api/v1/customers</pre>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Clés existantes</h3>
+            <div id="apiKeysList"><p class="hint">Chargement…</p></div>
+          </div>
+        </section>
+
         <!-- Publish -->
         <section id="tab-publish" class="tab">
           <h2>Déploiement</h2>
@@ -940,8 +1002,15 @@
     </div>
   </div>
 
+  <div id="omniSearch" class="omni hidden">
+    <div class="omni-box">
+      <input type="search" id="omniInput" placeholder="Produits, commandes, clients… (Entrée)" autocomplete="off">
+      <div id="omniResults" class="omni-results"></div>
+    </div>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js"></script>
-  <script src="console.js"></script>
+  <script src="config.js?v=20260912g"></script>
+  <script src="console.js?v=20260912g"></script>
 </body>
 </html>

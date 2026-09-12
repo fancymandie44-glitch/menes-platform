@@ -1178,3 +1178,6 @@ body.scroll-locked .pdp-body {
 .upsell-img img { width: 100%; height: 100%; object-fit: cover; }
 .upsell-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
 .modal-x { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--white); font-size: 1.4rem; cursor: pointer; }
+.recent-viewed { margin-top: 48px; }
+.recent-viewed.hidden { display: none; }
+.recent-viewed-title { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
