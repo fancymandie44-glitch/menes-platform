@@ -2,8 +2,8 @@
   publish = "."
 
 [[redirects]]
-  from = "/api/*"
-  to = "https://boutiquemenes.netlify.app/api/:splat"
+  from = "/store-api/*"
+  to = "https://boutiquemenes.netlify.app/:splat"
   status = 200
   force = true
 

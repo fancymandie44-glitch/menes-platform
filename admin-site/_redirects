@@ -1,3 +1,3 @@
-# Internal Netlify rewrite (must target the .netlify.app host, not the custom domain).
-# 200! = proxy; the browser stays on menesadmin so SameSite=Lax cookies work.
-/api/*  https://boutiquemenes.netlify.app/api/:splat  200!
+# /api is reserved for Netlify Functions on this site (returns "Function not found").
+# Browser calls /store-api/api/... (see config.js API_BASE); we proxy that to the boutique.
+/store-api/*  https://boutiquemenes.netlify.app/:splat  200!
