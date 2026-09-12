@@ -1,9 +1,10 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/store-api/*"
-  to = "https://boutiquemenes.netlify.app/:splat"
+  to = "/.netlify/functions/store-proxy"
   status = 200
   force = true
 

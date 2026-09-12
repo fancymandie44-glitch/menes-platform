@@ -12,6 +12,8 @@ copy /Y admin-site\console.js "%OUT%\console.js" >nul
 copy /Y admin-site\config.js "%OUT%\config.js" >nul
 copy /Y admin-site\netlify.toml "%OUT%\netlify.toml" >nul
 copy /Y admin-site\_redirects "%OUT%\_redirects" >nul
+mkdir "%OUT%\netlify\functions" >nul 2>nul
+copy /Y admin-site\netlify\functions\store-proxy.js "%OUT%\netlify\functions\store-proxy.js" >nul
 
 echo.
 echo  ==========================================
