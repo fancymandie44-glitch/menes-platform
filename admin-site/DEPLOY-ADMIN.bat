@@ -7,10 +7,11 @@ if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
 
 copy /Y admin-site\index.html "%OUT%\index.html" >nul
-copy /Y console.css "%OUT%\console.css" >nul
-copy /Y console.js "%OUT%\console.js" >nul
-copy /Y config.js "%OUT%\config.js" >nul
+copy /Y admin-site\console.css "%OUT%\console.css" >nul
+copy /Y admin-site\console.js "%OUT%\console.js" >nul
+copy /Y admin-site\config.js "%OUT%\config.js" >nul
 copy /Y admin-site\netlify.toml "%OUT%\netlify.toml" >nul
+copy /Y admin-site\_redirects "%OUT%\_redirects" >nul
 
 echo.
 echo  ==========================================
