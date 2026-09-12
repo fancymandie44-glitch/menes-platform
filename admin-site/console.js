@@ -69,7 +69,8 @@ const TAB_TITLES = {
   products: 'Produits', inventory: 'Inventaire', collections: 'Collections', orders: 'Commandes',
   customers: 'Clients', marketing: 'Marketing', ambassadors: 'Ambassadeurs',
   appearance: 'Apparence & thème', design: 'Design & contenu',
-  sections: 'Sections page', payments: 'Paiements', settings: 'Réglages', publish: 'Déploiement',
+  sections: 'Sections page', payments: 'Paiements', settings: 'Réglages',
+  developers: 'Apps & API', publish: 'Déploiement',
 };
 
 /** Session via httpOnly cookie — password is not stored in the browser after login. */
@@ -303,6 +304,7 @@ function switchTab(tab) {
     sites: renderSites, domains: renderDomains, design: loadDesignForm, appearance: loadAppearanceForm,
     sections: () => { renderSectionEditors(); renderGalleryEditor(); },
     settings: renderSettings,
+    developers: renderDevelopers,
   };
   // Paint tab chrome first, then heavy content — feels instant on click
   requestAnimationFrame(() => {
@@ -3688,6 +3690,117 @@ document.getElementById('saveShippingBtn')?.addEventListener('click', async () =
   const fs = document.getElementById('siteFreeShipping');
   if (fs) fs.value = storeData.site.freeShippingThreshold;
   await saveStore('Livraison sauvegardée');
+});
+
+const API_SCOPE_LABELS = {
+  'products:read': 'Lire produits',
+  'products:write': 'Écrire produits',
+  'orders:read': 'Lire commandes',
+  'orders:write': 'Écrire commandes',
+  'inventory:write': 'Stock',
+  'customers:read': 'Lire clients',
+  'store:read': 'Lire boutique',
+  'store:write': 'Écrire boutique complète',
+};
+const API_AI_PRESET = ['products:read', 'products:write', 'orders:read', 'orders:write', 'inventory:write', 'customers:read', 'store:read'];
+let apiKeysCache = [];
+
+function selectedApiScopes() {
+  return [...document.querySelectorAll('#apiKeyScopes input[type=checkbox]:checked')].map((el) => el.value);
+}
+
+function paintApiScopeChecks(selected) {
+  const box = document.getElementById('apiKeyScopes');
+  if (!box) return;
+  const chosen = selected || API_AI_PRESET;
+  box.innerHTML = Object.entries(API_SCOPE_LABELS).map(([value, label]) => `
+    <label><input type="checkbox" value="${esc(value)}" ${chosen.includes(value) ? 'checked' : ''}> ${esc(label)}</label>
+  `).join('');
+}
+
+async function renderDevelopers() {
+  paintApiScopeChecks(selectedApiScopes().length ? selectedApiScopes() : API_AI_PRESET);
+  const list = document.getElementById('apiKeysList');
+  if (!list) return;
+  try {
+    const res = await apiFetch('/api/keys');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Impossible de charger les clés');
+    apiKeysCache = data.keys || [];
+    if (!apiKeysCache.length) {
+      list.innerHTML = '<p class="hint">Aucune clé. Crée-en une pour brancher une IA.</p>';
+      return;
+    }
+    list.innerHTML = apiKeysCache.map((k) => `
+      <div class="api-key-row">
+        <div>
+          <strong>${esc(k.name)}</strong>
+          <div class="muted">${esc(k.prefix)}…</div>
+        </div>
+        <div class="muted">${k.revokedAt ? 'Révoquée' : 'Active'}<br>${esc((k.createdAt || '').slice(0, 10))}</div>
+        <div class="api-key-scopes">${(k.scopes || []).map((s) => `<span>${esc(API_SCOPE_LABELS[s] || s)}</span>`).join('')}</div>
+        <div>${k.revokedAt ? '' : `<button type="button" class="btn-outline btn-sm" data-revoke="${esc(k.id)}">Révoquer</button>`}</div>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-revoke]').forEach((btn) => {
+      btn.addEventListener('click', () => revokeApiKey(btn.dataset.revoke));
+    });
+  } catch (err) {
+    list.innerHTML = `<p class="hint">${esc(err.message)}</p>`;
+  }
+}
+
+async function createApiKey() {
+  const name = document.getElementById('apiKeyName')?.value.trim() || 'Clé API';
+  const scopes = selectedApiScopes();
+  try {
+    const res = await apiFetch('/api/keys', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'create', name, scopes }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Création impossible');
+    const box = document.getElementById('apiKeySecretBox');
+    const val = document.getElementById('apiKeySecretValue');
+    if (box && val) {
+      val.textContent = data.secret;
+      box.classList.remove('hidden');
+    }
+    if (document.getElementById('apiKeyName')) document.getElementById('apiKeyName').value = '';
+    toast('Clé créée — copie-la maintenant', 'ok');
+    await renderDevelopers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function revokeApiKey(id) {
+  if (!confirm('Révoquer cette clé ? Les scripts / IA qui l’utilisent cesseront de fonctionner.')) return;
+  try {
+    const res = await apiFetch('/api/keys', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'revoke', id }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Révocation impossible');
+    toast('Clé révoquée', 'ok');
+    await renderDevelopers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+document.getElementById('apiKeyPresetBtn')?.addEventListener('click', () => paintApiScopeChecks(API_AI_PRESET));
+document.getElementById('apiKeyCreateBtn')?.addEventListener('click', createApiKey);
+document.getElementById('apiKeyCopyBtn')?.addEventListener('click', async () => {
+  const secret = document.getElementById('apiKeySecretValue')?.textContent || '';
+  if (!secret) return;
+  try {
+    await navigator.clipboard.writeText(secret);
+    toast('Clé copiée', 'ok');
+  } catch {
+    toast('Sélectionne la clé et copie-la (Ctrl+C)', 'error');
+  }
 });
 
 // Export/import

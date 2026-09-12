@@ -5,6 +5,8 @@
 /admin               /console.html        200
 /admin/              /console.html        200
 /paiement            /paiement.html       200
+/api/v1              /.netlify/functions/v1      200
+/api/v1/*            /.netlify/functions/v1      200
 /api/*               /.netlify/functions/:splat  200
 /r/*                 /index.html          200
 /*                   /index.html          200

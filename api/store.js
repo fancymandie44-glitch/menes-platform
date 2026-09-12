@@ -1,6 +1,7 @@
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent, getBlobStore, storeKey } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
-const { checkAdminAuth } = require('../lib/admin-auth');
+const { authorizeAdmin } = require('../lib/admin-auth');
+const { hasScopes } = require('../lib/api-keys');
 const { readProgram, mergeAmbassadorDiscounts } = require('../lib/ambassador-data');
 const { publicStore } = require('../lib/public-catalog');
 
@@ -42,8 +43,8 @@ exports.handler = async (event) => {
 
   try {
     const siteId = await resolveSiteId(host, params.site || headerSiteId);
-    const auth = checkAdminAuth(event);
-    const isAdmin = auth.ok;
+    const auth = await authorizeAdmin(event);
+    const isAdmin = auth.ok && (auth.via !== 'api_key' || hasScopes(auth, ['store:read']));
 
     if (event.httpMethod === 'GET') {
       const data = await readSiteStore(siteId);
@@ -84,6 +85,9 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'POST') {
       if (!auth.ok) {
         return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
+      }
+      if (auth.via === 'api_key' && !hasScopes(auth, ['store:write'])) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Clé API : permission insuffisante (store:write)' }) };
       }
       const payload = JSON.parse(event.body || '{}');
       const targetSite = await resolveSiteId(host, payload._siteId || headerSiteId);

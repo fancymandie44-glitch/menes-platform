@@ -71,6 +71,7 @@
         <button class="nav-btn" data-tab="domains">Domaines</button>
         <button class="nav-btn" data-tab="payments">Paiements</button>
         <button class="nav-btn" data-tab="settings">Réglages</button>
+        <button class="nav-btn" data-tab="developers">Apps &amp; API</button>
         <button class="nav-btn" data-tab="publish">Déploiement</button>
       </nav>
 
@@ -172,6 +173,7 @@
                 <button onclick="switchTab('inventory')" class="quick-card">Inventaire</button>
                 <button onclick="switchTab('customers')" class="quick-card">Clients</button>
                 <button onclick="switchTab('marketing')" class="quick-card">Code promo</button>
+                <button onclick="switchTab('developers')" class="quick-card">Clés API / IA</button>
                 <button onclick="switchTab('design')" class="quick-card">Modifier design</button>
               </div>
             </div>
@@ -763,6 +765,51 @@
           </div>
         </section>
 
+        <!-- Developers / API keys -->
+        <section id="tab-developers" class="tab">
+          <h2>Apps &amp; API</h2>
+          <p class="hint">Crée une clé pour une IA ou un script. Elle lit et met à jour produits, commandes et stock sans le mot de passe admin. La clé secrète n’est affichée qu’une fois.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Nouvelle clé</h3>
+              <label>Nom
+                <input type="text" id="apiKeyName" placeholder="ex: Assistant IA, Zapier, inventaire">
+              </label>
+              <p class="hint" style="margin-top:8px">Permissions</p>
+              <div id="apiKeyScopes" class="scope-grid"></div>
+              <div class="publish-actions" style="margin-top:14px">
+                <button type="button" id="apiKeyPresetBtn" class="btn-outline btn-sm">Preset IA gestion</button>
+                <button type="button" id="apiKeyCreateBtn" class="btn-primary btn-sm">Créer la clé</button>
+              </div>
+              <div id="apiKeySecretBox" class="api-secret-box hidden">
+                <strong>Copie cette clé maintenant — elle ne sera plus visible.</strong>
+                <code id="apiKeySecretValue"></code>
+                <button type="button" id="apiKeyCopyBtn" class="btn-outline btn-sm">Copier</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Pour une IA</h3>
+              <p class="hint">Donne-lui la clé + cette base. Elle n’a pas besoin du mot de passe console.</p>
+              <pre class="api-docs" id="apiKeyDocs">Authorization: Bearer menes_live_…
+Base: https://www.mymenes.com/api/v1
+
+GET  /api/v1                 documentation
+GET  /api/v1/products
+POST /api/v1/products        { "name", "price", "stock" }
+PATCH /api/v1/products/:id
+GET  /api/v1/orders
+PATCH /api/v1/orders/:id     { "status": "shipped", "trackingNumber" }
+GET  /api/v1/inventory
+PATCH /api/v1/inventory      { "productId", "stock" }
+GET  /api/v1/customers</pre>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Clés existantes</h3>
+            <div id="apiKeysList"><p class="hint">Chargement…</p></div>
+          </div>
+        </section>
+
         <!-- Publish -->
         <section id="tab-publish" class="tab">
           <h2>Déploiement</h2>
@@ -941,7 +988,7 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js?v=20260912e"></script>
-  <script src="console.js?v=20260912e"></script>
+  <script src="config.js?v=20260912f"></script>
+  <script src="console.js?v=20260912f"></script>
 </body>
 </html>

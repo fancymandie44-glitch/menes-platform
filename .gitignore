@@ -8,6 +8,7 @@ dist
 .env.*
 !.env.example
 backups/
+data/api-keys.json
 .DS_Store
 Thumbs.db
 MENES-VETEMENTS-extracted

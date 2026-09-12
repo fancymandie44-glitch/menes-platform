@@ -721,6 +721,19 @@ body.nav-open { overflow: hidden; }
 .badge.refunded { background: rgba(255, 107, 90, 0.18); color: var(--red); }
 .stock-cell-detail { display: block; font-size: 0.68rem; color: var(--muted); font-weight: 500; }
 
+.scope-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.scope-grid label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); font-size: 0.78rem; cursor: pointer; }
+.scope-grid input { margin: 0; }
+.api-secret-box { margin-top: 16px; padding: 14px; border: 1px solid var(--gold); border-radius: 10px; background: var(--highlight-bg); }
+.api-secret-box.hidden { display: none; }
+.api-secret-box code { display: block; margin: 10px 0; padding: 10px; background: var(--bg); border-radius: 8px; word-break: break-all; font-size: 0.78rem; }
+.api-docs { margin: 0; padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 0.75rem; line-height: 1.55; overflow-x: auto; white-space: pre-wrap; color: var(--text); }
+.api-key-row { display: grid; grid-template-columns: 1.4fr 0.8fr 1.6fr auto; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.api-key-row .muted { color: var(--muted); font-size: 0.75rem; }
+.api-key-scopes { display: flex; flex-wrap: wrap; gap: 4px; }
+.api-key-scopes span { font-size: 0.68rem; padding: 2px 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--border); }
+
 @media (max-width: 800px) {
   .ship-rate-row { grid-template-columns: 1fr 1fr; }
+  .api-key-row { grid-template-columns: 1fr; }
 }

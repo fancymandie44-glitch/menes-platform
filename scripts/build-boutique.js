@@ -48,7 +48,11 @@ const REQUIRED_FILES = [
   'lib/cors.js',
   'lib/order-pricing.js',
   'lib/admin-auth.js',
+  'lib/api-keys.js',
+  'lib/merchant-api.js',
   'lib/public-catalog.js',
+  'api/keys.js',
+  'api/v1.js',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib'];
