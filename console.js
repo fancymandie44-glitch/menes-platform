@@ -2405,7 +2405,6 @@ function defaultAspectFor() {
     toast(files.length > 1 ? `${files.length} photos ajoutées` : 'Photo ajoutée');
   }
 
-  zone?.addEventListener('click', () => fileInput?.click());
   zone?.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
   zone?.addEventListener('dragleave', () => zone.classList.remove('dragover'));
   zone?.addEventListener('drop', (e) => {
@@ -2418,7 +2417,6 @@ function defaultAspectFor() {
     fileInput.value = '';
   });
 
-  studioZone?.addEventListener('click', () => studioInput?.click());
   studioInput?.addEventListener('change', () => {
     const file = studioInput.files && studioInput.files[0];
     if (!file) return;

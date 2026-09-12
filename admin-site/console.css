@@ -225,8 +225,13 @@ a { color: var(--blue); }
 .checkbox { display: flex !important; align-items: center; gap: 8px; font-weight: 500 !important; }
 .checkbox input { width: auto !important; margin: 0 !important; }
 
-.upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: var(--bg); margin-top: 6px; }
+.upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: var(--bg); margin-top: 6px; position: relative; overflow: hidden; }
 .upload-zone.small { padding: 14px; }
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; width: 100% !important; height: 100%;
+  margin: 0 !important; padding: 0 !important; border: 0 !important; cursor: pointer;
+  display: block !important; background: transparent;
+}
 .upload-preview { max-width: 100%; max-height: 120px; border-radius: 6px; margin-bottom: 8px; object-fit: contain; }
 
 .toggle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
