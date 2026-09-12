@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shop.css?v=20260912e">
+  <link rel="stylesheet" href="/shop.css?v=20260912g">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -87,6 +87,10 @@
         </div>
       </div>
       <div id="productsGrid" class="products-grid"></div>
+      <div id="recentViewed" class="recent-viewed hidden">
+        <h3 class="recent-viewed-title" data-i18n="recent_title">Recently viewed</h3>
+        <div id="recentViewedList" class="pdp-recs-list"></div>
+      </div>
     </div>
   </section>
 
@@ -251,6 +255,10 @@
       <div id="pdpRecs" class="pdp-recs hidden" aria-live="polite">
         <h3 class="pdp-recs-title" data-i18n="complete_look">Complete the look</h3>
         <div id="pdpRecsList" class="pdp-recs-list"></div>
+      </div>
+      <div id="pdpRecent" class="pdp-recs hidden">
+        <h3 class="pdp-recs-title" data-i18n="recent_title">Recently viewed</h3>
+        <div id="pdpRecentList" class="pdp-recs-list"></div>
       </div>
     </div>
   </aside>
@@ -481,6 +489,6 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="/config.js?v=20260910a"></script>
-  <script src="/shop.js?v=20260912e"></script>
+  <script src="/shop.js?v=20260912g"></script>
 </body>
 </html>

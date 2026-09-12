@@ -573,6 +573,7 @@ async function showApp() {
   loadDesignForm();
   renderSectionEditors();
   renderGalleryEditor();
+  runMerchantJobs(true);
 }
 
 function updateDashboard() {
@@ -621,14 +622,67 @@ function updateDashboard() {
   const alerts = [];
   if (fulfillCount) alerts.push({ tab: 'orders', text: `${fulfillCount} commande(s) à préparer / expédier` });
   if (lowStockCount) alerts.push({ tab: 'inventory', text: `${lowStockCount} produit(s) en stock bas ou rupture` });
-  const unpaid = orders.filter((o) => o.status === 'awaiting_payment').length;
-  if (unpaid) alerts.push({ tab: 'orders', text: `${unpaid} paiement(s) en cours` });
+  const unpaid = orders.filter((o) => o.status === 'awaiting_payment' || o.status === 'pending').length;
+  if (unpaid) alerts.push({ tab: 'orders', text: `${unpaid} paiement(s) incomplet(s)` });
   const alertsEl = document.getElementById('opsAlerts');
   if (alertsEl) {
     alertsEl.innerHTML = alerts.length
       ? alerts.map((a) => `<button type="button" class="mini-item alert-row" onclick="switchTab('${a.tab}')"><span>${esc(a.text)}</span><span>→</span></button>`).join('')
       : '<p class="empty">Rien à traiter. La boutique est à jour.</p>';
   }
+  renderTodayWork(orders, p);
+}
+
+function hoursAgoLabel(iso) {
+  const t = Date.parse(iso || '');
+  if (!Number.isFinite(t)) return '';
+  const h = Math.max(0, Math.round((Date.now() - t) / 3600000));
+  if (h < 1) return 'à l’instant';
+  if (h < 24) return `il y a ${h} h`;
+  return `il y a ${Math.round(h / 24)} j`;
+}
+
+function renderTodayWork(orders, products) {
+  const box = document.getElementById('todayWork');
+  if (!box) return;
+  const rows = [];
+  (orders || []).filter((o) => o.status === 'paid' || o.status === 'processing').slice().reverse().slice(0, 8).forEach((o) => {
+    rows.push({
+      kind: 'Expédier',
+      title: `#${o.id} · ${o.customer?.name || 'Client'}`,
+      meta: `${formatMoney(o.total || 0)} · ${hoursAgoLabel(o.date || o.paidAt)}`,
+      run: () => window.openOrderDetail(o.id),
+    });
+  });
+  (orders || []).filter((o) => o.status === 'awaiting_payment' || o.status === 'pending').slice().reverse().slice(0, 5).forEach((o) => {
+    rows.push({
+      kind: 'Impayé',
+      title: `#${o.id} · ${o.customer?.email || o.customer?.name || 'Client'}`,
+      meta: hoursAgoLabel(o.date || o.createdAt),
+      run: () => window.openOrderDetail(o.id),
+    });
+  });
+  (products || []).filter((p) => p && p.active !== false && (isLowStockProduct(p) || productStockTotal(p) <= 0)).slice(0, 6).forEach((p) => {
+    rows.push({
+      kind: productStockTotal(p) <= 0 ? 'Rupture' : 'Stock',
+      title: p.name,
+      meta: `${productStockTotal(p)} u.`,
+      run: () => switchTab('inventory'),
+    });
+  });
+  if (!rows.length) {
+    box.innerHTML = '<p class="empty">Rien en attente. Tu peux créer un drop ou une clé API.</p>';
+    return;
+  }
+  box.innerHTML = rows.map((r, i) => `
+    <button type="button" class="today-row" data-i="${i}">
+      <span class="today-kind">${esc(r.kind)}</span>
+      <span>${esc(r.title)}</span>
+      <span class="today-meta">${esc(r.meta)}</span>
+    </button>`).join('');
+  box.querySelectorAll('.today-row').forEach((btn) => {
+    btn.addEventListener('click', () => rows[+btn.dataset.i]?.run());
+  });
 }
 
 // Sites
@@ -770,7 +824,7 @@ function renderProducts() {
       <td><strong>${esc(p.name)}</strong></td><td>${esc(p.sku || '-')}</td><td>${esc(p.category)}</td>
       <td>${p.price}$${p.comparePrice ? ` <s>${p.comparePrice}$</s>` : ''}</td>
       <td class="${stockClass}">${formatProductStockCell(p)}</td>
-      <td>${p.active ? '<span class="badge paid">Actif</span>' : '<span class="badge cancelled">Masqué</span>'}${p.preorder ? ' <span class="badge pending">Précommande</span>' : ''}</td>
+      <td>${p.active ? '<span class="badge paid">En boutique</span>' : '<span class="badge cancelled">Brouillon</span>'}${p.preorder ? ' <span class="badge pending">Précommande</span>' : ''}</td>
       <td><button onclick="editProduct('${p.id}')">Modifier</button> <button class="btn-danger" onclick="deleteProduct('${p.id}')">Suppr.</button></td>
     </tr>`;
     }).join('')}</tbody></table>` : emptyState('Aucun produit', 'Crée ta première pièce. Photos, variantes et stock se gèrent dans la fiche.', '+ Nouveau produit', 'products');
@@ -799,6 +853,45 @@ document.getElementById('addProductBtn')?.addEventListener('click', () => openPr
 document.getElementById('cancelProductBtn')?.addEventListener('click', () => document.getElementById('productModal').classList.add('hidden'));
 document.getElementById('bulkActivateBtn')?.addEventListener('click', () => bulkSetProductActive(true));
 document.getElementById('bulkHideBtn')?.addEventListener('click', () => bulkSetProductActive(false));
+document.getElementById('bulkPriceBtn')?.addEventListener('click', () => bulkSetProductPrice());
+document.getElementById('bulkPctBtn')?.addEventListener('click', () => bulkAdjustProductPercent());
+
+async function selectedProducts() {
+  const ids = [...productSelectSet];
+  return (storeData.products || []).filter((p) => ids.includes(p.id));
+}
+
+async function bulkSetProductPrice() {
+  const price = Number(document.getElementById('bulkPriceInput')?.value);
+  if (!Number.isFinite(price) || price < 0) {
+    toast('Indique un prix CAD', 'error');
+    return;
+  }
+  const rows = await selectedProducts();
+  if (!rows.length) return;
+  rows.forEach((p) => { p.price = price; });
+  productSelectSet.clear();
+  await saveStore(`Prix ${price}$ appliqué`);
+  renderProducts();
+}
+
+async function bulkAdjustProductPercent() {
+  const pct = Number(document.getElementById('bulkPctInput')?.value);
+  if (!Number.isFinite(pct) || pct === 0) {
+    toast('Indique un % (ex: -10 pour un drop)', 'error');
+    return;
+  }
+  const rows = await selectedProducts();
+  if (!rows.length) return;
+  rows.forEach((p) => {
+    const current = Number(p.price) || 0;
+    if (!p.comparePrice || p.comparePrice < current) p.comparePrice = current;
+    p.price = Math.max(0, Math.round(current * (1 + pct / 100) * 100) / 100);
+  });
+  productSelectSet.clear();
+  await saveStore(`Drop ${pct}% appliqué`);
+  renderProducts();
+}
 
 async function bulkSetProductActive(active) {
   const ids = [...productSelectSet];
@@ -807,7 +900,7 @@ async function bulkSetProductActive(active) {
     if (ids.includes(p.id)) p.active = active;
   });
   productSelectSet.clear();
-  await saveStore(active ? 'Produits activés' : 'Produits masqués');
+  await saveStore(active ? 'Produits publiés' : 'Produits en brouillon');
   renderProducts();
   renderInventory();
 }
@@ -3819,6 +3912,92 @@ document.getElementById('importFile')?.addEventListener('change', async (e) => {
     loadDesignForm(); renderProducts(); renderSectionEditors(); updateDashboard();
   };
   reader.readAsText(file);
+});
+
+async function runMerchantJobs(silent = false) {
+  try {
+    const res = await apiFetch('/api/merchant-jobs', { method: 'POST', body: '{}' });
+    const data = await res.json().catch(() => ({}));
+    const hint = document.getElementById('jobsHint');
+    if (!res.ok) throw new Error(data.error || 'Relances impossibles');
+    if (data.emailConfigured === false) {
+      if (hint) hint.textContent = `${data.pending?.reminders || 0} panier(s) et ${data.pending?.reviews || 0} avis en attente — configure un email (Resend/Brevo) pour envoyer.`;
+      if (!silent) toast('Email boutique non configuré — relances en attente', 'error');
+      return;
+    }
+    const n = (data.sent?.reminders || 0) + (data.sent?.reviews || 0);
+    if (hint) hint.textContent = n
+      ? `Envoyé : ${data.sent.reminders} relance(s) paiement, ${data.sent.reviews} demande(s) d’avis.`
+      : 'Aucune relance à envoyer pour le moment.';
+    if (!silent) toast(n ? `${n} email(s) envoyés` : 'Rien à relancer', n ? 'ok' : '');
+    if (n) await loadStore();
+  } catch (err) {
+    if (!silent) toast(err.message, 'error');
+  }
+}
+
+document.getElementById('runJobsBtn')?.addEventListener('click', () => runMerchantJobs(false));
+
+function openOmni() {
+  const el = document.getElementById('omniSearch');
+  if (!el) return;
+  el.classList.remove('hidden');
+  const input = document.getElementById('omniInput');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  renderOmni('');
+}
+
+function closeOmni() {
+  document.getElementById('omniSearch')?.classList.add('hidden');
+}
+
+function renderOmni(q) {
+  const box = document.getElementById('omniResults');
+  if (!box) return;
+  const query = String(q || '').trim().toLowerCase();
+  if (query.length < 2) {
+    box.innerHTML = '<p class="hint">Tape au moins 2 lettres. Raccourci : Ctrl K.</p>';
+    return;
+  }
+  const hits = [];
+  (storeData.products || []).forEach((p) => {
+    const hay = `${p.name} ${p.sku || ''} ${(p.tags || []).join(' ')}`.toLowerCase();
+    if (hay.includes(query)) hits.push({ kind: 'Produit', title: p.name, meta: `${p.price}$`, run: () => { closeOmni(); switchTab('products'); editProduct(p.id); } });
+  });
+  (storeData.orders || []).forEach((o) => {
+    const hay = `${o.id} ${o.customer?.name || ''} ${o.customer?.email || ''}`.toLowerCase();
+    if (hay.includes(query)) hits.push({ kind: 'Commande', title: `#${o.id} · ${o.customer?.name || ''}`, meta: orderStatusLabel(o.status), run: () => { closeOmni(); switchTab('orders'); openOrderDetail(o.id); } });
+  });
+  (storeData.customers || []).forEach((c) => {
+    const hay = `${c.name || ''} ${c.email || ''}`.toLowerCase();
+    if (hay.includes(query)) hits.push({ kind: 'Client', title: c.name || c.email, meta: c.email || '', run: () => { closeOmni(); switchTab('customers'); } });
+  });
+  box.innerHTML = hits.slice(0, 12).map((h, i) => `
+    <button type="button" class="omni-item" data-i="${i}">
+      <span class="omni-kind">${esc(h.kind)}</span>
+      <span>${esc(h.title)}<br><span class="muted">${esc(h.meta)}</span></span>
+    </button>`).join('') || '<p class="hint">Aucun résultat.</p>';
+  box.querySelectorAll('.omni-item').forEach((btn) => {
+    btn.addEventListener('click', () => hits[+btn.dataset.i]?.run());
+  });
+}
+
+document.getElementById('omniToggle')?.addEventListener('click', openOmni);
+document.getElementById('omniSearch')?.addEventListener('click', (e) => {
+  if (e.target.id === 'omniSearch') closeOmni();
+});
+document.getElementById('omniInput')?.addEventListener('input', (e) => renderOmni(e.target.value));
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
+    e.preventDefault();
+    const open = !document.getElementById('omniSearch')?.classList.contains('hidden');
+    if (open) closeOmni();
+    else openOmni();
+  }
+  if (e.key === 'Escape') closeOmni();
 });
 
 // Init — session verified server-side via httpOnly cookie

@@ -733,6 +733,20 @@ body.nav-open { overflow: hidden; }
 .api-key-scopes { display: flex; flex-wrap: wrap; gap: 4px; }
 .api-key-scopes span { font-size: 0.68rem; padding: 2px 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--border); }
 
+.bulk-price-input { width: 88px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); color: var(--text); font: inherit; font-size: 0.82rem; }
+.today-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--border); padding: 10px 0; cursor: pointer; font: inherit; color: var(--text); }
+.today-row:hover { color: var(--gold); }
+.today-row .today-meta { margin-left: auto; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.today-kind { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); font-weight: 700; min-width: 72px; }
+.omni { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 80; display: grid; place-items: start center; padding: 12vh 16px 16px; }
+.omni.hidden { display: none; }
+.omni-box { width: min(640px, 100%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
+.omni-box input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; }
+.omni-results { margin-top: 10px; max-height: 50vh; overflow: auto; }
+.omni-item { display: flex; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--border); padding: 10px 4px; cursor: pointer; font: inherit; color: var(--text); }
+.omni-item:hover, .omni-item.active { background: var(--bg); }
+.omni-kind { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); min-width: 78px; padding-top: 3px; }
+
 @media (max-width: 800px) {
   .ship-rate-row { grid-template-columns: 1fr 1fr; }
   .api-key-row { grid-template-columns: 1fr; }

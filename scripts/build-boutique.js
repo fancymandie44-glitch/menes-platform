@@ -53,6 +53,7 @@ const REQUIRED_FILES = [
   'lib/public-catalog.js',
   'api/keys.js',
   'api/v1.js',
+  'api/merchant-jobs.js',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib'];

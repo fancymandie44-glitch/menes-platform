@@ -40,6 +40,7 @@ function run() {
     'api/auth.js',
     'api/keys.js',
     'api/v1.js',
+    'api/merchant-jobs.js',
     'api/pay.js',
     'api/confirm-order.js',
     'lib/public-catalog.js',
@@ -48,6 +49,7 @@ function run() {
     'lib/platform.js',
     'lib/api-keys.js',
     'lib/merchant-api.js',
+    'lib/merchant-jobs.js',
     'lib/passport.js',
     'data/store.json',
   ];

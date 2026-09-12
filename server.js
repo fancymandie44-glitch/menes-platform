@@ -100,7 +100,7 @@ http.createServer(async (req, res) => {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
-  if (urlPath === '/api/keys' || urlPath === '/api/v1' || urlPath.startsWith('/api/v1/')) {
+  if (urlPath === '/api/keys' || urlPath === '/api/merchant-jobs' || urlPath === '/api/v1' || urlPath.startsWith('/api/v1/')) {
     if (req.method === 'OPTIONS') {
       res.writeHead(204, {
         'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Password, Authorization, X-Menes-Api-Key, X-Site-Id',
@@ -114,7 +114,9 @@ http.createServer(async (req, res) => {
     event.rawUrl = `http://localhost:${port}${urlPath}${url.search}`;
     const handler = urlPath === '/api/keys'
       ? require('./api/keys').handler
-      : require('./api/v1').handler;
+      : urlPath === '/api/merchant-jobs'
+        ? require('./api/merchant-jobs').handler
+        : require('./api/v1').handler;
     const result = await handler(event);
     let payload = {};
     try { payload = JSON.parse(result.body || '{}'); } catch { payload = { error: result.body }; }
