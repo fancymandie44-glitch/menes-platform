@@ -511,6 +511,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.ok) {
+      adminPassword = password;
       sessionStorage.setItem(AUTH_KEY, '1');
       document.getElementById('loginPassword').value = '';
       await showApp();

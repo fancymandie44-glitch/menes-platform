@@ -121,7 +121,17 @@ exports.handler = async (event) => {
       const lower = key.toLowerCase();
       if (DROP_RES.has(lower)) continue;
       if (lower === 'set-cookie') {
-        multiValueHeaders['Set-Cookie'] = Array.isArray(value) ? value : [value];
+        const cookies = (Array.isArray(value) ? value : [value]).map((raw) => {
+          const parts = String(raw)
+            .split(';')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .filter((p) => !/^domain=/i.test(p));
+          if (!parts.some((p) => /^path=/i.test(p))) parts.splice(1, 0, 'Path=/');
+          return parts.join('; ');
+        });
+        headers['Set-Cookie'] = cookies[0];
+        multiValueHeaders['Set-Cookie'] = cookies;
         continue;
       }
       headers[key] = Array.isArray(value) ? value.join(', ') : String(value);
