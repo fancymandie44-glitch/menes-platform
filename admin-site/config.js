@@ -1,6 +1,6 @@
-// Same-origin proxy function. /api is reserved for Netlify Functions on this
-// static site, so the console calls /store-api/api/* which store-proxy forwards
-// to www.mymenes.com/api/*. Session cookie stays host-only on menesadmin.
+// Call the proxy function directly. /api is reserved for Functions and
+// /store-api is swallowed by the SPA fallback on this site.
+// store-proxy forwards /api/* to www.mymenes.com so the session cookie stays on menesadmin.
 window.MENES_CONFIG = {
-  API_BASE: '/store-api',
+  API_BASE: '/.netlify/functions/store-proxy',
 };

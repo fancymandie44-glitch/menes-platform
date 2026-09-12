@@ -11,8 +11,8 @@ const { handler } = require('../admin-site/netlify/functions/store-proxy');
 
 assert.match(
   config,
-  /API_BASE:\s*'\/store-api'/,
-  'admin must prefix API calls so they do not hit the reserved /api functions path'
+  /API_BASE:\s*'\/\.netlify\/functions\/store-proxy'/,
+  'admin must call the proxy function URL; /api and /store-api are stolen by SPA routing'
 );
 assert.match(
   redirects,
@@ -49,6 +49,15 @@ assert.match(sw, /menes-amb-v8/, 'ambassador service worker cache must be bumped
   assert.equal(denied.statusCode, 401, 'wrong password must be JSON 401, not HTML 404');
   const deniedJson = JSON.parse(denied.body);
   assert.equal(deniedJson.ok, false);
+
+  const viaFn = await handler({
+    httpMethod: 'GET',
+    path: '/.netlify/functions/store-proxy/api/auth',
+    queryStringParameters: { action: 'me' },
+    headers: {},
+  });
+  assert.equal(viaFn.statusCode, 200, 'proxy via functions URL');
+  assert.equal(JSON.parse(viaFn.body).ok, true);
 
   const blocked = await handler({
     httpMethod: 'GET',
