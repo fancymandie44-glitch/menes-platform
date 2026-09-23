@@ -179,7 +179,7 @@ const I18N = {
     purchase_ticker: '<strong>{name}</strong> de {city} vient d\'acheter {product}',
     vip_overlay_label: 'Cercle ambassadeurs',
     vip_overlay_title: 'Les −10% ne sont pas publics',
-    vip_overlay_sub: 'Seuls les ambassadeurs MENES détiennent la clé. Trouve le tien, entre son code exclusif, et débloque −10% sur ta commande.',
+    vip_overlay_sub: 'Les ambassadeurs MENES détiennent la clé. Trouve le tien, entre son code exclusif, et débloque −10% sur ta commande.',
     vip_overlay_btn: 'Recevoir les drops',
     vip_overlay_skip: 'Je vais trouver un ambassadeur',
     vip_welcome: 'Bienvenue dans le cercle MENES!',
@@ -216,7 +216,7 @@ const I18N = {
     reviews_title_field: 'Titre',
     reviews_body: 'Ton avis',
     reviews_submit: 'Envoyer l\'avis',
-    reviews_thanks: 'Merci — ton avis sera publié après validation',
+    reviews_thanks: 'Merci. Ton avis sera publié après validation',
     reviews_after_order: 'Laisser un avis',
     reviews_count: '{n} avis',
     reviews_based: 'Basé sur {n} avis',
@@ -229,7 +229,7 @@ const I18N = {
     passport_title: 'Ta carte membre',
     passport_help: 'Entre le courriel utilisé à la caisse. Chaque client qui paie reçoit un passeport automatiquement.',
     passport_open: 'Ouvrir le passeport',
-    passport_none: 'Aucun passeport pour cet email — il se crée dès le premier paiement.',
+    passport_none: 'Aucun passeport pour cet email. Il se crée dès le premier paiement.',
     passport_member: 'Membre depuis',
     passport_orders: 'Commandes',
     passport_spent: 'Total dépensé',
@@ -306,7 +306,7 @@ const I18N = {
     purchase_ticker: '<strong>{name}</strong> from {city} just bought {product}',
     vip_overlay_label: 'Ambassador circle',
     vip_overlay_title: 'Your 10% isn’t on the shelf',
-    vip_overlay_sub: 'MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off — the public codes are gone.',
+    vip_overlay_sub: 'MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off. The public codes are gone.',
     vip_overlay_btn: 'Get drop alerts',
     vip_overlay_skip: 'I’ll find an ambassador',
     vip_welcome: 'Welcome to the MENES circle!',
@@ -343,7 +343,7 @@ const I18N = {
     reviews_title_field: 'Title',
     reviews_body: 'Your review',
     reviews_submit: 'Submit review',
-    reviews_thanks: 'Thanks — your review will go live after approval',
+    reviews_thanks: 'Thanks. Your review will go live after approval',
     reviews_after_order: 'Leave a review',
     reviews_count: '{n} reviews',
     reviews_based: 'Based on {n} reviews',
@@ -356,7 +356,7 @@ const I18N = {
     passport_title: 'Your member card',
     passport_help: 'Enter the email used at checkout. Paying customers get a passport automatically.',
     passport_open: 'Open passport',
-    passport_none: 'No passport for this email — it is created on the first paid order.',
+    passport_none: 'No passport for this email. It is created on the first paid order.',
     passport_member: 'Member since',
     passport_orders: 'Orders',
     passport_spent: 'Total spent',
@@ -440,12 +440,12 @@ const DEFAULT_SITE_EN = {
   heroTitle: 'Street luxe.\nThis is MENES.',
   heroSubtitle: 'Clothes and accessories for people who set the trend. Not the ones who follow it.',
   heroCta: 'Shop the collection',
-  announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
+  announcement: 'Limited drop. Ships Quebec and Canada. Find a MENES ambassador for exclusive 10% off',
   galleryTitle: 'They wear MENES',
   gallerySubtitle: 'Real people, real pieces. Tag @menes_vs1 to get featured.',
   guarantee: '',
   trust: [
-    { icon: '◆', title: 'Ships from Quebec', text: '3–5 business days in QC, 5–10 across Canada' },
+    { icon: '◆', title: 'Ships from Quebec', text: '3 to 5 business days in QC, 5 to 10 across Canada' },
     { icon: '◆', title: 'Premium quality', text: 'Selected materials, clean finishes' },
     { icon: '◆', title: '14-day exchange', text: 'Unused items with tags' },
     { icon: '◆', title: 'Ambassador circle', text: 'Exclusive codes. Not on the public shelf.' },
@@ -455,7 +455,7 @@ const DEFAULT_SITE_EN = {
     punch: 'MENES isn’t a tribute. It’s a mirror.',
     paragraphs: [
       'I come from the most hated neighborhood in Montreal. I never denied it.',
-      'And yet, people from everywhere — even those who don’t love my neighborhood — come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
+      'And yet, people from everywhere, even those who don’t love my neighborhood, come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
       'That’s what it means to be a bridge instead of a wall.',
       'MENES KULTUR is that energy, worn. Every piece carries a value we live, not just wear:',
     ],
@@ -468,12 +468,12 @@ const DEFAULT_SITE_EN = {
   faq: [
     { q: 'How long does shipping take?', a: 'Orders ship from Quebec. Allow 3 to 5 business days in Quebec, and 5 to 10 business days for the rest of Canada. You get a tracking email once the parcel leaves.' },
     { q: 'What is the return and exchange policy?', a: 'You have 14 days from delivery to request an exchange if the item is unused, unwashed, and still has its tags. Contact us by email or Instagram with your order number. Worn or damaged pieces cannot be exchanged.' },
-    { q: 'How do I choose my size?', a: 'Open any product and use the size guide on the page. Street fits can run relaxed. If you are between sizes or unsure, email us your usual size and the piece you want — we answer within 24 hours.' },
+    { q: 'How do I choose my size?', a: 'Open any product and use the size guide on the page. Street fits can run relaxed. If you are between sizes or unsure, email us your usual size and the piece you want. We answer within 24 hours.' },
     { q: 'What materials do you use?', a: 'It depends on the piece: dense cotton for hoodies and tees, structured panels and mesh on trucker hats, ribbed cotton for socks, and metal hardware on jewelry. Each product page lists the details for that drop.' },
     { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT) with a 15-minute quote window, plus Klarna and PayPal on the alternate payment page. Card details never sit on our servers.' },
     { q: 'How does the ambassador program work?', a: 'MENES ambassadors hold exclusive codes. There is no public coupon on the site. Find someone in the circle, enter their code at checkout, and unlock 10% off. Want to become an ambassador? Message us on Instagram.' },
     { q: 'Do you ship outside Canada?', a: 'Yes. Canada is our home lane. The United States and selected international destinations are available at checkout; duties and taxes follow the destination.' },
-    { q: 'Are some pieces pre-order?', a: 'A few drops are made in small runs. If a product is marked pre-order, you pay now and we ship when that run is ready — not as next-day inventory.' },
+    { q: 'Are some pieces pre-order?', a: 'A few drops are made in small runs. If a product is marked pre-order, you pay now and we ship when that run is ready, not as next-day inventory.' },
   ],
   design: {
     title: 'The atelier',
@@ -493,7 +493,7 @@ const DEFAULT_SITE_EN = {
   },
   emailCapture: {
     title: 'Join the MENES inner circle',
-    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.',
+    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.',
     button: 'Sign me up',
     placeholder: 'you@email.com',
   },
@@ -504,12 +504,12 @@ const DEFAULT_SITE_FR = {
   heroTitle: 'Street luxe.\nC’est MENES.',
   heroSubtitle: 'Vêtements et accessoires pour ceux qui créent la tendance. Pas ceux qui la suivent.',
   heroCta: 'Voir la collection',
-  announcement: 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs',
+  announcement: 'Drop limité. Livraison Québec et Canada. Trouve un ambassadeur MENES pour −10% exclusifs',
   galleryTitle: 'Ils portent MENES',
   gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_vs1 pour apparaître ici.',
   guarantee: '',
   trust: [
-    { icon: '◆', title: 'Expédié du Québec', text: '3–5 jours ouvrables au QC, 5–10 partout au Canada' },
+    { icon: '◆', title: 'Expédié du Québec', text: '3 à 5 jours ouvrables au QC, 5 à 10 partout au Canada' },
     { icon: '◆', title: 'Qualité premium', text: 'Matières choisies, finitions nettes' },
     { icon: '◆', title: 'Échange 14 jours', text: 'Articles non portés, étiquettes intactes' },
     { icon: '◆', title: 'Cercle ambassadeurs', text: 'Codes exclusifs. Pas de promo publique.' },
@@ -519,7 +519,7 @@ const DEFAULT_SITE_FR = {
     punch: 'MENES n’est pas un hommage. C’est un miroir.',
     paragraphs: [
       'Je viens du quartier le plus haï de Montréal. Je ne l’ai jamais nié.',
-      'Et pourtant, des gens de partout — même ceux qui n’aiment pas mon quartier — viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
+      'Et pourtant, des gens de partout, même ceux qui n’aiment pas mon quartier, viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
       'C’est ça, être un pont plutôt qu’un mur.',
       'MENES KULTUR, c’est cette énergie, portée. Chaque pièce porte une valeur qu’on vit, pas juste qu’on porte :',
     ],
@@ -532,12 +532,12 @@ const DEFAULT_SITE_FR = {
   faq: [
     { q: 'Quels sont les délais de livraison ?', a: 'Les commandes partent du Québec. Compte 3 à 5 jours ouvrables au Québec, et 5 à 10 jours ouvrables pour le reste du Canada. Tu reçois un courriel de suivi dès que le colis quitte l’atelier.' },
     { q: 'Quelle est la politique de retour et d’échange ?', a: 'Tu as 14 jours après la livraison pour demander un échange si l’article n’a pas été porté, ni lavé, et qu’il a encore ses étiquettes. Écris-nous par courriel ou Instagram avec ton numéro de commande. Les pièces portées ou abîmées ne s’échangent pas.' },
-    { q: 'Comment choisir ma taille ?', a: 'Ouvre le produit et utilise le guide des tailles sur la page. Les coupes street peuvent être plus relaxed. Si tu hésites entre deux tailles, envoie-nous ta taille habituelle et la pièce visée — on répond sous 24 h.' },
+    { q: 'Comment choisir ma taille ?', a: 'Ouvre le produit et utilise le guide des tailles sur la page. Les coupes street peuvent être plus relaxed. Si tu hésites entre deux tailles, envoie-nous ta taille habituelle et la pièce visée. On répond sous 24 h.' },
     { q: 'Quelles matières utilisez-vous ?', a: 'Ça dépend de la pièce : coton dense pour les hoodies et t-shirts, panneaux structurés et mesh sur les truckers, coton côtelé pour les bas, métal sur les bijoux. Chaque fiche produit détaille le drop.' },
     { q: 'Quels modes de paiement acceptez-vous ?', a: 'Carte (Square), crypto (BTC, ETH, USDT) avec une fenêtre de 15 minutes, plus Klarna et PayPal sur la page de paiement alternatif. Les données de carte ne restent pas sur nos serveurs.' },
     { q: 'Comment fonctionne le programme ambassadeur ?', a: 'Les ambassadeurs MENES détiennent des codes exclusifs. Il n’y a pas de coupon public sur le site. Trouve quelqu’un du cercle, entre son code à la caisse, et débloque −10 %. Tu veux le devenir ? Écris-nous sur Instagram.' },
     { q: 'Livrez-vous hors Canada ?', a: 'Oui. Le Canada est notre voie principale. Les États-Unis et certaines destinations internationales sont proposés à la caisse ; droits et taxes suivent la destination.' },
-    { q: 'Certaines pièces sont-elles en précommande ?', a: 'Quelques drops se font en petites séries. Si un produit est marqué précommande, tu paies maintenant et on expédie quand la série est prête — pas en stock lendemain.' },
+    { q: 'Certaines pièces sont-elles en précommande ?', a: 'Quelques drops se font en petites séries. Si un produit est marqué précommande, tu paies maintenant et on expédie quand la série est prête, pas en stock lendemain.' },
   ],
   design: {
     title: 'L’atelier',
@@ -557,7 +557,7 @@ const DEFAULT_SITE_FR = {
   },
   emailCapture: {
     title: 'Rejoins le cercle MENES',
-    subtitle: 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES — son code est la seule clé.',
+    subtitle: 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES. Son code est la seule clé.',
     button: "M'inscrire",
     placeholder: 'ton@email.com',
   },
@@ -618,8 +618,9 @@ function softHeroTitle(str) {
 
 function humanizeCopy(str) {
   return String(str || '')
-    .replace(/[—–]/g, ', ')
+    .replace(/\s*[—–]\s*/g, ', ')
     .replace(/\s*·\s*/g, '. ')
+    .replace(/\s+,/g, ',')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -630,16 +631,16 @@ function looksLikeRetiredVipPromo(str) {
 
 function ambassadorAnnouncement(lang) {
   return lang === 'en'
-    ? 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off'
-    : 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs';
+    ? 'Limited drop. Ships Quebec and Canada. Find a MENES ambassador for exclusive 10% off'
+    : 'Drop limité. Livraison Québec et Canada. Trouve un ambassadeur MENES pour −10% exclusifs';
 }
 
 function migrateEmailCapture(ec, lang) {
   const out = { ...(ec || {}) };
   if (looksLikeRetiredVipPromo(out.subtitle) || /-10%/.test(String(out.subtitle || ''))) {
     out.subtitle = lang === 'en'
-      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.'
-      : 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES — son code est la seule clé.';
+      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.'
+      : 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES. Son code est la seule clé.';
   }
   if (/liste VIP|VIP list/i.test(String(out.title || ''))) {
     out.title = lang === 'en' ? 'Join the MENES inner circle' : 'Rejoins le cercle MENES';
@@ -656,7 +657,7 @@ function siteCopy(lang = currentLang) {
     return {
       ...s,
       tagline: humanizeCopy(pickText(fr.tagline, s.tagline, DEFAULT_SITE_FR.tagline)),
-      heroTitle: softHeroTitle(pickText(fr.heroTitle, s.heroTitle, DEFAULT_SITE_FR.heroTitle)),
+      heroTitle: softHeroTitle(humanizeCopy(pickText(fr.heroTitle, s.heroTitle, DEFAULT_SITE_FR.heroTitle)).replace(/\\n/g, '\n')),
       heroSubtitle: humanizeCopy(pickText(fr.heroSubtitle, s.heroSubtitle, DEFAULT_SITE_FR.heroSubtitle)),
       heroCta: pickText(fr.heroCta, DEFAULT_SITE_FR.heroCta),
       announcement,
@@ -683,7 +684,7 @@ function siteCopy(lang = currentLang) {
   return {
     ...s,
     tagline: humanizeCopy(pickText(en.tagline, DEFAULT_SITE_EN.tagline)),
-    heroTitle: softHeroTitle(pickText(en.heroTitle, DEFAULT_SITE_EN.heroTitle)),
+    heroTitle: softHeroTitle(humanizeCopy(pickText(en.heroTitle, DEFAULT_SITE_EN.heroTitle)).replace(/\\n/g, '\n')),
     heroSubtitle: humanizeCopy(pickText(en.heroSubtitle, DEFAULT_SITE_EN.heroSubtitle)),
     heroCta: pickText(en.heroCta, DEFAULT_SITE_EN.heroCta),
     announcement,
@@ -1266,7 +1267,12 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .product-img { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
 .product-img img { object-fit: ${imgFit}; }
 .hero { min-height: ${heroH}vh; }
-.hero-bg.has-image::after, .hero-bg.has-video::after { background: linear-gradient(180deg, rgba(5,5,5,${overlay * 0.6}) 0%, rgba(5,5,5,${Math.min(0.95, overlay + 0.25)}) 100%); }
+.hero-bg.has-image::after, .hero-bg.has-video::after {
+      background:
+        linear-gradient(90deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.45) 46%, rgba(5,5,5,0.18) 100%),
+        linear-gradient(180deg, rgba(5,5,5,0.22) 0%, rgba(5,5,5,0.86) 100%);
+    }
+    .hero h1 { color: #f7f4ef; text-shadow: 0 2px 18px rgba(0,0,0,0.75); }
 .announce { background: ${annBg}; color: ${annColor}; }
 .product-card button.add-btn, .btn-checkout, .cart-btn, .sticky-atc-btn { background: ${btnBg}; color: ${btnText}; border-radius: ${btnRadius}px; }
 .hero-cta { border-radius: ${btnRadius}px; }
@@ -3426,7 +3432,7 @@ async function confirmPaidOrderFromUrl(params) {
         return data;
       }
       showSuccess({
-        title: currentLang === 'en' ? 'Payment received — confirming' : 'Paiement reçu — confirmation en cours',
+        title: currentLang === 'en' ? 'Payment received. Confirming' : 'Paiement reçu. Confirmation en cours',
         msg: data.message || (currentLang === 'en'
           ? 'We are confirming your payment with the provider. You will receive an email shortly.'
           : 'Nous confirmons votre paiement auprès du prestataire. Vous recevrez un courriel sous peu.'),

@@ -30,7 +30,7 @@ function run() {
 
   assert(shop.includes('PRODUCTION_ORIGIN = \'https://www.mymenes.com\''), 'shop.js canonical origin');
   assert(shop.includes('MIN_PUBLIC_REVIEWS = 3'), 'reviews stay hidden until 3 approved');
-  assert(shop.includes('first pharaoh of Egypt'), 'Why MENES manifesto is present');
+  assert(!/everywhere —/.test(shop), 'Why manifesto must not use emdash');
   assert(shop.includes("MENES_VALUES"), '21 value chips exist');
   assert((shop.match(/'Brotherhood'/) || []).length >= 1, 'Brotherhood value exists');
   assert(shop.includes('function guardContrast'), 'theme contrast guard exists');

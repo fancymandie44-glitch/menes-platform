@@ -148,9 +148,13 @@ body {
     linear-gradient(160deg, #050505 0%, #121212 45%, #050505 100%);
 }
 .hero-bg.has-image { background-size: cover; background-position: center; animation: heroKen 28s var(--ease) infinite alternate; }
-.hero-bg.has-image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,5,5,0.35) 0%, rgba(5,5,5,0.72) 70%, #050505 100%); }
+.hero-bg.has-image::after { content: ''; position: absolute; inset: 0; background:
+    linear-gradient(90deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.42) 48%, rgba(5,5,5,0.16) 100%),
+    linear-gradient(180deg, rgba(5,5,5,0.22) 0%, rgba(5,5,5,0.86) 100%); }
 .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
-.hero-bg.has-video::after { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(5,5,5,0.4) 0%, rgba(5,5,5,0.75) 100%); }
+.hero-bg.has-video::after { content: ''; position: absolute; inset: 0; z-index: 1; background:
+    linear-gradient(90deg, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.42) 48%, rgba(5,5,5,0.16) 100%),
+    linear-gradient(180deg, rgba(5,5,5,0.25) 0%, rgba(5,5,5,0.82) 100%); }
 @keyframes heroKen { from { transform: scale(1); } to { transform: scale(1.06); } }
 .hero-inner { position: relative; z-index: 2; text-align: left; padding: 64px 24px 80px; max-width: 1180px; width: 100%; margin: 0 auto; }
 .hero-tag {
@@ -163,7 +167,8 @@ body {
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1.08;
-  color: var(--white);
+  color: #f7f4ef;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.45), 0 10px 28px rgba(0,0,0,0.7);
   margin-bottom: 22px;
   max-width: 14ch;
   text-wrap: balance;
@@ -172,7 +177,8 @@ body {
 }
 .hero-sub {
   font-family: var(--font-body);
-  color: rgba(246,243,238,0.88);
+  color: #f3efe8;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.7);
   font-size: clamp(0.98rem, 1.6vw, 1.12rem);
   font-weight: 400;
   line-height: 1.65;
