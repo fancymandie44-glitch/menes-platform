@@ -429,7 +429,12 @@ const FALLBACK_ATELIER_STILLS = [
   '/images/atelier/hat-black-still.jpg',
 ];
 
-/** English CMS fallbacks when blob/store has no site.i18n.en yet */
+const MENES_VALUES = [
+  'Brotherhood', 'Proactive', 'Grind', 'Motivated', 'Helpful', 'Disciplined', 'Strategic',
+  'United', 'Resilient', 'Ambitious', 'Resourceful', 'Courageous', 'Visionary',
+  'Accountable', 'Loyal', 'Persistent', 'Adaptable', 'Independent', 'Purposeful',
+  'Respectful', 'Legacy-minded',
+];
 const DEFAULT_SITE_EN = {
   tagline: 'Luxury streetwear. Premium quality.',
   heroTitle: 'Street luxe.\nThis is MENES.',
@@ -445,12 +450,21 @@ const DEFAULT_SITE_EN = {
     { icon: '◆', title: '14-day exchange', text: 'Unused items with tags' },
     { icon: '◆', title: 'Ambassador circle', text: 'Exclusive codes. Not on the public shelf.' },
   ],
-  why: [
-    { title: 'Built to be seen', text: 'MENES exists for people who dress like a statement, not a trend report. Every drop is designed to stand out on the street and in the room — luxury streetwear with a hard silhouette, not mass-market filler.' },
-    { title: 'Materials with weight', text: 'Heavy cotton, dense embroidery, hardware that holds. We pick fabrics and finishes that look expensive in daylight and still hit under night lighting. The pieces are meant to be worn hard, not babied on a hanger.' },
-    { title: 'From culture, not a moodboard', text: 'The house is rooted in Montreal and Quebec street culture: music, sport, jewelry, nights out. Inspiration comes from the people already in the circle, then gets cut into hats, hoodies, socks, and jewelry that carry that energy.' },
-    { title: 'Direct from the house', text: 'No mall markup, no anonymous factory brand. You buy from MENES. Questions go to a real inbox. Replies within 24 hours. If you want 10% off, you find an ambassador — that code is the only key.' },
-  ],
+  whyStory: {
+    lead: 'Menes. The first pharaoh of Egypt. The one who united Upper and Lower Egypt: two worlds divided, brought together by the vision, courage, and determination of one man.',
+    punch: 'MENES isn’t a tribute. It’s a mirror.',
+    paragraphs: [
+      'I come from the most hated neighborhood in Montreal. I never denied it.',
+      'And yet, people from everywhere — even those who don’t love my neighborhood — come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
+      'That’s what it means to be a bridge instead of a wall.',
+      'MENES KULTUR is that energy, worn. Every piece carries a value we live, not just wear:',
+    ],
+    valuesLabel: 'Twenty-one words. One mentality.',
+    close: [
+      'MENES is a global vision lived through exclusivity. Those who wear MENES aren’t just wearing a piece. They feel the change. They wear success. They wear the values they’re becoming.',
+      'MENES is for those who build, who unite, who leave behind something bigger than themselves.',
+    ],
+  },
   faq: [
     { q: 'How long does shipping take?', a: 'Orders ship from Quebec. Allow 3 to 5 business days in Quebec, and 5 to 10 business days for the rest of Canada. You get a tracking email once the parcel leaves.' },
     { q: 'What is the return and exchange policy?', a: 'You have 14 days from delivery to request an exchange if the item is unused, unwashed, and still has its tags. Contact us by email or Instagram with your order number. Worn or damaged pieces cannot be exchanged.' },
@@ -500,12 +514,21 @@ const DEFAULT_SITE_FR = {
     { icon: '◆', title: 'Échange 14 jours', text: 'Articles non portés, étiquettes intactes' },
     { icon: '◆', title: 'Cercle ambassadeurs', text: 'Codes exclusifs. Pas de promo publique.' },
   ],
-  why: [
-    { title: 'Fait pour se voir', text: 'MENES existe pour ceux qui s’habillent comme une déclaration, pas comme un rapport de tendances. Chaque drop est pensé pour trancher dans la rue et dans la pièce — du luxury streetwear à silhouette nette, pas du remplissage de masse.' },
-    { title: 'Des matières qui pèsent', text: 'Coton dense, broderie serrée, quincaillerie qui tient. On choisit des tissus et des finitions qui restent chers en plein jour et qui frappent encore sous les lumières de nuit. Les pièces se portent fort, elles ne restent pas sur un cintre.' },
-    { title: 'La culture, pas un moodboard', text: 'La maison est ancrée dans la culture street de Montréal et du Québec : musique, sport, bijoux, sorties. L’inspiration vient des gens déjà dans le cercle, puis se coupe en casquettes, hoodies, bas et bijoux qui portent cette énergie.' },
-    { title: 'Directement de la maison', text: 'Pas de marge de mail, pas de marque d’usine anonyme. Tu achètes chez MENES. Les questions arrivent dans une vraie boîte. Réponse sous 24 h. Pour −10 %, tu trouves un ambassadeur — son code est la seule clé.' },
-  ],
+  whyStory: {
+    lead: 'Menes. Le premier pharaon d’Égypte. Celui qui a uni la Haute et la Basse-Égypte : deux mondes divisés, réunis par la vision, le courage et la détermination d’un seul homme.',
+    punch: 'MENES n’est pas un hommage. C’est un miroir.',
+    paragraphs: [
+      'Je viens du quartier le plus haï de Montréal. Je ne l’ai jamais nié.',
+      'Et pourtant, des gens de partout — même ceux qui n’aiment pas mon quartier — viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
+      'C’est ça, être un pont plutôt qu’un mur.',
+      'MENES KULTUR, c’est cette énergie, portée. Chaque pièce porte une valeur qu’on vit, pas juste qu’on porte :',
+    ],
+    valuesLabel: 'Vingt-et-un mots. Une mentalité.',
+    close: [
+      'MENES est une vision globale, vécue dans l’exclusivité. Ceux qui portent MENES ne portent pas juste une pièce. Ils sentent le changement. Ils portent le succès. Ils portent les valeurs qu’ils deviennent.',
+      'MENES est pour ceux qui construisent, qui unissent, qui laissent derrière eux quelque chose de plus grand qu’eux.',
+    ],
+  },
   faq: [
     { q: 'Quels sont les délais de livraison ?', a: 'Les commandes partent du Québec. Compte 3 à 5 jours ouvrables au Québec, et 5 à 10 jours ouvrables pour le reste du Canada. Tu reçois un courriel de suivi dès que le colis quitte l’atelier.' },
     { q: 'Quelle est la politique de retour et d’échange ?', a: 'Tu as 14 jours après la livraison pour demander un échange si l’article n’a pas été porté, ni lavé, et qu’il a encore ses étiquettes. Écris-nous par courriel ou Instagram avec ton numéro de commande. Les pièces portées ou abîmées ne s’échangent pas.' },
@@ -551,6 +574,17 @@ function pickList(...candidates) {
     if (filled.length) return filled;
   }
   return [];
+}
+
+function pickWhyStory(preferred, fallback) {
+  const story = preferred && preferred.lead && pickList(preferred.paragraphs).length ? preferred : fallback;
+  return {
+    lead: pickText(story?.lead, fallback.lead),
+    punch: pickText(story?.punch, fallback.punch),
+    paragraphs: pickList(story?.paragraphs, fallback.paragraphs),
+    valuesLabel: pickText(story?.valuesLabel, fallback.valuesLabel),
+    close: pickList(story?.close, fallback.close),
+  };
 }
 
 function pickText(...candidates) {
@@ -627,6 +661,7 @@ function siteCopy(lang = currentLang) {
       heroCta: pickText(fr.heroCta, DEFAULT_SITE_FR.heroCta),
       announcement,
       trust: publicTrust(pickList(fr.trust, s.trust), DEFAULT_SITE_FR.trust),
+      whyStory: pickWhyStory(null, DEFAULT_SITE_FR.whyStory),
       why: pickList(fr.why, s.why, DEFAULT_SITE_FR.why),
       faq: pickList(fr.faq, s.faq, DEFAULT_SITE_FR.faq),
       design: {
@@ -653,6 +688,7 @@ function siteCopy(lang = currentLang) {
     heroCta: pickText(en.heroCta, DEFAULT_SITE_EN.heroCta),
     announcement,
     trust: publicTrust(pickList(en.trust, DEFAULT_SITE_EN.trust), DEFAULT_SITE_EN.trust),
+    whyStory: pickWhyStory(null, DEFAULT_SITE_EN.whyStory),
     why: pickList(en.why, DEFAULT_SITE_EN.why),
     faq: pickList(en.faq, DEFAULT_SITE_EN.faq),
     design: {
@@ -1147,9 +1183,36 @@ function loadGoogleFont(family) {
 }
 
 const THEME_MODES = {
-  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#555555', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
-  dark: { bg: '#050505', surface: '#0f0f0f', text: '#f4f2ee', muted: '#a8a8a8', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505' },
+  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#3f3c38', border: '#d7d2cb', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
+  dark: { bg: '#050505', surface: '#161616', text: '#f6f3ee', muted: '#d4cfc6', border: '#3d3d3d', navbg: 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505' },
 };
+
+function hexLum(hex) {
+  const raw = String(hex || '').trim();
+  const m = raw.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!m) return 0.5;
+  let h = m[1];
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function guardContrast(pal) {
+  const out = { ...pal };
+  const bgL = hexLum(out.bg);
+  if (bgL < 0.4) {
+    if (hexLum(out.text) < 0.6) out.text = '#f6f3ee';
+    if (hexLum(out.muted) < 0.55) out.muted = '#d4cfc6';
+    if (hexLum(out.border) < 0.14) out.border = '#3d3d3d';
+    if (Math.abs(hexLum(out.surface) - bgL) < 0.04) out.surface = '#161616';
+  } else if (bgL > 0.7) {
+    if (hexLum(out.text) > 0.45) out.text = '#0a0a0a';
+    if (hexLum(out.muted) > 0.55) out.muted = '#3f3c38';
+  }
+  return out;
+}
 
 const ASPECT_MAP = { '': '', square: '1 / 1', portrait45: '4 / 5', portrait34: '3 / 4', landscape: '16 / 9', wide: '3 / 2' };
 
@@ -1171,6 +1234,7 @@ function applyTheme() {
   } else {
     pal = { ...(THEME_MODES[mode] || THEME_MODES.dark) };
   }
+  pal = guardContrast(pal);
   const btnBg = th.buttonBg || pal.btnBg || (mode === 'dark' ? accent : '#0a0a0a');
   const btnText = th.buttonText || pal.btnText || (mode === 'dark' ? '#050505' : '#fafafa');
 
@@ -1189,7 +1253,7 @@ function applyTheme() {
   const annColor = th.announceColor || accent;
 
   const css = `
-:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; }
+:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; --muted: ${pal.muted}; --surface-1: ${pal.surface}; }
 body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero h1, .section-head h2, .nav-brand span, .product-price, .bundle-copy h2, .cart-header h3, .modal-box h3, .contact-section h2, .pdp-body h2, .product-title-btn { font-family: ${headingFont}; }
 .nav { background: ${pal.navbg}; border-bottom-color: ${pal.border}; }
@@ -1472,13 +1536,7 @@ function renderSite() {
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
-
-  toggle('why', sec.why !== false && s.why?.length);
-  if (sec.why !== false && s.why?.length) {
-    document.getElementById('whyGrid').innerHTML = s.why.map((w) => `
-      <div class="why-card"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p></div>
-    `).join('');
-  }
+  renderWhy(s, sec);
 
   renderDesign(s, sec);
 
@@ -1516,8 +1574,28 @@ function renderSite() {
 }
 
 function renderBundle(/* s, sec */) {
-  // Signature / grillz mix section retired
   toggle('bundle', false);
+}
+
+function renderWhy(s, sec) {
+  const story = (currentLang === 'fr' ? DEFAULT_SITE_FR.whyStory : DEFAULT_SITE_EN.whyStory);
+  const hasStory = story && (story.lead || story.paragraphs?.length);
+  toggle('why', sec.why !== false && hasStory);
+  if (sec.why === false || !hasStory) return;
+  const grid = document.getElementById('whyGrid');
+  if (!grid) return;
+  const values = MENES_VALUES.map((v) => `<li>${esc(v)}</li>`).join('');
+  const paras = (story.paragraphs || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  const close = (story.close || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  grid.className = 'why-story';
+  grid.innerHTML = `
+    <p class="why-lead">${esc(story.lead || '')}</p>
+    <p class="why-punch">${esc(story.punch || '')}</p>
+    <div class="why-body">${paras}</div>
+    <ul class="why-values" aria-label="${esc(story.valuesLabel || 'MENES')}">${values}</ul>
+    <p class="why-values-label">${esc(story.valuesLabel || '')}</p>
+    <div class="why-close">${close}</div>
+  `;
 }
 
 function renderDesign(s, sec) {

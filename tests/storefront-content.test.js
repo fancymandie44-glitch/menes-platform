@@ -30,7 +30,10 @@ function run() {
 
   assert(shop.includes('PRODUCTION_ORIGIN = \'https://www.mymenes.com\''), 'shop.js canonical origin');
   assert(shop.includes('MIN_PUBLIC_REVIEWS = 3'), 'reviews stay hidden until 3 approved');
-  assert(shop.includes('FALLBACK_GALLERY'), 'community photo fallback exists');
+  assert(shop.includes('first pharaoh of Egypt'), 'Why MENES manifesto is present');
+  assert(shop.includes("MENES_VALUES"), '21 value chips exist');
+  assert((shop.match(/'Brotherhood'/) || []).length >= 1, 'Brotherhood value exists');
+  assert(shop.includes('function guardContrast'), 'theme contrast guard exists');
   assert(shop.includes('DEFAULT_SITE_FR'), 'French copy pack exists');
   assert((shop.match(/q: '/g) || []).length >= 16, 'FAQ should include EN + FR questions');
   assert(shop.includes('toggle(\'guarantee\', false)'), 'SSL guarantee block is forced off');
