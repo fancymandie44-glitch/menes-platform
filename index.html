@@ -7,13 +7,13 @@
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
   <meta property="og:description" content="Luxury streetwear. Premium clothing, secure checkout, shipping across Quebec and Canada.">
-  <meta property="og:url" content="https://boutiquemenes.netlify.app/">
-  <link rel="canonical" href="https://boutiquemenes.netlify.app/">
+  <meta property="og:url" content="https://www.mymenes.com/">
+  <link rel="canonical" href="https://www.mymenes.com/">
   <title>MENES | Luxury Streetwear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260908p">
+  <link rel="stylesheet" href="shop.css?v=20260923d">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -35,6 +35,7 @@
       <a href="#products" data-i18n="nav_shop">Shop</a>
       <a href="#gallery" data-i18n="nav_community">Community</a>
       <a href="#why" data-i18n="nav_why">Why MENES</a>
+      <a href="#design" data-i18n="nav_design">Atelier</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
       <button type="button" id="langToggle" class="nav-lang-btn" aria-label="Passer en français">FR</button>
@@ -52,7 +53,7 @@
       <p class="hero-tag" id="heroTag"></p>
       <h1 id="heroTitle">MENES</h1>
       <p class="hero-sub" id="heroSubtitle"></p>
-      <a href="#products" class="hero-cta" id="heroCta">Shop the collection</a>
+      <a href="#products" class="hero-cta" id="heroCta" data-i18n="hero_cta">Shop the collection</a>
     </div>
   </header>
 
@@ -73,7 +74,7 @@
         <div class="shop-sort-wrap">
           <label for="productSizeFilter" id="productSizeLabel" data-i18n="size_filter">Size</label>
           <select id="productSizeFilter" class="shop-sort-select" aria-labelledby="productSizeLabel">
-            <option value="">Toutes les tailles</option>
+            <option value="" data-i18n="size_all">All sizes</option>
           </select>
         </div>
         <div class="shop-sort-wrap">
@@ -93,9 +94,9 @@
     <div class="container bundle-inner">
       <div class="bundle-copy">
         <span class="section-label" data-i18n="label_signature">Signature MENES</span>
-        <h2 id="bundleTitle">Complete le look</h2>
+        <h2 id="bundleTitle" data-i18n="complete_look">Complete the look</h2>
         <p id="bundleText"></p>
-        <a href="#products" class="hero-cta" id="bundleCta">Shop the collection</a>
+        <a href="#products" class="hero-cta" id="bundleCta" data-i18n="hero_cta">Shop the collection</a>
       </div>
       <div class="bundle-tags">
         <span>Grillz</span><span>+</span><span>Streetwear</span><span>=</span><span>MENES</span>
@@ -107,11 +108,12 @@
     <div class="container">
       <div class="section-head">
         <span class="section-label" data-i18n="label_community">Community</span>
-        <h2 id="galleryTitle">Ils portent MENES</h2>
+        <h2 id="galleryTitle" data-i18n="gallery_title">They wear MENES</h2>
         <p class="section-sub" id="gallerySubtitle"></p>
       </div>
       <div id="galleryGrid" class="gallery-grid"></div>
-      <p class="gallery-empty hidden" id="galleryEmpty"><span data-i18n="gallery_empty">Customer photos coming soon. Tag</span> <a id="galleryIgLink" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">@menes_jewelry</a> <span data-i18n="gallery_empty_ig">on Instagram.</span></p>
+      <p class="gallery-cta" id="galleryCta"><span data-i18n="gallery_cta">Tag</span> <a id="galleryCtaLink" href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">@menes_vs1</a> <span data-i18n="gallery_cta_rest">on Instagram with your photos. We feature the community.</span></p>
+      <p class="gallery-empty hidden" id="galleryEmpty"><span data-i18n="gallery_empty">Tag</span> <a id="galleryIgLink" href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">@menes_vs1</a> <span data-i18n="gallery_empty_ig">on Instagram with your photos.</span></p>
     </div>
   </section>
 
@@ -139,16 +141,29 @@
     </div>
   </section>
 
+  <section id="design" class="design-section hidden">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label" data-i18n="label_design">Atelier</span>
+        <h2 id="designTitle" data-i18n="design_title">The MENES vision</h2>
+        <p class="section-sub" id="designSubtitle"></p>
+      </div>
+      <p class="design-intro" id="designIntro"></p>
+      <div id="designGrid" class="why-grid"></div>
+      <div id="designStills" class="design-stills"></div>
+    </div>
+  </section>
+
   <section id="emailCapture" class="email-section hidden">
     <div class="container email-inner">
       <div class="email-copy">
-        <h2 id="emailTitle">Rejoins la liste VIP MENES</h2>
+        <h2 id="emailTitle">Join the MENES inner circle</h2>
         <p id="emailSubtitle"></p>
       </div>
       <form id="emailForm" class="email-form">
         <input type="email" id="emailInput" required autocomplete="email" data-i18n-placeholder="email_ph">
         <input type="text" id="emailHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button type="submit" id="emailBtn">M'inscrire</button>
+        <button type="submit" id="emailBtn" data-i18n="email_btn">Sign me up</button>
       </form>
     </div>
   </section>
@@ -168,9 +183,9 @@
       <h2 data-i18n="label_contact">Contact</h2>
       <p class="contact-sub" data-i18n="contact_sub">Got a question? We reply within 24h.</p>
       <div class="contact-links">
-        <a id="linkInstagram" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">Instagram</a>
+        <a id="linkInstagram" href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">Instagram</a>
         <a id="linkEmail" href="mailto:contact@menes.store">Email</a>
-        <a id="linkPhone" href="#" class="hidden">Téléphone</a>
+        <a id="linkPhone" href="#" class="hidden" data-i18n="contact_phone">Phone</a>
       </div>
     </div>
   </section>
@@ -480,6 +495,6 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20260908p"></script>
+  <script src="shop.js?v=20260923d"></script>
 </body>
 </html>
