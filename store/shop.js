@@ -382,8 +382,29 @@ const I18N = {
 
 const PRODUCTION_ORIGIN = 'https://www.mymenes.com';
 const MIN_PUBLIC_REVIEWS = 3;
-const IG_HANDLE = '@menes_jewelry';
-const IG_URL = 'https://www.instagram.com/menes_jewelry';
+const IG_HANDLE = '@menes_vs1';
+const IG_URL = 'https://www.instagram.com/menes_vs1';
+
+function rewriteLegacyIg(str) {
+  return String(str || '').replace(/@?menes_jewelry/gi, IG_HANDLE);
+}
+
+function shopInstagram(raw = {}) {
+  const handleRaw = String(raw.instagramHandle || '').trim();
+  const urlRaw = String(raw.instagram || '').trim();
+  if (!handleRaw && !urlRaw) return { handle: IG_HANDLE, url: IG_URL };
+  if (/menes_jewelry/i.test(handleRaw) || /menes_jewelry/i.test(urlRaw)) {
+    return { handle: IG_HANDLE, url: IG_URL };
+  }
+  let handle = handleRaw;
+  if (!handle && urlRaw) {
+    const m = urlRaw.match(/instagram\.com\/([^/?#]+)/i);
+    if (m) handle = m[1];
+  }
+  if (handle && !handle.startsWith('@')) handle = `@${handle.replace(/^@+/, '')}`;
+  const url = urlRaw || (handle ? `https://www.instagram.com/${handle.replace(/^@/, '')}` : IG_URL);
+  return { handle: handle || IG_HANDLE, url };
+}
 
 const FALLBACK_GALLERY = [
   { image: '/images/community/hat-outdoor.jpg', handle: IG_HANDLE, caption: 'MENES Kultur' },
@@ -416,7 +437,7 @@ const DEFAULT_SITE_EN = {
   heroCta: 'Shop the collection',
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
-  gallerySubtitle: 'Real people, real pieces. Tag @menes_jewelry to get featured.',
+  gallerySubtitle: 'Real people, real pieces. Tag @menes_vs1 to get featured.',
   guarantee: '',
   trust: [
     { icon: '◆', title: 'Ships from Quebec', text: '3–5 business days in QC, 5–10 across Canada' },
@@ -471,7 +492,7 @@ const DEFAULT_SITE_FR = {
   heroCta: 'Voir la collection',
   announcement: 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs',
   galleryTitle: 'Ils portent MENES',
-  gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_jewelry pour apparaître ici.',
+  gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_vs1 pour apparaître ici.',
   guarantee: '',
   trust: [
     { icon: '◆', title: 'Expédié du Québec', text: '3–5 jours ouvrables au QC, 5–10 partout au Canada' },
@@ -614,7 +635,7 @@ function siteCopy(lang = currentLang) {
         points: pickList(fr.design?.points, s.design?.points, DEFAULT_SITE_FR.design.points),
       },
       galleryTitle: pickText(fr.galleryTitle, s.galleryTitle, DEFAULT_SITE_FR.galleryTitle),
-      gallerySubtitle: humanizeCopy(pickText(fr.gallerySubtitle, s.gallerySubtitle, DEFAULT_SITE_FR.gallerySubtitle)),
+      gallerySubtitle: rewriteLegacyIg(humanizeCopy(pickText(fr.gallerySubtitle, s.gallerySubtitle, DEFAULT_SITE_FR.gallerySubtitle))),
       guarantee: '',
       bundle: { ...DEFAULT_SITE_FR.bundle, ...(s.bundle || {}), ...(fr.bundle || {}) },
       emailCapture: migrateEmailCapture({ ...DEFAULT_SITE_FR.emailCapture, ...(s.emailCapture || {}), ...(fr.emailCapture || {}) }, 'fr'),
@@ -640,7 +661,7 @@ function siteCopy(lang = currentLang) {
       points: pickList(en.design?.points, DEFAULT_SITE_EN.design.points),
     },
     galleryTitle: pickText(en.galleryTitle, DEFAULT_SITE_EN.galleryTitle),
-    gallerySubtitle: humanizeCopy(pickText(en.gallerySubtitle, DEFAULT_SITE_EN.gallerySubtitle)),
+    gallerySubtitle: rewriteLegacyIg(humanizeCopy(pickText(en.gallerySubtitle, DEFAULT_SITE_EN.gallerySubtitle))),
     guarantee: '',
     bundle: { ...DEFAULT_SITE_EN.bundle, ...(en.bundle || {}) },
     emailCapture: migrateEmailCapture({ ...DEFAULT_SITE_EN.emailCapture, ...(en.emailCapture || {}) }, 'en'),
@@ -1476,10 +1497,11 @@ function renderSite() {
 
   toggle('guarantee', false);
 
-  const igHandle = raw.instagramHandle || '@menes_jewelry';
-  if (raw.instagram) {
-    document.getElementById('linkInstagram').href = raw.instagram;
-    document.getElementById('linkInstagram').textContent = `Instagram ${igHandle}`;
+  const ig = shopInstagram(raw);
+  const igLinkEl = document.getElementById('linkInstagram');
+  if (igLinkEl) {
+    igLinkEl.href = ig.url;
+    igLinkEl.textContent = `Instagram ${ig.handle}`;
   }
   if (raw.email) {
     document.getElementById('linkEmail').href = `mailto:${raw.email}`;
@@ -1533,12 +1555,11 @@ function renderGallery(s, sec, raw) {
 
   document.getElementById('galleryTitle').textContent = s.galleryTitle || t('gallery_title');
   document.getElementById('gallerySubtitle').textContent = s.gallerySubtitle || '';
-  const igHref = src.instagram || IG_URL;
-  const igHandle = src.instagramHandle || IG_HANDLE;
+  const ig = shopInstagram(src);
   document.querySelectorAll('#galleryIgLink, #galleryCtaLink').forEach((igLink) => {
     if (!igLink) return;
-    igLink.href = igHref;
-    igLink.textContent = igHandle;
+    igLink.href = ig.url;
+    igLink.textContent = ig.handle;
   });
 
   const grid = document.getElementById('galleryGrid');
@@ -1547,7 +1568,7 @@ function renderGallery(s, sec, raw) {
   if (!grid) return;
 
   grid.innerHTML = items.map((g) => {
-    const handle = (g.handle || '').trim();
+    const handle = rewriteLegacyIg((g.handle || '').trim());
     const caption = (g.caption || '').trim();
     const label = handle || caption || 'MENES';
     const sub = handle && caption && caption !== handle ? caption : '';
@@ -3488,7 +3509,7 @@ async function showCryptoPayment(order, total) {
   if (!wallets.length) {
     document.getElementById('cryptoTimer').classList.add('hidden');
     tabs.innerHTML = '';
-    const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_jewelry';
+    const ig = shopInstagram(storeData?.site).url;
     panel.innerHTML = `<p class="crypto-empty">Contacte-nous sur <a href="${ig}" target="_blank" rel="noopener">Instagram</a> ou par email pour recevoir l'adresse de paiement crypto. Ta commande #${order.id} est enregistrée.</p>`;
     return;
   }

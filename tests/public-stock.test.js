@@ -3,7 +3,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { publicProduct, publicStockCount, isLowStock, LOW_STOCK_LIMIT } = require('../lib/public-catalog');
+const { publicProduct, publicStockCount, isLowStock, LOW_STOCK_LIMIT, publicSite } = require('../lib/public-catalog');
 
 assert.strictEqual(LOW_STOCK_LIMIT, 10);
 assert.strictEqual(isLowStock(9), true);
@@ -61,5 +61,14 @@ assert.ok(shopJs.includes('function isLowStock'));
 assert.ok(shopJs.includes('function cardRemaining'));
 assert.ok(shopJs.includes('product-stock-left'));
 assert.ok(shopJs.includes("tFill('stock_left'"));
+
+const ig = publicSite({
+  instagram: 'https://www.instagram.com/menes_jewelry',
+  instagramHandle: '@menes_jewelry',
+  gallerySubtitle: 'Tag @menes_jewelry',
+});
+assert.strictEqual(ig.instagramHandle, '@menes_vs1');
+assert.strictEqual(ig.instagram, 'https://www.instagram.com/menes_vs1');
+assert.strictEqual(ig.gallerySubtitle, 'Tag @menes_vs1');
 
 console.log('ok: public low-stock catalog');

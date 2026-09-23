@@ -20,7 +20,9 @@ function run() {
   assert(!html.includes('boutiquemenes.netlify.app'), 'homepage must not advertise the Netlify origin');
   assert(/Luxury Streetwear/.test(html), 'Luxury positioning stays in metadata');
   assert(html.includes('id="design"'), 'atelier / design section is present');
-  assert(html.includes('galleryCtaLink'), 'community Instagram CTA is present');
+  assert(html.includes('@menes_vs1'), 'community CTA uses @menes_vs1');
+  assert(!html.includes('menes_jewelry'), 'homepage must not link the old jewelry IG');
+  assert(shop.includes("IG_HANDLE = '@menes_vs1'"), 'shop IG default is @menes_vs1');
   assert(!/coming soon/i.test(html), 'homepage HTML must not say coming soon');
   assert(!/Ils portent MENES/.test(html), 'default homepage language should not mix FR gallery title');
   assert(!/Toutes les tailles/.test(html), 'size filter default must be English before i18n');
