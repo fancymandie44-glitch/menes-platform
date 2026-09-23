@@ -125,10 +125,16 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_design: 'Atelier', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
+    label_design: 'Atelier', design_title: 'La vision MENES',
+    gallery_title: 'Ils portent MENES',
+    gallery_cta: 'Tague',
+    gallery_cta_rest: 'sur Instagram avec tes photos. On met la communauté en avant.',
+    contact_phone: 'Téléphone',
+    email_btn: "M'inscrire",
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
     foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
@@ -177,8 +183,8 @@ const I18N = {
     vip_overlay_btn: 'Recevoir les drops',
     vip_overlay_skip: 'Je vais trouver un ambassadeur',
     vip_welcome: 'Bienvenue dans le cercle MENES!',
-    gallery_empty: 'Photos clients bientôt. Tag',
-    gallery_empty_ig: 'sur Instagram.',
+    gallery_empty: 'Tague',
+    gallery_empty_ig: 'sur Instagram avec tes photos.',
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
@@ -246,10 +252,16 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_design: 'Atelier', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
+    label_design: 'Atelier', design_title: 'The MENES vision',
+    gallery_title: 'They wear MENES',
+    gallery_cta: 'Tag',
+    gallery_cta_rest: 'on Instagram with your photos. We feature the community.',
+    contact_phone: 'Phone',
+    email_btn: 'Sign me up',
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
     foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
@@ -298,8 +310,8 @@ const I18N = {
     vip_overlay_btn: 'Get drop alerts',
     vip_overlay_skip: 'I’ll find an ambassador',
     vip_welcome: 'Welcome to the MENES circle!',
-    gallery_empty: 'Customer photos soon. Tag',
-    gallery_empty_ig: 'on Instagram.',
+    gallery_empty: 'Tag',
+    gallery_empty_ig: 'on Instagram with your photos.',
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
@@ -368,6 +380,34 @@ const I18N = {
   },
 };
 
+const PRODUCTION_ORIGIN = 'https://www.mymenes.com';
+const MIN_PUBLIC_REVIEWS = 3;
+const IG_HANDLE = '@menes_jewelry';
+const IG_URL = 'https://www.instagram.com/menes_jewelry';
+
+const FALLBACK_GALLERY = [
+  { image: '/images/community/hat-outdoor.jpg', handle: IG_HANDLE, caption: 'MENES Kultur' },
+  { image: '/images/community/street-point.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/field-duo.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hoodie-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hallway-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/studio-session.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/dj-chain.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/kid-pitch.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/painter.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/camera-selfie.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/bathtub-campaign.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-beige-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-black-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-orange-studio.jpg', handle: IG_HANDLE, caption: '' },
+];
+
+const FALLBACK_ATELIER_STILLS = [
+  '/images/atelier/hat-orange-detail.jpg',
+  '/images/atelier/socks-lineup.jpg',
+  '/images/atelier/hat-black-still.jpg',
+];
+
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
   tagline: 'Luxury streetwear. Premium quality.',
@@ -376,25 +416,41 @@ const DEFAULT_SITE_EN = {
   heroCta: 'Shop the collection',
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
-  gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
-  guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
+  gallerySubtitle: 'Real people, real pieces. Tag @menes_jewelry — we feature the community.',
+  guarantee: '',
   trust: [
-    { icon: '◆', title: '100% secure payment', text: 'Card, Crypto, Klarna, PayPal' },
-    { icon: '◆', title: 'Fast shipping', text: 'Ships in 3-5 business days' },
+    { icon: '◆', title: 'Ships from Quebec', text: '3–5 business days in QC, 5–10 across Canada' },
     { icon: '◆', title: 'Premium quality', text: 'Selected materials, clean finishes' },
-    { icon: '◆', title: 'Happy or exchange', text: '14 days to exchange' },
+    { icon: '◆', title: '14-day exchange', text: 'Unused items with tags' },
+    { icon: '◆', title: 'Ambassador circle', text: 'Exclusive codes. Not on the public shelf.' },
   ],
   why: [
-    { title: 'Exclusive design', text: 'Every MENES piece is built to stand out. No mass market. Real luxury streetwear.' },
-    { title: 'Direct producer price', text: 'No middleman markup. You pay the fair price for boutique quality.' },
-    { title: 'Personal service', text: 'Questions? Hit us on Instagram or email. Reply within 24h.' },
+    { title: 'Built to be seen', text: 'MENES exists for people who dress like a statement, not a trend report. Every drop is designed to stand out on the street and in the room — luxury streetwear with a hard silhouette, not mass-market filler.' },
+    { title: 'Materials with weight', text: 'Heavy cotton, dense embroidery, hardware that holds. We pick fabrics and finishes that look expensive in daylight and still hit under night lighting. The pieces are meant to be worn hard, not babied on a hanger.' },
+    { title: 'From culture, not a moodboard', text: 'The house is rooted in Montreal and Quebec street culture: music, sport, jewelry, nights out. Inspiration comes from the people already in the circle, then gets cut into hats, hoodies, socks, and jewelry that carry that energy.' },
+    { title: 'Direct from the house', text: 'No mall markup, no anonymous factory brand. You buy from MENES. Questions go to a real inbox. Replies within 24 hours. If you want 10% off, you find an ambassador — that code is the only key.' },
   ],
   faq: [
-    { q: 'How do I order?', a: 'Add items to cart, enter your info, pay by card or crypto. Klarna and PayPal are also on the alternate payment page.' },
-    { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT), Klarna (4 interest-free payments) and PayPal.' },
-    { q: 'How long is shipping?', a: '3 to 5 business days in Quebec. 5 to 10 days for the rest of Canada.' },
-    { q: 'Can I exchange an item?', a: 'Yes, within 14 days of delivery if the item is unused with tags.' },
+    { q: 'How long does shipping take?', a: 'Orders ship from Quebec. Allow 3 to 5 business days in Quebec, and 5 to 10 business days for the rest of Canada. You get a tracking email once the parcel leaves.' },
+    { q: 'What is the return and exchange policy?', a: 'You have 14 days from delivery to request an exchange if the item is unused, unwashed, and still has its tags. Contact us by email or Instagram with your order number. Worn or damaged pieces cannot be exchanged.' },
+    { q: 'How do I choose my size?', a: 'Open any product and use the size guide on the page. Street fits can run relaxed. If you are between sizes or unsure, email us your usual size and the piece you want — we answer within 24 hours.' },
+    { q: 'What materials do you use?', a: 'It depends on the piece: dense cotton for hoodies and tees, structured panels and mesh on trucker hats, ribbed cotton for socks, and metal hardware on jewelry. Each product page lists the details for that drop.' },
+    { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT) with a 15-minute quote window, plus Klarna and PayPal on the alternate payment page. Card details never sit on our servers.' },
+    { q: 'How does the ambassador program work?', a: 'MENES ambassadors hold exclusive codes. There is no public coupon on the site. Find someone in the circle, enter their code at checkout, and unlock 10% off. Want to become an ambassador? Message us on Instagram.' },
+    { q: 'Do you ship outside Canada?', a: 'Yes. Canada is our home lane. The United States and selected international destinations are available at checkout; duties and taxes follow the destination.' },
+    { q: 'Are some pieces pre-order?', a: 'A few drops are made in small runs. If a product is marked pre-order, you pay now and we ship when that run is ready — not as next-day inventory.' },
   ],
+  design: {
+    title: 'The atelier',
+    subtitle: 'How the house builds a drop.',
+    intro: 'MENES is not a catalog first. It is a studio that cuts luxury streetwear for a tight circle: hats with weight, hoodies with presence, jewelry that reads from across the room.',
+    points: [
+      { title: 'Inspiration', text: 'Nights, pitches, studios, and the people already wearing the pieces. We sketch from real rooms, not stock moodboards.' },
+      { title: 'Design', text: 'Gothic lettering, gold on black, burnt orange, sand. The Kultur mark is built to embroider clean and still hit in a photo.' },
+      { title: 'Materials', text: 'We sample fabrics and threads until the hand-feel matches the look. If it pills, fades cheap, or sits flat, it does not ship.' },
+      { title: 'The circle', text: 'Drops move through ambassadors and the community before they become “content”. That is why the gallery is people, not mannequins.' },
+    ],
+  },
   bundle: {
     title: 'Complete the look',
     text: 'Grillz + streetwear = your MENES signature. Mix your favorite pieces in one checkout.',
@@ -407,6 +463,84 @@ const DEFAULT_SITE_EN = {
     placeholder: 'you@email.com',
   },
 };
+
+const DEFAULT_SITE_FR = {
+  tagline: 'Luxe streetwear. Qualité premium.',
+  heroTitle: 'Street luxe.\nC’est MENES.',
+  heroSubtitle: 'Vêtements et accessoires pour ceux qui créent la tendance. Pas ceux qui la suivent.',
+  heroCta: 'Voir la collection',
+  announcement: 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs',
+  galleryTitle: 'Ils portent MENES',
+  gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_jewelry — on met la communauté en avant.',
+  guarantee: '',
+  trust: [
+    { icon: '◆', title: 'Expédié du Québec', text: '3–5 jours ouvrables au QC, 5–10 partout au Canada' },
+    { icon: '◆', title: 'Qualité premium', text: 'Matières choisies, finitions nettes' },
+    { icon: '◆', title: 'Échange 14 jours', text: 'Articles non portés, étiquettes intactes' },
+    { icon: '◆', title: 'Cercle ambassadeurs', text: 'Codes exclusifs. Pas de promo publique.' },
+  ],
+  why: [
+    { title: 'Fait pour se voir', text: 'MENES existe pour ceux qui s’habillent comme une déclaration, pas comme un rapport de tendances. Chaque drop est pensé pour trancher dans la rue et dans la pièce — du luxury streetwear à silhouette nette, pas du remplissage de masse.' },
+    { title: 'Des matières qui pèsent', text: 'Coton dense, broderie serrée, quincaillerie qui tient. On choisit des tissus et des finitions qui restent chers en plein jour et qui frappent encore sous les lumières de nuit. Les pièces se portent fort, elles ne restent pas sur un cintre.' },
+    { title: 'La culture, pas un moodboard', text: 'La maison est ancrée dans la culture street de Montréal et du Québec : musique, sport, bijoux, sorties. L’inspiration vient des gens déjà dans le cercle, puis se coupe en casquettes, hoodies, bas et bijoux qui portent cette énergie.' },
+    { title: 'Directement de la maison', text: 'Pas de marge de mail, pas de marque d’usine anonyme. Tu achètes chez MENES. Les questions arrivent dans une vraie boîte. Réponse sous 24 h. Pour −10 %, tu trouves un ambassadeur — son code est la seule clé.' },
+  ],
+  faq: [
+    { q: 'Quels sont les délais de livraison ?', a: 'Les commandes partent du Québec. Compte 3 à 5 jours ouvrables au Québec, et 5 à 10 jours ouvrables pour le reste du Canada. Tu reçois un courriel de suivi dès que le colis quitte l’atelier.' },
+    { q: 'Quelle est la politique de retour et d’échange ?', a: 'Tu as 14 jours après la livraison pour demander un échange si l’article n’a pas été porté, ni lavé, et qu’il a encore ses étiquettes. Écris-nous par courriel ou Instagram avec ton numéro de commande. Les pièces portées ou abîmées ne s’échangent pas.' },
+    { q: 'Comment choisir ma taille ?', a: 'Ouvre le produit et utilise le guide des tailles sur la page. Les coupes street peuvent être plus relaxed. Si tu hésites entre deux tailles, envoie-nous ta taille habituelle et la pièce visée — on répond sous 24 h.' },
+    { q: 'Quelles matières utilisez-vous ?', a: 'Ça dépend de la pièce : coton dense pour les hoodies et t-shirts, panneaux structurés et mesh sur les truckers, coton côtelé pour les bas, métal sur les bijoux. Chaque fiche produit détaille le drop.' },
+    { q: 'Quels modes de paiement acceptez-vous ?', a: 'Carte (Square), crypto (BTC, ETH, USDT) avec une fenêtre de 15 minutes, plus Klarna et PayPal sur la page de paiement alternatif. Les données de carte ne restent pas sur nos serveurs.' },
+    { q: 'Comment fonctionne le programme ambassadeur ?', a: 'Les ambassadeurs MENES détiennent des codes exclusifs. Il n’y a pas de coupon public sur le site. Trouve quelqu’un du cercle, entre son code à la caisse, et débloque −10 %. Tu veux le devenir ? Écris-nous sur Instagram.' },
+    { q: 'Livrez-vous hors Canada ?', a: 'Oui. Le Canada est notre voie principale. Les États-Unis et certaines destinations internationales sont proposés à la caisse ; droits et taxes suivent la destination.' },
+    { q: 'Certaines pièces sont-elles en précommande ?', a: 'Quelques drops se font en petites séries. Si un produit est marqué précommande, tu paies maintenant et on expédie quand la série est prête — pas en stock lendemain.' },
+  ],
+  design: {
+    title: 'L’atelier',
+    subtitle: 'Comment la maison construit un drop.',
+    intro: 'MENES n’est pas un catalogue d’abord. C’est un studio qui coupe du luxury streetwear pour un cercle serré : casquettes qui pèsent, hoodies qui tiennent la pièce, bijoux lisibles de l’autre côté de la salle.',
+    points: [
+      { title: 'Inspiration', text: 'Les nuits, les terrains, les studios, et les gens qui portent déjà les pièces. On dessine à partir de vraies salles, pas de moodboards stock.' },
+      { title: 'Conception', text: 'Lettrage gothique, or sur noir, orange brûlé, sable. La marque Kultur est faite pour broder net et encore frapper en photo.' },
+      { title: 'Matières', text: 'On teste tissus et fils jusqu’à ce que le toucher suive le look. Si ça bouloche, ça déteint cheap ou ça tombe plat, ça ne part pas.' },
+      { title: 'Le cercle', text: 'Les drops passent par les ambassadeurs et la communauté avant de devenir du « contenu ». C’est pour ça que la galerie, c’est des gens, pas des mannequins.' },
+    ],
+  },
+  bundle: {
+    title: 'Complète le look',
+    text: 'Grillz + streetwear = ta signature MENES. Mélange tes pièces préférées en une commande.',
+    cta: 'Voir la collection',
+  },
+  emailCapture: {
+    title: 'Rejoins le cercle MENES',
+    subtitle: 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES — son code est la seule clé.',
+    button: "M'inscrire",
+    placeholder: 'ton@email.com',
+  },
+};
+
+function pickList(...candidates) {
+  for (const c of candidates) {
+    if (Array.isArray(c) && c.length) return c;
+  }
+  return [];
+}
+
+function pickText(...candidates) {
+  for (const c of candidates) {
+    if (c != null && String(c).trim()) return c;
+  }
+  return '';
+}
+
+function looksLikeSslBadge(item) {
+  return /ssl|encrypted|pci-dss|256-bit|paiement s[ée]cur|secure payment|encrypted payment/i.test(`${item?.title || ''} ${item?.text || ''}`);
+}
+
+function publicTrust(list, fallback) {
+  const cleaned = (Array.isArray(list) ? list : []).filter((item) => item && (item.title || item.text) && !looksLikeSslBadge(item));
+  return cleaned.length ? cleaned : fallback;
+}
 
 function softHeroTitle(str) {
   const s = String(str || '').replace(/\\n/g, '\n').trim();
@@ -455,43 +589,53 @@ function migrateEmailCapture(ec, lang) {
 function siteCopy(lang = currentLang) {
   const s = storeData?.site || {};
   if (lang !== 'en') {
-    const fr = { ...(s.i18n?.fr || {}) };
-    let announcement = humanizeCopy(fr.announcement || s.announcement);
-    if (looksLikeRetiredVipPromo(announcement)) announcement = ambassadorAnnouncement('fr');
+    const fr = { ...DEFAULT_SITE_FR, ...(s.i18n?.fr || {}) };
+    let announcement = humanizeCopy(pickText(fr.announcement, s.announcement, DEFAULT_SITE_FR.announcement));
+    if (looksLikeRetiredVipPromo(announcement) || !announcement) announcement = ambassadorAnnouncement('fr');
     return {
       ...s,
-      tagline: humanizeCopy(fr.tagline || s.tagline),
-      heroTitle: softHeroTitle(fr.heroTitle || s.heroTitle),
-      heroSubtitle: humanizeCopy(fr.heroSubtitle || s.heroSubtitle),
-      heroCta: fr.heroCta || s.heroCta,
+      tagline: humanizeCopy(pickText(fr.tagline, s.tagline, DEFAULT_SITE_FR.tagline)),
+      heroTitle: softHeroTitle(pickText(fr.heroTitle, s.heroTitle, DEFAULT_SITE_FR.heroTitle)),
+      heroSubtitle: humanizeCopy(pickText(fr.heroSubtitle, s.heroSubtitle, DEFAULT_SITE_FR.heroSubtitle)),
+      heroCta: pickText(fr.heroCta, DEFAULT_SITE_FR.heroCta),
       announcement,
-      trust: fr.trust || s.trust,
-      why: fr.why || s.why,
-      faq: fr.faq || s.faq,
-      galleryTitle: fr.galleryTitle || s.galleryTitle,
-      gallerySubtitle: humanizeCopy(fr.gallerySubtitle || s.gallerySubtitle),
-      guarantee: humanizeCopy(fr.guarantee || s.guarantee),
-      bundle: { ...(s.bundle || {}), ...(fr.bundle || {}) },
-      emailCapture: migrateEmailCapture({ ...(s.emailCapture || {}), ...(fr.emailCapture || {}) }, 'fr'),
+      trust: publicTrust(pickList(fr.trust, s.trust), DEFAULT_SITE_FR.trust),
+      why: pickList(fr.why, s.why, DEFAULT_SITE_FR.why),
+      faq: pickList(fr.faq, s.faq, DEFAULT_SITE_FR.faq),
+      design: {
+        ...DEFAULT_SITE_FR.design,
+        ...(fr.design || s.design || {}),
+        points: pickList(fr.design?.points, s.design?.points, DEFAULT_SITE_FR.design.points),
+      },
+      galleryTitle: pickText(fr.galleryTitle, s.galleryTitle, DEFAULT_SITE_FR.galleryTitle),
+      gallerySubtitle: humanizeCopy(pickText(fr.gallerySubtitle, s.gallerySubtitle, DEFAULT_SITE_FR.gallerySubtitle)),
+      guarantee: '',
+      bundle: { ...DEFAULT_SITE_FR.bundle, ...(s.bundle || {}), ...(fr.bundle || {}) },
+      emailCapture: migrateEmailCapture({ ...DEFAULT_SITE_FR.emailCapture, ...(s.emailCapture || {}), ...(fr.emailCapture || {}) }, 'fr'),
     };
   }
   // English is the official storefront language — never fall back to French CMS strings
   const en = { ...DEFAULT_SITE_EN, ...(s.i18n?.en || {}) };
-  let announcement = humanizeCopy(en.announcement);
-  if (looksLikeRetiredVipPromo(announcement)) announcement = ambassadorAnnouncement('en');
+  let announcement = humanizeCopy(pickText(en.announcement, DEFAULT_SITE_EN.announcement));
+  if (looksLikeRetiredVipPromo(announcement) || !announcement) announcement = ambassadorAnnouncement('en');
   return {
     ...s,
-    tagline: humanizeCopy(en.tagline),
-    heroTitle: softHeroTitle(en.heroTitle),
-    heroSubtitle: humanizeCopy(en.heroSubtitle),
-    heroCta: en.heroCta || DEFAULT_SITE_EN.heroCta,
+    tagline: humanizeCopy(pickText(en.tagline, DEFAULT_SITE_EN.tagline)),
+    heroTitle: softHeroTitle(pickText(en.heroTitle, DEFAULT_SITE_EN.heroTitle)),
+    heroSubtitle: humanizeCopy(pickText(en.heroSubtitle, DEFAULT_SITE_EN.heroSubtitle)),
+    heroCta: pickText(en.heroCta, DEFAULT_SITE_EN.heroCta),
     announcement,
-    trust: en.trust || DEFAULT_SITE_EN.trust,
-    why: en.why || DEFAULT_SITE_EN.why,
-    faq: en.faq || DEFAULT_SITE_EN.faq,
-    galleryTitle: en.galleryTitle || DEFAULT_SITE_EN.galleryTitle,
-    gallerySubtitle: humanizeCopy(en.gallerySubtitle || DEFAULT_SITE_EN.gallerySubtitle),
-    guarantee: humanizeCopy(en.guarantee || DEFAULT_SITE_EN.guarantee),
+    trust: publicTrust(pickList(en.trust, DEFAULT_SITE_EN.trust), DEFAULT_SITE_EN.trust),
+    why: pickList(en.why, DEFAULT_SITE_EN.why),
+    faq: pickList(en.faq, DEFAULT_SITE_EN.faq),
+    design: {
+      ...DEFAULT_SITE_EN.design,
+      ...(en.design || {}),
+      points: pickList(en.design?.points, DEFAULT_SITE_EN.design.points),
+    },
+    galleryTitle: pickText(en.galleryTitle, DEFAULT_SITE_EN.galleryTitle),
+    gallerySubtitle: humanizeCopy(pickText(en.gallerySubtitle, DEFAULT_SITE_EN.gallerySubtitle)),
+    guarantee: '',
     bundle: { ...DEFAULT_SITE_EN.bundle, ...(en.bundle || {}) },
     emailCapture: migrateEmailCapture({ ...DEFAULT_SITE_EN.emailCapture, ...(en.emailCapture || {}) }, 'en'),
   };
@@ -1132,17 +1276,27 @@ function applySeo() {
   const seo = s.seo || {};
   const name = s.name || 'MENES';
   const enSeo = seo.en || {};
+  const origin = PRODUCTION_ORIGIN;
   if (currentLang === 'en') {
     document.title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
   } else {
-    document.title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
+    document.title = seo.title || `${name} | Luxe Streetwear`;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    if (seo.description) meta.content = seo.description;
+    meta.content = seo.description || 'MENES. Luxury streetwear. Vêtements premium, paiement sécurisé, livraison au Québec et au Canada.';
   }
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    document.head.appendChild(canonical);
+  }
+  canonical.href = `${origin}/`;
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.setAttribute('content', `${origin}/`);
   if (s.favicon) {
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
@@ -1210,12 +1364,22 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'design', 'emailCapture', 'faq', 'contact'];
 
 function applySectionOrder() {
-  const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
-    ? storeData.site.sectionOrder
-    : DEFAULT_SECTION_ORDER;
+  let order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
+    ? [...storeData.site.sectionOrder]
+    : [...DEFAULT_SECTION_ORDER];
+  order = order.filter((id) => id !== 'bundle' && id !== 'guarantee');
+  DEFAULT_SECTION_ORDER.forEach((id) => {
+    if (order.includes(id)) return;
+    if (id === 'design') {
+      const whyIdx = order.indexOf('why');
+      order.splice(whyIdx >= 0 ? whyIdx + 1 : order.length, 0, id);
+    } else {
+      order.push(id);
+    }
+  });
   const hero = document.getElementById('heroSection');
   if (!hero) return;
   let ref = hero;
@@ -1282,14 +1446,16 @@ function renderSite() {
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
 
-  toggle('why', sec.why !== false);
+  toggle('why', sec.why !== false && s.why?.length);
   if (sec.why !== false && s.why?.length) {
     document.getElementById('whyGrid').innerHTML = s.why.map((w) => `
       <div class="why-card"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p></div>
     `).join('');
   }
 
-  toggle('faq', sec.faq !== false);
+  renderDesign(s, sec);
+
+  toggle('faq', sec.faq !== false && s.faq?.length);
   if (sec.faq !== false && s.faq?.length) {
     document.getElementById('faqList').innerHTML = s.faq.map((f) => `
       <div class="faq-item">
@@ -1302,8 +1468,7 @@ function renderSite() {
     });
   }
 
-  toggle('guarantee', sec.guarantee !== false && s.guarantee);
-  if (s.guarantee) document.getElementById('guaranteeText').textContent = s.guarantee;
+  toggle('guarantee', false);
 
   const igHandle = raw.instagramHandle || '@menes_jewelry';
   if (raw.instagram) {
@@ -1327,33 +1492,54 @@ function renderBundle(/* s, sec */) {
   toggle('bundle', false);
 }
 
+function renderDesign(s, sec) {
+  const d = s.design || {};
+  const points = Array.isArray(d.points) ? d.points.filter((p) => p && (p.title || p.text)) : [];
+  const show = sec.design !== false && (d.intro || points.length);
+  toggle('design', show);
+  if (!show) return;
+  const title = document.getElementById('designTitle');
+  const sub = document.getElementById('designSubtitle');
+  const intro = document.getElementById('designIntro');
+  const grid = document.getElementById('designGrid');
+  const stills = document.getElementById('designStills');
+  if (title) title.textContent = d.title || t('design_title');
+  if (sub) sub.textContent = d.subtitle || '';
+  if (intro) intro.textContent = d.intro || '';
+  if (grid) {
+    grid.innerHTML = points.map((p) => `
+      <div class="why-card"><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p></div>
+    `).join('');
+  }
+  if (stills) {
+    stills.innerHTML = FALLBACK_ATELIER_STILLS.map((src, i) => `
+      <figure class="design-still"><img src="${esc(src)}" alt="${esc(d.title || 'MENES')}" loading="lazy"></figure>
+    `).join('');
+  }
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
-  const items = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
-  const allItems = src.gallery || [];
-  toggle('gallery', sec.gallery !== false);
+  const cmsItems = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
+  const items = cmsItems.length ? cmsItems : FALLBACK_GALLERY;
+  toggle('gallery', sec.gallery !== false && items.length);
   if (sec.gallery === false) return;
 
-  document.getElementById('galleryTitle').textContent = s.galleryTitle || (currentLang === 'en' ? 'They wear MENES' : 'Ils portent MENES');
+  document.getElementById('galleryTitle').textContent = s.galleryTitle || t('gallery_title');
   document.getElementById('gallerySubtitle').textContent = s.gallerySubtitle || '';
-  const igLink = document.getElementById('galleryIgLink');
-  if (src.instagram) {
-    igLink.href = src.instagram;
-    igLink.textContent = src.instagramHandle || '@menes_jewelry';
-  }
+  const igHref = src.instagram || IG_URL;
+  const igHandle = src.instagramHandle || IG_HANDLE;
+  document.querySelectorAll('#galleryIgLink, #galleryCtaLink').forEach((igLink) => {
+    if (!igLink) return;
+    igLink.href = igHref;
+    igLink.textContent = igHandle;
+  });
 
   const grid = document.getElementById('galleryGrid');
   const empty = document.getElementById('galleryEmpty');
+  if (empty) empty.classList.add('hidden');
+  if (!grid) return;
 
-  if (!items.length) {
-    grid.innerHTML = allItems.slice(0, 6).map(() => `
-      <div class="gallery-item"><div class="gallery-placeholder">${currentLang === 'en' ? 'Customer photo<br>soon' : 'Photo client<br>bientôt'}</div></div>
-    `).join('');
-    empty.classList.remove('hidden');
-    return;
-  }
-
-  empty.classList.add('hidden');
   grid.innerHTML = items.map((g) => {
     const handle = (g.handle || '').trim();
     const caption = (g.caption || '').trim();
@@ -1385,7 +1571,7 @@ function renderEmailCapture(s, sec) {
   document.getElementById('emailTitle').textContent = e.title;
   document.getElementById('emailSubtitle').textContent = e.subtitle || '';
   document.getElementById('emailInput').placeholder = e.placeholder || t('email_ph');
-  document.getElementById('emailBtn').textContent = e.button || (currentLang === 'en' ? 'Sign me up' : "M'inscrire");
+  document.getElementById('emailBtn').textContent = e.button || t('email_btn');
 }
 
 /* ---------- Reviews ---------- */
@@ -1423,11 +1609,11 @@ function starsHtml(rating, opts = {}) {
 function renderReviewsSection(sec) {
   const section = document.getElementById('reviews');
   if (!section) return;
-  const show = sec.reviews !== false;
+  const reviews = getApprovedReviews();
+  const show = sec.reviews !== false && reviews.length >= MIN_PUBLIC_REVIEWS;
   toggle('reviews', show);
   if (!show) return;
 
-  const reviews = getApprovedReviews();
   const stats = reviewStats(reviews);
   const summary = document.getElementById('reviewsSummary');
   const grid = document.getElementById('reviewsGrid');
@@ -1435,13 +1621,7 @@ function renderReviewsSection(sec) {
   const writeBtn = document.getElementById('reviewsWriteBtn');
 
   if (writeBtn) writeBtn.textContent = t('reviews_write');
-
-  if (!reviews.length) {
-    if (summary) summary.innerHTML = '';
-    if (grid) grid.innerHTML = '';
-    empty?.classList.remove('hidden');
-    return;
-  }
+  empty?.classList.add('hidden');
 
   empty?.classList.add('hidden');
   if (summary) {
