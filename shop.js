@@ -416,7 +416,7 @@ const DEFAULT_SITE_EN = {
   heroCta: 'Shop the collection',
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
-  gallerySubtitle: 'Real people, real pieces. Tag @menes_jewelry — we feature the community.',
+  gallerySubtitle: 'Real people, real pieces. Tag @menes_jewelry to get featured.',
   guarantee: '',
   trust: [
     { icon: '◆', title: 'Ships from Quebec', text: '3–5 business days in QC, 5–10 across Canada' },
@@ -471,7 +471,7 @@ const DEFAULT_SITE_FR = {
   heroCta: 'Voir la collection',
   announcement: 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs',
   galleryTitle: 'Ils portent MENES',
-  gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_jewelry — on met la communauté en avant.',
+  gallerySubtitle: 'Vraies pièces, vraies personnes. Tague @menes_jewelry pour apparaître ici.',
   guarantee: '',
   trust: [
     { icon: '◆', title: 'Expédié du Québec', text: '3–5 jours ouvrables au QC, 5–10 partout au Canada' },
