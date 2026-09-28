@@ -375,7 +375,7 @@ async function saveStore(msg = 'Sauvegardé') {
       console.error('Save failed:', data);
     }
   } catch (err) {
-    toast('Connexion API impossible. Vérifie que boutiquemenes.netlify.app est en ligne', 'error');
+    toast('Connexion API impossible. Vérifie www.mymenes.com (réseau / trop de photos).', 'error');
     console.error(err);
   }
 }
@@ -413,7 +413,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       sessionStorage.setItem('menes_admin_pw', adminPassword);
       showApp();
     } else toast('Mot de passe incorrect', 'error');
-  } catch { toast('Erreur connexion', 'error'); }
+  } catch { toast('Erreur connexion. API www.mymenes.com injoignable.', 'error'); }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
