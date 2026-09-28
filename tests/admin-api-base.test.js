@@ -17,6 +17,8 @@ assert.match(bat, /admin-site\\config\.js/);
 assert.doesNotMatch(bat, /copy \/Y config\.js/);
 assert.match(consoleJs, /www\.mymenes\.com/);
 assert.doesNotMatch(consoleJs, /Vérifie que boutiquemenes\.netlify\.app est en ligne/);
+const shop = fs.readFileSync(path.join(root, 'shop.js'), 'utf8');
+assert.doesNotMatch(shop, /cachedStoreScore\(cached\) > cachedStoreScore\(data\)/);
 assert.match(cors, /https:\/\/menesadmin\.netlify\.app/);
 assert.match(cors, /https:\/\/www\.mymenes\.com/);
 

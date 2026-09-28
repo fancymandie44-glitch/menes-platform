@@ -30,4 +30,4 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-Sitemap: https://boutiquemenes.netlify.app/sitemap.xml
+Sitemap: https://www.mymenes.com/sitemap.xml
