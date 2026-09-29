@@ -1737,7 +1737,7 @@ function renderReviewsSection(sec) {
 
   const sorted = [...reviews].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
   if (grid) {
-    grid.innerHTML = sorted.slice(0, 12).map((r) => `
+    grid.innerHTML = sorted.slice(0, 24).map((r) => `
       <article class="review-card reveal">
         <div class="review-card-top">
           ${starsHtml(r.rating)}
