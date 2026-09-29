@@ -375,7 +375,7 @@ async function saveStore(msg = 'Sauvegardé') {
       console.error('Save failed:', data);
     }
   } catch (err) {
-    toast('Connexion API impossible. Vérifie que boutiquemenes.netlify.app est en ligne', 'error');
+    toast('Connexion API impossible. Vérifie www.mymenes.com (réseau / trop de photos).', 'error');
     console.error(err);
   }
 }
@@ -413,7 +413,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       sessionStorage.setItem('menes_admin_pw', adminPassword);
       showApp();
     } else toast('Mot de passe incorrect', 'error');
-  } catch { toast('Erreur connexion', 'error'); }
+  } catch { toast('Erreur connexion. API www.mymenes.com injoignable.', 'error'); }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -1550,11 +1550,11 @@ const SECTION_ORDER_META = [
   ['products', 'Boutique'],
   ['gallery', 'Galerie'],
   ['why', 'Pourquoi'],
+  ['design', 'Atelier'],
   ['reviews', 'Avis'],
   ['emailCapture', 'Liste VIP'],
   ['faq', 'FAQ'],
   ['contact', 'Contact'],
-  ['guarantee', 'Sécurité'],
 ];
 
 function defaultSectionOrder() {
@@ -1604,7 +1604,7 @@ function renderSectionEditors() {
   const sec = s.sections || {};
   document.getElementById('sectionToggles').innerHTML = [
     ['announcement','Annonce'],['trustBar','Confiance'],['gallery','Galerie'],
-    ['why','Pourquoi'],['reviews','Avis'],['emailCapture','Liste VIP'],['faq','FAQ'],['guarantee','Sécurité'],
+    ['why','Pourquoi'],['design','Atelier'],['reviews','Avis'],['emailCapture','Liste VIP'],['faq','FAQ'],
   ].map(([k,l]) => `<label class="toggle-item"><input type="checkbox" data-sec="${k}" ${sec[k]!==false?'checked':''}> ${l}</label>`).join('');
   // Force Signature/Bundle off (grillz mix retired)
   if (storeData.site) {

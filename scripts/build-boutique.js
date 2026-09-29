@@ -50,7 +50,7 @@ const REQUIRED_FILES = [
   'lib/public-catalog.js',
 ];
 
-const STATIC_DIRS = ['data', 'api', 'lib'];
+const STATIC_DIRS = ['data', 'api', 'lib', 'images'];
 
 function copyFile(rel) {
   const src = path.join(ROOT, rel);
