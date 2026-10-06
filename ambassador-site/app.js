@@ -278,7 +278,65 @@
         $$('.auth-tab').forEach((t) => t.classList.toggle('active', t === tab));
         $('#loginForm').classList.toggle('hidden', tab.dataset.auth !== 'login');
         $('#registerForm').classList.toggle('hidden', tab.dataset.auth !== 'register');
+        $('#forgotForm')?.classList.add('hidden');
+        $('#resetForm')?.classList.add('hidden');
       });
+    });
+
+    function showAuthForm(id) {
+      ['loginForm', 'registerForm', 'forgotForm', 'resetForm'].forEach((formId) => {
+        document.getElementById(formId)?.classList.toggle('hidden', formId !== id);
+      });
+    }
+
+    $('#forgotLink')?.addEventListener('click', () => showAuthForm('forgotForm'));
+    $('#forgotBack')?.addEventListener('click', () => {
+      $$('.auth-tab').forEach((t) => t.classList.toggle('active', t.dataset.auth === 'login'));
+      showAuthForm('loginForm');
+    });
+
+    const resetToken = params.get('reset') || '';
+    if (resetToken) showAuthForm('resetForm');
+
+    $('#forgotForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      $('#forgotError').textContent = '';
+      try {
+        const data = await api('forgot-password', {
+          method: 'POST',
+          auth: false,
+          body: { email: fd.get('email') },
+        });
+        $('#forgotError').textContent = data.message || 'Si un compte existe, tu vas recevoir un lien.';
+      } catch (err) {
+        $('#forgotError').textContent = err.message;
+      }
+    });
+
+    $('#resetForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      $('#resetError').textContent = '';
+      if (fd.get('password') !== fd.get('password2')) {
+        $('#resetError').textContent = 'Les mots de passe ne correspondent pas.';
+        return;
+      }
+      try {
+        const data = await api('reset-password', {
+          method: 'POST',
+          auth: false,
+          body: { token: resetToken, password: fd.get('password') },
+        });
+        $('#resetError').textContent = data.message || 'Mot de passe mis à jour.';
+        history.replaceState({}, '', location.pathname);
+        setTimeout(() => {
+          $$('.auth-tab').forEach((t) => t.classList.toggle('active', t.dataset.auth === 'login'));
+          showAuthForm('loginForm');
+        }, 900);
+      } catch (err) {
+        $('#resetError').textContent = err.message;
+      }
     });
 
     $('#loginForm').addEventListener('submit', async (e) => {

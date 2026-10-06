@@ -96,7 +96,7 @@ exports.handler = async (event) => {
   const headers = corsHeaders(event);
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
 
-  const auth = checkAdminAuth(event);
+  const auth = await checkAdminAuth(event);
   if (!auth.ok) {
     return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
   }

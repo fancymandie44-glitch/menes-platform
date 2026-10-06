@@ -158,7 +158,7 @@ exports.handler = async (event) => {
     }
 
     // Allow admin override header for ops recovery only
-    const admin = require('../lib/admin-auth').checkAdminAuth(event);
+    const admin = await require('../lib/admin-auth').checkAdminAuth(event);
     if (!verification.verified && admin.ok && body.forcePaid === true) {
       verification = { verified: true, provider: 'admin_force' };
     }

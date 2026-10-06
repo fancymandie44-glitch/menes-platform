@@ -30,7 +30,7 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'GET') {
       const store = await readSiteStore(siteId);
       const list = Array.isArray(store.reviews) ? store.reviews : [];
-      const isAdmin = checkAdminAuth(event).ok;
+      const isAdmin = (await checkAdminAuth(event)).ok;
       let status = params.status || 'approved';
       if (!isAdmin) status = 'approved';
       const productId = params.productId || '';
@@ -50,7 +50,7 @@ exports.handler = async (event) => {
 
       // Admin moderation
       if (body.action) {
-        const auth = checkAdminAuth(event);
+        const auth = await checkAdminAuth(event);
         if (!auth.ok) return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
         const review = store.reviews.find((r) => r.id === body.id);
         if (!review) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Avis introuvable' }) };

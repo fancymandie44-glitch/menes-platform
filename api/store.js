@@ -42,7 +42,7 @@ exports.handler = async (event) => {
 
   try {
     const siteId = await resolveSiteId(host, params.site || headerSiteId);
-    const auth = checkAdminAuth(event);
+    const auth = await checkAdminAuth(event);
     const isAdmin = auth.ok;
 
     if (event.httpMethod === 'GET') {

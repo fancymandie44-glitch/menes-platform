@@ -402,6 +402,23 @@ document.getElementById('siteSelector')?.addEventListener('change', async (e) =>
   toast(`Boutique : ${platform.sites.find((s) => s.id === activeSiteId)?.name}`);
 });
 
+function showLoginPanel(id) {
+  ['loginForm', 'forgotForm', 'resetForm'].forEach((formId) => {
+    document.getElementById(formId)?.classList.toggle('hidden', formId !== id);
+  });
+}
+
+async function postAuth(action, payload) {
+  const res = await fetch(apiUrl('/api/auth'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Erreur');
+  return data;
+}
+
 // Auth
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -414,6 +431,42 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       showApp();
     } else toast('Mot de passe incorrect', 'error');
   } catch { toast('Erreur connexion. API www.mymenes.com injoignable.', 'error'); }
+});
+
+document.getElementById('forgotAdminBtn')?.addEventListener('click', () => showLoginPanel('forgotForm'));
+document.getElementById('backToLoginBtn')?.addEventListener('click', () => showLoginPanel('loginForm'));
+
+document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('forgotMsg');
+  msg.textContent = '';
+  try {
+    const data = await postAuth('forgot-admin', { email: document.getElementById('forgotEmail').value });
+    msg.textContent = data.message || 'Si cet email est le compte admin, tu vas recevoir un lien.';
+  } catch (err) {
+    msg.textContent = err.message;
+  }
+});
+
+document.getElementById('resetForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('resetMsg');
+  const password = document.getElementById('resetPassword').value;
+  const confirm = document.getElementById('resetPassword2').value;
+  msg.textContent = '';
+  if (password !== confirm) {
+    msg.textContent = 'Les mots de passe ne correspondent pas.';
+    return;
+  }
+  const token = new URLSearchParams(location.search).get('reset') || '';
+  try {
+    const data = await postAuth('reset-admin', { token, password });
+    msg.textContent = data.message || 'Mot de passe mis à jour.';
+    history.replaceState({}, '', location.pathname);
+    setTimeout(() => showLoginPanel('loginForm'), 900);
+  } catch (err) {
+    msg.textContent = err.message;
+  }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -3193,7 +3246,9 @@ document.getElementById('importFile')?.addEventListener('change', async (e) => {
 initAdminTheme();
 setupMobileNav();
 (async () => {
-  if (sessionStorage.getItem(AUTH_KEY)) {
+  const resetToken = new URLSearchParams(location.search).get('reset');
+  if (resetToken) showLoginPanel('resetForm');
+  else if (sessionStorage.getItem(AUTH_KEY)) {
     adminPassword = sessionStorage.getItem('menes_admin_pw') || '';
     try { await showApp(); } catch { sessionStorage.clear(); }
   }
