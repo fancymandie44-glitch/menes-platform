@@ -1,5 +1,5 @@
 /* MENES Ambassador — offline shell + push */
-const CACHE = 'menes-amb-v7';
+const CACHE = 'menes-amb-v8';
 const SHELL = [
   '/',
   '/index.html',
@@ -30,7 +30,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (url.pathname.startsWith('/api/')) return;
 
-  const networkFirst = NETWORK_FIRST.has(url.pathname) || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+  const networkFirst = NETWORK_FIRST.has(url.pathname)
+    || url.pathname.startsWith('/reset')
+    || url.pathname.endsWith('.js')
+    || url.pathname.endsWith('.css');
 
   if (networkFirst) {
     event.respondWith(

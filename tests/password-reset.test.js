@@ -8,6 +8,7 @@ const {
   verifySecret,
   createResetToken,
   resetTokenMatches,
+  cleanResetToken,
   normalizeEmail,
   isEmail,
   passwordStrongEnough,
@@ -20,8 +21,11 @@ assert.ok(!verifySecret('', a.salt, a.hash));
 
 const { token, hash, exp } = createResetToken();
 assert.ok(resetTokenMatches(token, hash, exp));
+assert.ok(resetTokenMatches(`\n${token.slice(0, 8)}-${token.slice(8)}\n`, hash, exp), 'email wrapping must still match');
 assert.ok(!resetTokenMatches('00' + token.slice(2), hash, exp));
 assert.ok(!resetTokenMatches(token, hash, Date.now() - 1000));
+assert.strictEqual(cleanResetToken(` ${token.slice(0, 4)} ${token.slice(4)} `), token);
+assert.ok(require('../lib/ambassador-reset').tokenBlobKey(token).startsWith('amb-pw-reset:'));
 
 assert.strictEqual(normalizeEmail('  A@B.COM '), 'a@b.com');
 assert.ok(isEmail('a@b.com'));
@@ -60,6 +64,8 @@ assert.ok(passwordsMatch('env-admin-secret', 'env-admin-secret'));
   assert.ok(files.auth.includes("action === 'reset-admin'"), 'auth API must handle admin reset');
   assert.ok(files.amb.includes("action === 'forgot-password'"), 'ambassador API must handle forgot');
   assert.ok(files.amb.includes("action === 'reset-password'"), 'ambassador API must handle reset');
+  assert.ok(files.amb.includes('saveAmbassadorReset'), 'ambassador forgot must persist token outside program blob');
+  assert.ok(files.amb.includes('readAmbassadorReset'), 'ambassador reset must read dedicated token blob');
   assert.ok(files.ambAuth.includes('async function requireAdmin'), 'requireAdmin must be async');
   assert.ok(files.consoleHtml.includes('forgotForm'), 'console login must have forgot form');
   assert.ok(files.adminHtml.includes('forgotForm'), 'admin login must have forgot form');

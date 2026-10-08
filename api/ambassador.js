@@ -22,7 +22,8 @@ const {
 } = require('../lib/ambassador-engine');
 const { sendAmbassadorWelcome, sendAmbassadorInvite, sendAmbassadorPasswordReset, emailConfigured } = require('../lib/ambassador-email');
 const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
-const { createResetToken, resetTokenMatches, passwordStrongEnough, normalizeEmail, isEmail } = require('../lib/password-reset');
+const { createResetToken, resetTokenMatches, passwordStrongEnough, normalizeEmail, isEmail, cleanResetToken } = require('../lib/password-reset');
+const { saveAmbassadorReset, readAmbassadorReset, deleteAmbassadorReset } = require('../lib/ambassador-reset');
 const {
   pushConfigured, getPublicKey, upsertSubscription, removeSubscription, notifyCommunityMessage,
 } = require('../lib/ambassador-push');
@@ -371,6 +372,7 @@ exports.handler = async (event) => {
         const { token, hash, exp } = createResetToken();
         amb.resetHash = hash;
         amb.resetExp = exp;
+        await saveAmbassadorReset({ ambassadorId: amb.id, token, exp });
         await writeProgram(program);
         const sent = await sendAmbassadorPasswordReset(amb, program.settings, token);
         if (!sent.ok) {
@@ -381,12 +383,15 @@ exports.handler = async (event) => {
     }
 
     if (action === 'reset-password' && event.httpMethod === 'POST') {
-      const token = String(body.token || '').trim();
+      const token = cleanResetToken(body.token);
       const password = String(body.password || '');
       if (!token || !passwordStrongEnough(password)) {
         return json(headers, 400, { error: 'Lien invalide ou mot de passe trop court (8+).' });
       }
-      const amb = program.ambassadors.find((a) => resetTokenMatches(token, a.resetHash, a.resetExp));
+      const stored = await readAmbassadorReset(token);
+      let amb = stored
+        ? program.ambassadors.find((a) => a.id === stored.ambassadorId)
+        : program.ambassadors.find((a) => resetTokenMatches(token, a.resetHash, a.resetExp));
       if (!amb) {
         return json(headers, 400, { error: 'Lien expiré ou déjà utilisé. Demande-en un nouveau.' });
       }
@@ -397,6 +402,7 @@ exports.handler = async (event) => {
       delete amb.resetExp;
       amb.lastActiveAt = new Date().toISOString();
       await writeProgram(program);
+      await deleteAmbassadorReset(token);
       return json(headers, 200, { ok: true, message: 'Mot de passe mis à jour. Connecte-toi.' });
     }
 

@@ -46,6 +46,7 @@
           <p id="forgotError" class="form-error"></p>
         </form>
         <form id="resetForm" class="auth-form hidden">
+          <input type="hidden" name="token" id="resetTokenInput" value="">
           <label>Nouveau mot de passe (8+)<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
           <label>Confirmer<input type="password" name="password2" required minlength="8" autocomplete="new-password"></label>
           <button type="submit" class="btn-gold">Enregistrer</button>

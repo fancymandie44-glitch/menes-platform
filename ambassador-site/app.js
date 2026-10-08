@@ -295,8 +295,19 @@
       showAuthForm('loginForm');
     });
 
-    const resetToken = params.get('reset') || '';
-    if (resetToken) showAuthForm('resetForm');
+    function readResetToken() {
+      const q = params.get('reset') || '';
+      const hash = (String(location.hash || '').match(/reset=([a-fA-F0-9]+)/i) || [])[1] || '';
+      const path = (String(location.pathname || '').match(/\/reset\/([a-fA-F0-9]+)/i) || [])[1] || '';
+      return String(path || q || hash).toLowerCase().replace(/[^a-f0-9]/g, '');
+    }
+
+    const resetToken = readResetToken();
+    if (resetToken) {
+      const hidden = $('#resetTokenInput');
+      if (hidden) hidden.value = resetToken;
+      showAuthForm('resetForm');
+    }
 
     $('#forgotForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -326,7 +337,7 @@
         const data = await api('reset-password', {
           method: 'POST',
           auth: false,
-          body: { token: resetToken, password: fd.get('password') },
+          body: { token: fd.get('token') || resetToken, password: fd.get('password') },
         });
         $('#resetError').textContent = data.message || 'Mot de passe mis à jour.';
         history.replaceState({}, '', location.pathname);
@@ -1471,5 +1482,6 @@
   const viewParam = bootParams.get('view');
   if (viewParam) state.view = viewParam;
   if (bootParams.get('channel')) state.channel = bootParams.get('channel');
-  enterApp();
+  const resetting = /\/reset\//.test(location.pathname) || bootParams.get('reset') || /reset=/i.test(location.hash || '');
+  if (!resetting) enterApp();
 })();
