@@ -4,8 +4,8 @@ const {
 const { corsHeaders } = require('../lib/cors');
 const { checkAdminAuth } = require('../lib/admin-auth');
 
-function auth(event) {
-  return checkAdminAuth(event).ok;
+async function auth(event) {
+  return (await checkAdminAuth(event)).ok;
 }
 
 exports.handler = async (event) => {
@@ -28,7 +28,7 @@ exports.handler = async (event) => {
         return { statusCode: 200, headers: cors, body: JSON.stringify({ siteId, host: normalizeHost(host) }) };
       }
 
-      if (!auth(event)) {
+      if (!(await auth(event))) {
         return { statusCode: 401, headers: cors, body: JSON.stringify({ error: 'Non autorisé' }) };
       }
 
@@ -49,7 +49,7 @@ exports.handler = async (event) => {
     }
 
     if (event.httpMethod === 'POST') {
-      if (!auth(event)) {
+      if (!(await auth(event))) {
         return { statusCode: 401, headers: cors, body: JSON.stringify({ error: 'Non autorisé' }) };
       }
 

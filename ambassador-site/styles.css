@@ -107,6 +107,15 @@ a { color: var(--gold); }
 }
 .auth-form input:focus { border-color: var(--gold-dim); }
 .form-error { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; }
+.auth-link {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: none;
+  color: var(--gold);
+  font-size: 0.85rem;
+  text-align: center;
+}
 .btn-gold {
   width: 100%;
   margin-top: 6px;

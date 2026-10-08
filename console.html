@@ -28,6 +28,24 @@
         <p>Gère tes boutiques, domaines, produits et commandes. Tout en un seul endroit.</p>
         <input type="password" id="loginPassword" placeholder="Mot de passe admin" required autocomplete="current-password">
         <button type="submit">Accéder à la console</button>
+        <button type="button" class="login-link" id="forgotAdminBtn">Mot de passe oublié</button>
+        <p id="loginMsg" class="login-msg"></p>
+      </form>
+      <form id="forgotForm" class="login-box hidden">
+        <h1>Mot de passe oublié</h1>
+        <p>On envoie un lien à l’email de la boutique (celui qui reçoit les commandes). Regarde aussi Spam.</p>
+        <input type="email" id="forgotEmail" placeholder="Email admin" required autocomplete="email">
+        <button type="submit">Envoyer le lien</button>
+        <button type="button" class="login-secondary" id="backToLoginBtn">Retour</button>
+        <p id="forgotMsg" class="login-msg"></p>
+      </form>
+      <form id="resetForm" class="login-box hidden">
+        <h1>Nouveau mot de passe</h1>
+        <p>Choisis un mot de passe d’au moins 8 caractères.</p>
+        <input type="password" id="resetPassword" placeholder="Nouveau mot de passe" required minlength="8" autocomplete="new-password">
+        <input type="password" id="resetPassword2" placeholder="Confirmer" required minlength="8" autocomplete="new-password">
+        <button type="submit">Enregistrer</button>
+        <p id="resetMsg" class="login-msg"></p>
       </form>
     </div>
   </div>

@@ -36,7 +36,21 @@
           <label>Email<input type="email" name="email" required autocomplete="username"></label>
           <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
           <button type="submit" class="btn-gold">Entrer</button>
+          <button type="button" class="auth-link" id="forgotLink">Mot de passe oublié</button>
           <p id="loginError" class="form-error"></p>
+        </form>
+        <form id="forgotForm" class="auth-form hidden">
+          <label>Email<input type="email" name="email" required autocomplete="email"></label>
+          <button type="submit" class="btn-gold">Envoyer le lien</button>
+          <button type="button" class="auth-link" id="forgotBack">Retour à la connexion</button>
+          <p id="forgotError" class="form-error"></p>
+        </form>
+        <form id="resetForm" class="auth-form hidden">
+          <input type="hidden" name="token" id="resetTokenInput" value="">
+          <label>Nouveau mot de passe (8+)<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+          <label>Confirmer<input type="password" name="password2" required minlength="8" autocomplete="new-password"></label>
+          <button type="submit" class="btn-gold">Enregistrer</button>
+          <p id="resetError" class="form-error"></p>
         </form>
         <form id="registerForm" class="auth-form hidden">
           <label>Nom affiché<input type="text" name="displayName" required maxlength="40"></label>

@@ -83,7 +83,7 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
 
-  const admin = requireAdmin(event);
+  const admin = await requireAdmin(event);
   if (!admin.ok) return json(headers, admin.status, { error: admin.error });
 
   try {

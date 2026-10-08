@@ -31,6 +31,7 @@ assert.ok(!/item\.price \* 100/.test(checkoutJs), 'create-checkout must not use 
 
 const reviewsJs = fs.readFileSync(path.join(__dirname, '../api/reviews.js'), 'utf8');
 assert.ok(reviewsJs.includes("status = 'approved'"), 'public reviews must force approved status');
+assert.ok(reviewsJs.includes('await checkAdminAuth'), 'reviews admin checks must await async auth');
 
 const platformJs = fs.readFileSync(path.join(__dirname, '../api/../lib/platform.js'), 'utf8');
 assert.ok(platformJs.includes('knownSiteIds'), 'site ids must be allowlisted');

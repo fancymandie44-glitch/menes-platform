@@ -86,6 +86,23 @@ a { color: var(--blue); }
 .login-box input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font: inherit; background: var(--input-bg); color: var(--text); }
 .login-box button { width: 100%; padding: 14px; background: var(--gold); color: #050505; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font: inherit; }
 .login-box button:hover { background: var(--gold-dark); }
+.login-box .login-link {
+  background: none;
+  color: var(--gold);
+  padding: 10px 0 0;
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.login-box .login-link:hover { background: none; text-decoration: underline; }
+.login-box .login-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  margin-top: 8px;
+}
+.login-box .login-secondary:hover { background: var(--input-bg); }
+.login-msg { min-height: 1.2em; margin: 10px 0 0 !important; font-size: 0.9rem; }
 
 /* App layout */
 .app { display: flex; min-height: 100vh; }

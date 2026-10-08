@@ -217,7 +217,7 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const authCheck = require('../lib/admin-auth').checkAdminAuth(event);
+  const authCheck = await require('../lib/admin-auth').checkAdminAuth(event);
   if (!authCheck.ok) {
     return { statusCode: authCheck.status, headers, body: JSON.stringify({ error: authCheck.error }) };
   }

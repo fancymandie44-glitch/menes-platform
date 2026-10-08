@@ -37,6 +37,7 @@ function run() {
     'api/store.js',
     'api/media.js',
     'api/health.js',
+    'api/auth.js',
     'api/pay.js',
     'api/confirm-order.js',
     'lib/public-catalog.js',

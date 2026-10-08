@@ -20,7 +20,10 @@ const {
   awardProfileCompleteXp, xpGuide, ensureXpState,
   settleWeeklyXpRewards, weeklyXpContestInfo, weekKey,
 } = require('../lib/ambassador-engine');
-const { sendAmbassadorWelcome, sendAmbassadorInvite } = require('../lib/ambassador-email');
+const { sendAmbassadorWelcome, sendAmbassadorInvite, sendAmbassadorPasswordReset, emailConfigured } = require('../lib/ambassador-email');
+const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
+const { createResetToken, resetTokenMatches, passwordStrongEnough, normalizeEmail, isEmail, cleanResetToken } = require('../lib/password-reset');
+const { saveAmbassadorReset, readAmbassadorReset, deleteAmbassadorReset } = require('../lib/ambassador-reset');
 const {
   pushConfigured, getPublicKey, upsertSubscription, removeSubscription, notifyCommunityMessage,
 } = require('../lib/ambassador-push');
@@ -351,6 +354,56 @@ exports.handler = async (event) => {
         token: signToken({ aid: amb.id, role: amb.role }),
         ambassador: publicAmbassador(amb, { private: true }),
       });
+    }
+
+    if (action === 'forgot-password' && event.httpMethod === 'POST') {
+      const ip = clientIp(event);
+      if (!allowRequest(`amb-forgot:${ip}`, { limit: 8, windowMs: 60 * 60 * 1000 })) {
+        return tooManyRequests(headers);
+      }
+      const email = normalizeEmail(body.email);
+      const generic = { ok: true, message: 'Si un compte existe pour cet email, tu vas recevoir un lien (regarde aussi Spam).' };
+      if (!isEmail(email)) return json(headers, 200, generic);
+      if (!emailConfigured()) {
+        return json(headers, 503, { error: 'Email non configuré sur Netlify (BREVO_API_KEY + EMAIL_FROM). Impossible d’envoyer le lien.' });
+      }
+      const amb = program.ambassadors.find((a) => normalizeEmail(a.email) === email);
+      if (amb && amb.status !== 'rejected') {
+        const { token, hash, exp } = createResetToken();
+        amb.resetHash = hash;
+        amb.resetExp = exp;
+        await saveAmbassadorReset({ ambassadorId: amb.id, token, exp });
+        await writeProgram(program);
+        const sent = await sendAmbassadorPasswordReset(amb, program.settings, token);
+        if (!sent.ok) {
+          return json(headers, 503, { error: sent.error || 'Envoi email impossible' });
+        }
+      }
+      return json(headers, 200, generic);
+    }
+
+    if (action === 'reset-password' && event.httpMethod === 'POST') {
+      const token = cleanResetToken(body.token);
+      const password = String(body.password || '');
+      if (!token || !passwordStrongEnough(password)) {
+        return json(headers, 400, { error: 'Lien invalide ou mot de passe trop court (8+).' });
+      }
+      const stored = await readAmbassadorReset(token);
+      let amb = stored
+        ? program.ambassadors.find((a) => a.id === stored.ambassadorId)
+        : program.ambassadors.find((a) => resetTokenMatches(token, a.resetHash, a.resetExp));
+      if (!amb) {
+        return json(headers, 400, { error: 'Lien expiré ou déjà utilisé. Demande-en un nouveau.' });
+      }
+      const { salt, hash } = hashPassword(password);
+      amb.passwordSalt = salt;
+      amb.passwordHash = hash;
+      delete amb.resetHash;
+      delete amb.resetExp;
+      amb.lastActiveAt = new Date().toISOString();
+      await writeProgram(program);
+      await deleteAmbassadorReset(token);
+      return json(headers, 200, { ok: true, message: 'Mot de passe mis à jour. Connecte-toi.' });
     }
 
     if (action === 'invite-info' && event.httpMethod === 'GET') {
