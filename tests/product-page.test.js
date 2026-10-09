@@ -50,6 +50,11 @@ assert.strictEqual(found.id, 'hat-black');
 const shop = fs.readFileSync(path.join(__dirname, '../shop.js'), 'utf8');
 assert.ok(shop.includes('openPdpFromLocation'), 'shop opens PDP from /produit URL');
 assert.ok(shop.includes('applyPdpColorGallery'), 'changing color refreshes gallery');
+const admin = fs.readFileSync(path.join(__dirname, '../console.html'), 'utf8');
+assert.ok(admin.includes('multiple'), 'admin photo input accepts several files');
+assert.ok(admin.includes('productImageTarget'), 'admin can target a color group');
+assert.ok(fs.existsSync(path.join(__dirname, '../images/products/socks/black.jpg')), 'new black sock photo is in the repo');
+
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 assert.ok(html.includes('id="pdpPanel"'), 'product page markup exists');
 assert.ok(html.includes('lib/product-page.js'), 'helpers load on the shop');

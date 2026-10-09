@@ -780,15 +780,21 @@
         <div class="modal-subhead">Stock par variante <small>(ex: Vert = 0 → les clients voient « épuisé » pour le vert seulement)</small></div>
         <div id="variantsStockEditor" class="variants-stock-editor"></div>
 
-        <div class="modal-subhead">Photos <small>(la 1<sup>re</sup> = principale · studio : fond, recadrage · associe une photo à une variante)</small></div>
-        <div id="productImagesEditor" class="images-editor"></div>
+        <div class="modal-subhead">Photos <small>plusieurs par produit et par couleur · la 1<sup>re</sup> du produit = image carte</small></div>
+        <p class="hint">Ajoute autant de photos que tu veux dans chaque groupe (face, côté, détail). Vide = toutes les couleurs. Une couleur = galerie qui change quand le client clique la pastille.</p>
         <div class="images-add-row">
-          <div class="upload-zone small" id="productUploadZone"><span>Ajouter une photo (fond + crop)</span><input type="file" id="productImageFile" accept="image/*" hidden></div>
+          <label class="img-target-label">Ajouter dans
+            <select id="productImageTarget">
+              <option value="">Produit (toutes les couleurs)</option>
+            </select>
+          </label>
+          <div class="upload-zone small" id="productUploadZone"><span>Ajouter plusieurs photos</span><input type="file" id="productImageFile" accept="image/*" multiple hidden></div>
           <div class="url-add">
             <input type="url" id="productImageUrl" placeholder="ou coller une URL d'image">
             <button type="button" id="addImageUrlBtn" class="btn-outline btn-sm">Ajouter l'URL</button>
           </div>
         </div>
+        <div id="productImagesEditor" class="images-editor"></div>
 
         <div class="checkbox-row">
           <label class="checkbox"><input type="checkbox" id="productActive" checked> Actif</label>
@@ -892,7 +898,7 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js?v=20260928a"></script>
-  <script src="console.js?v=20260928a"></script>
+  <script src="config.js"></script>
+  <script src="console.js"></script>
 </body>
 </html>

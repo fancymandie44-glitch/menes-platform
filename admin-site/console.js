@@ -860,34 +860,77 @@ function variantValuesList() {
   return vals;
 }
 
+function imageTargetOptionsHtml(selected) {
+  const variants = variantValuesList();
+  const extras = [...new Set(productImagesState.map((im) => (im.label || '').trim()).filter(Boolean))]
+    .filter((v) => !variants.includes(v));
+  const opts = [['', 'Produit (toutes les couleurs)'], ...variants.map((v) => [v, v]), ...extras.map((v) => [v, v])];
+  return opts.map(([val, label]) => `<option value="${esc(val)}" ${selected === val ? 'selected' : ''}>${esc(label)}</option>`).join('');
+}
+
+function syncProductImageTarget() {
+  const sel = document.getElementById('productImageTarget');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = imageTargetOptionsHtml(cur);
+  if (![...sel.options].some((o) => o.value === cur)) sel.value = '';
+}
+
 function renderProductImagesEditor() {
   const box = document.getElementById('productImagesEditor');
   if (!box) return;
+  syncProductImageTarget();
+  const variants = variantValuesList();
+  const groups = ['', ...variants];
+  productImagesState.forEach((im) => {
+    const lab = (im.label || '').trim();
+    if (lab && !groups.includes(lab)) groups.push(lab);
+  });
   if (!productImagesState.length) {
-    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Ajoute-en ci-dessous.</p>';
+    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Choisis un groupe ci-dessus puis ajoute plusieurs fichiers d’un coup.</p>';
     return;
   }
-  const variants = variantValuesList();
-  box.innerHTML = productImagesState.map((im, i) => `
-    <div class="image-edit-row" data-i="${i}">
-      <img src="${esc(im.url)}" alt="">
-      <div class="image-edit-fields">
-        ${i === 0 ? '<span class="badge-main">Principale</span>' : `<button type="button" class="btn-link makeMain" data-i="${i}">Définir principale</button>`}
-        <label class="img-var-label">Associer à la variante
-          <input list="variantOptionsList" class="image-variant" data-i="${i}" value="${esc(im.label || '')}" placeholder="ex: Olive Green">
-        </label>
-      </div>
-      <div class="image-edit-actions">
-        <button type="button" class="btn-link studioImg" data-i="${i}">Studio</button>
-        <button type="button" class="btn-link recropImg" data-i="${i}">Recadrer</button>
-        <button type="button" class="del-row delImg" data-i="${i}">Suppr.</button>
-      </div>
-    </div>`).join('')
-    + `<datalist id="variantOptionsList">${variants.map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
+  box.innerHTML = groups.map((key) => {
+    const rows = productImagesState
+      .map((im, i) => ({ im, i }))
+      .filter(({ im }) => (im.label || '').trim() === key);
+    const title = key ? `Couleur / variante : ${key}` : 'Photos produit (toutes les couleurs)';
+    const list = rows.length
+      ? rows.map(({ im, i }) => `
+        <div class="image-edit-row" data-i="${i}">
+          <img src="${esc(im.url)}" alt="">
+          <div class="image-edit-fields">
+            ${i === 0 ? '<span class="badge-main">Principale (carte boutique)</span>' : `<button type="button" class="btn-link makeMain" data-i="${i}">Définir principale</button>`}
+            <label class="img-var-label">Groupe
+              <select class="image-variant" data-i="${i}">${imageTargetOptionsHtml((im.label || '').trim())}</select>
+            </label>
+          </div>
+          <div class="image-edit-actions">
+            <button type="button" class="btn-link addMoreToGroup" data-label="${esc(key)}">+ Photos</button>
+            <button type="button" class="btn-link studioImg" data-i="${i}">Studio</button>
+            <button type="button" class="btn-link recropImg" data-i="${i}">Recadrer</button>
+            <button type="button" class="del-row delImg" data-i="${i}">Suppr.</button>
+          </div>
+        </div>`).join('')
+      : `<p class="empty" style="padding:8px">Aucune photo dans ce groupe. Tu peux en ajouter plusieurs.</p>
+         <button type="button" class="btn-outline btn-sm addMoreToGroup" data-label="${esc(key)}">Ajouter des photos à ${esc(key || 'produit')}</button>`;
+    return `<section class="image-group" data-group="${esc(key)}">
+      <div class="image-group-head"><strong>${esc(title)}</strong><span class="image-group-count">${rows.length} photo${rows.length > 1 ? 's' : ''}</span></div>
+      ${list}
+    </section>`;
+  }).join('');
 
-  box.querySelectorAll('.image-variant').forEach((inp) => inp.addEventListener('input', () => { productImagesState[+inp.dataset.i].label = inp.value; }));
+  box.querySelectorAll('.image-variant').forEach((inp) => inp.addEventListener('change', () => {
+    productImagesState[+inp.dataset.i].label = inp.value;
+    renderProductImagesEditor();
+  }));
   box.querySelectorAll('.delImg').forEach((b) => b.addEventListener('click', () => { productImagesState.splice(+b.dataset.i, 1); renderProductImagesEditor(); }));
   box.querySelectorAll('.makeMain').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.i; const [im] = productImagesState.splice(i, 1); productImagesState.unshift(im); renderProductImagesEditor(); }));
+  box.querySelectorAll('.addMoreToGroup').forEach((b) => b.addEventListener('click', () => {
+    const sel = document.getElementById('productImageTarget');
+    if (sel) sel.value = b.dataset.label || '';
+    document.getElementById('productImageFile')?.click();
+  }));
   box.querySelectorAll('.recropImg').forEach((b) => b.addEventListener('click', () => {
     const i = +b.dataset.i;
     openCropper(productImagesState[i].url, defaultAspectFor(), (dataUrl) => { productImagesState[i].url = dataUrl; renderProductImagesEditor(); }, { studio: false });
@@ -911,11 +954,13 @@ function renderProductOptionsEditor() {
   box.querySelectorAll('.opt-name-in').forEach((inp) => inp.addEventListener('input', () => {
     productOptionsState[+inp.dataset.i].name = inp.value;
     rebuildVariantsFromOptions(true);
+    syncProductImageTarget();
   }));
   box.querySelectorAll('.opt-values-in').forEach((inp) => inp.addEventListener('input', () => {
     productOptionsState[+inp.dataset.i].values = inp.value;
     updateVariantDatalist();
     rebuildVariantsFromOptions(true);
+    renderProductImagesEditor();
   }));
   box.querySelectorAll('.delOpt').forEach((b) => b.addEventListener('click', () => {
     productOptionsState.splice(+b.dataset.i, 1);
@@ -935,11 +980,15 @@ document.getElementById('addOptionBtn')?.addEventListener('click', () => {
   rebuildVariantsFromOptions(true);
 });
 
+function currentImageTarget() {
+  return (document.getElementById('productImageTarget')?.value || '').trim();
+}
+
 document.getElementById('addImageUrlBtn')?.addEventListener('click', () => {
   const input = document.getElementById('productImageUrl');
   const url = input.value.trim();
   if (!url) return;
-  productImagesState.push({ url, label: '' });
+  productImagesState.push({ url, label: currentImageTarget() });
   input.value = '';
   renderProductImagesEditor();
 });
@@ -2034,17 +2083,21 @@ function defaultAspectFor() {
   const zone = document.getElementById('productUploadZone');
   const fileInput = document.getElementById('productImageFile');
   zone?.addEventListener('click', () => fileInput?.click());
-  fileInput?.addEventListener('change', () => {
-    if (!fileInput.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      openCropper(e.target.result, defaultAspectFor(), (dataUrl) => {
-        productImagesState.push({ url: dataUrl, label: '' });
-        renderProductImagesEditor();
-      }, { studio: true });
-    };
-    reader.readAsDataURL(fileInput.files[0]);
+  fileInput?.addEventListener('change', async () => {
+    const files = [...(fileInput.files || [])];
     fileInput.value = '';
+    if (!files.length) return;
+    const label = currentImageTarget();
+    for (const file of files) {
+      try {
+        const dataUrl = await compressImage(file, 1200, 0.86);
+        productImagesState.push({ url: dataUrl, label });
+      } catch {
+        toast('Impossible de lire une photo', 'error');
+      }
+    }
+    renderProductImagesEditor();
+    toast(files.length > 1 ? `${files.length} photos ajoutées` : 'Photo ajoutée');
   });
 })();
 
