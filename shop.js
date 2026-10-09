@@ -1284,8 +1284,8 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .product-body p, .section-sub, .contact-sub, .pdp-desc { color: ${pal.muted}; }
 .product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${mode === 'dark' ? '#161616' : '#fff'}; color: ${pal.text}; border-color: ${pal.border}; }
 .products-grid { grid-template-columns: repeat(auto-fill, minmax(${gridMin}px, 1fr)); }
-.product-img { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
-.product-img img { object-fit: ${imgFit}; }
+.product-img, .product-img-btn { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
+.product-img img, .product-img-btn img, .pdp-img-wrap img { object-fit: contain; object-position: center center; }
 .hero { min-height: ${heroH}vh; }
 .hero-bg.has-image::after, .hero-bg.has-video::after {
       background:
