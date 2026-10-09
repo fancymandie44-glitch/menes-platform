@@ -11,7 +11,7 @@ const LOW_STOCK_LIMIT = 10;
 const VIP_DISMISS_DAYS = 14;
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
-const LANG_KEY = 'menes_lang_v2';
+const LANG_KEY = 'menes_lang_v3';
 const API = '/api/store';
 
 function getAmbassadorAttribution() {
@@ -1312,14 +1312,16 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 
 function detectVisitorLang() {
   const saved = localStorage.getItem(LANG_KEY);
-  if (saved === 'en' || saved === 'fr') return saved;
-  // Official site language wins over browser (boutique is English-first)
-  const siteLang = storeData?.site?.language;
-  if (siteLang === 'en' || siteLang === 'fr') return siteLang;
-  const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
-  if (nav.startsWith('fr')) return 'fr';
-  if (nav.startsWith('en')) return 'en';
+  if (saved === 'fr') return 'fr';
   return 'en';
+}
+
+function displayOptionName(name) {
+  const k = String(name || '').trim().toLowerCase();
+  const map = currentLang === 'fr'
+    ? { taille: 'Taille', size: 'Taille', couleur: 'Couleur', color: 'Couleur', colors: 'Couleur', teinte: 'Couleur' }
+    : { taille: 'Size', size: 'Size', couleur: 'Color', color: 'Color', colors: 'Color', teinte: 'Color' };
+  return map[k] || name;
 }
 
 function setVisitorLang(lang, opts = {}) {
@@ -2527,7 +2529,7 @@ function renderProducts() {
 
     const optionsHtml = opts.map((o, oi) => `
       <div class="product-option" data-opt="${oi}" data-name="${esc(o.name)}">
-        <span class="opt-name">${esc(o.name)}</span>
+        <span class="opt-name">${esc(displayOptionName(o.name))}</span>
         <div class="opt-values">
           ${o.values.map((v, vi) => `<button type="button" class="opt-chip ${vi === 0 ? 'active' : ''}" data-value="${esc(v)}" aria-pressed="${vi === 0 ? 'true' : 'false'}">${esc(v)}</button>`).join('')}
         </div>
@@ -2766,7 +2768,7 @@ function openPdp(id, opts = {}) {
   if (qtyEl) qtyEl.value = '1';
   document.getElementById('pdpOptions').innerHTML = optsList.map((o, oi) => `
     <div class="product-option" data-opt="${oi}" data-name="${esc(o.name)}">
-      <span class="opt-name">${esc(o.name)}</span>
+      <span class="opt-name">${esc(displayOptionName(o.name))}</span>
       <div class="opt-values${PDP.isColorOptionName?.(o.name) ? ' pdp-swatches' : ''}">
         ${o.values.map((v, vi) => optionChipHtml(product, o, v, vi)).join('')}
       </div>

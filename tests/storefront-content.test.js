@@ -35,6 +35,9 @@ function run() {
   assert(shop.includes("MENES_VALUES"), '21 value chips exist');
   assert((shop.match(/'Brotherhood'/) || []).length >= 1, 'Brotherhood value exists');
   assert(shop.includes('function guardContrast'), 'theme contrast guard exists');
+  assert(shop.includes('function displayOptionName'), 'option labels localize to English');
+  assert(shop.includes("taille: 'Size'"), 'Taille option reads as Size in English');
+  assert(shop.includes("LANG_KEY = 'menes_lang_v3'"), 'language key reset defaults visitors to English');
   assert(shop.includes('DEFAULT_SITE_FR'), 'French copy pack exists');
   assert((shop.match(/q: '/g) || []).length >= 16, 'FAQ should include EN + FR questions');
   assert(shop.includes('toggle(\'guarantee\', false)'), 'SSL guarantee block is forced off');
