@@ -40,6 +40,8 @@ const product = {
 };
 assert.strictEqual(imagesForColor(product, 'Noir').length, 2);
 assert.strictEqual(imagesForColor(product, 'Beige')[0].url, '/c.jpg');
+  const tagged = { images: [{ url: '/x.jpg', label: 'Black front' }, { url: '/y.jpg', label: 'Brown' }] };
+  assert.strictEqual(imagesForColor(tagged, 'Black')[0].url, '/x.jpg');
 assert.strictEqual(imagesForColor(product, 'Rouge').length, 3, 'unknown color falls back to all photos');
 
 const found = findProductBySlug([{ id: 'hat-black', slug: 'casquette' }], 'casquette');

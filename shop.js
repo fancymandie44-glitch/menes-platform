@@ -2831,6 +2831,7 @@ function closePdp(opts = {}) {
     history.pushState({}, '', '/#products');
     pdpNavigating = false;
   }
+  document.getElementById('products')?.scrollIntoView({ behavior: 'auto', block: 'start' });
 }
 
 function openPdpFromLocation() {
