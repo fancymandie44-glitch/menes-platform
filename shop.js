@@ -12,6 +12,7 @@ const VIP_DISMISS_DAYS = 14;
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
 const LANG_KEY = 'menes_lang_v3';
+const THEME_KEY = 'menes_appearance';
 const API = '/api/store';
 
 function getAmbassadorAttribution() {
@@ -126,6 +127,8 @@ const CATEGORY_LABELS_I18N = {
 const I18N = {
   fr: {
     nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_design: 'Atelier', nav_faq: 'FAQ', nav_contact: 'Contact',
+    theme_to_dark: 'Sombre', theme_to_light: 'Clair',
+    theme_aria_dark: 'Passer en mode sombre', theme_aria_light: 'Passer en mode clair',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -263,6 +266,8 @@ const I18N = {
   },
   en: {
     nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_design: 'Atelier', nav_faq: 'FAQ', nav_contact: 'Contact',
+    theme_to_dark: 'Dark', theme_to_light: 'Light',
+    theme_aria_dark: 'Switch to dark mode', theme_aria_light: 'Switch to light mode',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -1237,6 +1242,34 @@ function guardContrast(pal) {
 
 const ASPECT_MAP = { '': '', square: '1 / 1', portrait45: '4 / 5', portrait34: '3 / 4', landscape: '16 / 9', wide: '3 / 2' };
 
+function catalogAppearance() {
+  const m = storeData?.site?.theme?.mode;
+  return m === 'dark' ? 'dark' : 'light';
+}
+
+function resolvedAppearance() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {}
+  return catalogAppearance();
+}
+
+function setVisitorAppearance(mode) {
+  const next = mode === 'dark' ? 'dark' : 'light';
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
+  applyTheme();
+}
+
+function syncThemeToggle() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  const mode = resolvedAppearance();
+  btn.textContent = mode === 'dark' ? t('theme_to_light') : t('theme_to_dark');
+  btn.setAttribute('aria-label', mode === 'dark' ? t('theme_aria_light') : t('theme_aria_dark'));
+  btn.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
+}
+
 function applyTheme() {
   const th = storeData.site?.theme || {};
   const accent = th.accent || '#c9a84c';
@@ -1244,20 +1277,13 @@ function applyTheme() {
   const radius = th.radius != null ? th.radius : 2;
   const btnRadius = th.buttonRadius != null ? th.buttonRadius : radius;
 
-  const mode = th.mode || 'dark';
-  let pal;
-  if (mode === 'custom') {
-    pal = {
-      bg: th.bg || '#050505', surface: th.surface || '#0f0f0f', text: th.text || '#f4f2ee',
-      muted: th.muted || 'rgba(168,168,168,0.9)', border: th.border || '#2a2a2a',
-      navbg: th.surface || 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505',
-    };
-  } else {
-    pal = { ...(THEME_MODES[mode] || THEME_MODES.dark) };
-  }
-  pal = guardContrast(pal);
+  const mode = resolvedAppearance();
+  const pal = guardContrast({ ...(THEME_MODES[mode] || THEME_MODES.light) });
   const btnBg = th.buttonBg || pal.btnBg || (mode === 'dark' ? accent : '#0a0a0a');
   const btnText = th.buttonText || pal.btnText || (mode === 'dark' ? '#050505' : '#fafafa');
+  const surfaces = mode === 'dark'
+    ? { s0: '#050505', s1: pal.surface, s2: '#1f1f1f', s3: '#262626', gray4: '#c2bdb4' }
+    : { s0: pal.bg, s1: pal.surface, s2: '#ece8e2', s3: '#e4dfd7', gray4: '#6b6560' };
 
   const headingFont = FONT_OPTIONS[th.headingFont]?.stack || "'Syne', sans-serif";
   const bodyFont = FONT_OPTIONS[th.bodyFont]?.stack || "'DM Sans', sans-serif";
@@ -1274,7 +1300,12 @@ function applyTheme() {
   const annColor = th.announceColor || accent;
 
   const css = `
-:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; --muted: ${pal.muted}; --surface-1: ${pal.surface}; }
+:root {
+  --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px;
+  --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; --muted: ${pal.muted};
+  --surface-0: ${surfaces.s0}; --surface-1: ${surfaces.s1}; --surface-2: ${surfaces.s2}; --surface-3: ${surfaces.s3};
+  --gray-400: ${surfaces.gray4}; --gray-600: ${pal.muted};
+}
 body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero h1, .section-head h2, .nav-brand span, .product-price, .bundle-copy h2, .cart-header h3, .modal-box h3, .contact-section h2, .pdp-body h1, .pdp-body h2, .product-title-btn { font-family: ${headingFont}; }
 .nav { background: ${pal.navbg}; border-bottom-color: ${pal.border}; }
@@ -1297,6 +1328,8 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .product-card button.add-btn, .btn-checkout, .cart-btn, .sticky-atc-btn { background: ${btnBg}; color: ${btnText}; border-radius: ${btnRadius}px; }
 .hero-cta { border-radius: ${btnRadius}px; }
 .filter { border-radius: ${btnRadius}px; }
+.sticky-atc { background: ${mode === 'dark' ? 'rgba(5,5,5,0.94)' : 'rgba(244,242,238,0.94)'}; color: ${pal.text}; }
+.pdp-lightbox { background: ${mode === 'dark' ? 'rgba(5,5,5,0.94)' : 'rgba(244,242,238,0.96)'}; }
 `;
   let styleEl = document.getElementById('menes-theme');
   if (!styleEl) {
@@ -1307,7 +1340,11 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
   styleEl.textContent = css;
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = annBg;
+  if (themeColor) themeColor.content = pal.bg;
+  document.documentElement.dataset.theme = mode;
+  document.body.classList.toggle('theme-dark', mode === 'dark');
+  document.body.classList.toggle('theme-light', mode === 'light');
+  syncThemeToggle();
 }
 
 function detectVisitorLang() {
@@ -1364,6 +1401,7 @@ function applyLanguage(opts = {}) {
     langBtn.textContent = currentLang === 'en' ? 'FR' : 'EN';
     langBtn.setAttribute('aria-label', currentLang === 'en' ? 'Passer en français' : 'Switch to English');
   }
+  syncThemeToggle();
   const closeCart = document.getElementById('closeCart');
   if (closeCart) closeCart.setAttribute('aria-label', t('close'));
   const closePdp = document.getElementById('closePdp');
@@ -3872,6 +3910,9 @@ async function init() {
   setupReviewsUI();
   document.getElementById('langToggle')?.addEventListener('click', () => {
     setVisitorLang(currentLang === 'en' ? 'fr' : 'en');
+  });
+  document.getElementById('themeToggle')?.addEventListener('click', () => {
+    setVisitorAppearance(resolvedAppearance() === 'dark' ? 'light' : 'dark');
   });
   document.getElementById('upsellClose')?.addEventListener('click', closeUpsellModal);
   document.getElementById('upsellSkipBtn')?.addEventListener('click', closeUpsellModal);

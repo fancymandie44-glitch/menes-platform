@@ -14,18 +14,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261009en">
+  <link rel="stylesheet" href="shop.css?v=20261009theme">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
       var _ml = localStorage.getItem('menes_lang_v3');
       if (_ml === 'fr' || _ml === 'en') document.documentElement.lang = _ml;
       else document.documentElement.lang = 'en';
+      var _th = localStorage.getItem('menes_appearance');
+      if (_th === 'dark' || _th === 'light') document.documentElement.dataset.theme = _th;
     } catch (e) { document.documentElement.lang = 'en'; }
     try {
-      if (localStorage.getItem('menes_store_cache_v') !== '20261009en') {
+      if (localStorage.getItem('menes_store_cache_v') !== '20261009theme') {
         localStorage.removeItem('menes_store_data');
-        localStorage.setItem('menes_store_cache_v', '20261009en');
+        localStorage.setItem('menes_store_cache_v', '20261009theme');
       }
     } catch (e) {}
   </script>
@@ -45,6 +47,7 @@
       <a href="#design" data-i18n="nav_design">Atelier</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <button type="button" id="themeToggle" class="nav-lang-btn" aria-pressed="false" aria-label="Switch to dark mode">Dark</button>
       <button type="button" id="langToggle" class="nav-lang-btn" aria-label="Passer en français">FR</button>
       <button type="button" id="passportNavBtn" class="nav-passport-btn" aria-label="Passport" data-i18n-aria="passport">PASS</button>
       <button type="button" id="wishlistNavBtn" class="nav-wishlist-btn" aria-label="Wishlist" data-i18n-aria="wishlist"><span class="wishlist-nav-icon" aria-hidden="true">&#9825;</span><span id="wishlistNavCount" class="wishlist-nav-count hidden">0</span></button>
@@ -522,7 +525,7 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="lib/product-page.js?v=20261009en"></script>
-  <script src="shop.js?v=20261009en"></script>
+  <script src="lib/product-page.js?v=20261009theme"></script>
+  <script src="shop.js?v=20261009theme"></script>
 </body>
 </html>

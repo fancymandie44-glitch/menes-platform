@@ -51,6 +51,8 @@ body {
   font-family: var(--font-body); background: var(--black); color: var(--white);
   line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased;
 }
+html[data-theme="light"] body { background: #f4f2ee; color: #0a0a0a; }
+html[data-theme="dark"] body { background: #050505; color: #f6f3ee; }
 .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 .hidden { display: none !important; }
 

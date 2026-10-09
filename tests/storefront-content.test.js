@@ -35,6 +35,9 @@ function run() {
   assert(shop.includes("MENES_VALUES"), '21 value chips exist');
   assert((shop.match(/'Brotherhood'/) || []).length >= 1, 'Brotherhood value exists');
   assert(shop.includes('function guardContrast'), 'theme contrast guard exists');
+  assert(shop.includes('function setVisitorAppearance'), 'shop visitors can toggle light/dark');
+  assert(shop.includes("THEME_KEY = 'menes_appearance'"), 'appearance is persisted locally');
+  assert(html.includes('id="themeToggle"'), 'nav has a dark/light toggle');
   assert(shop.includes('function displayOptionName'), 'option labels localize to English');
   assert(shop.includes("taille: 'Size'"), 'Taille option reads as Size in English');
   assert(shop.includes("LANG_KEY = 'menes_lang_v3'"), 'language key reset defaults visitors to English');
