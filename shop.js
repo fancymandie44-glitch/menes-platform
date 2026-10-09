@@ -2558,18 +2558,16 @@ function renderProducts() {
       ? `<div class="product-rating">${starsHtml(pStats.avg)}<span>${pStats.avg.toFixed(1)} · ${t('reviews_count').replace('{n}', String(pStats.count))}</span></div>`
       : '';
 
-    const thumbs = imgs.length > 1
-      ? `<div class="product-thumbs">${imgs.map((im, i) => `
-          <button type="button" class="pg-thumb ${i === 0 ? 'active' : ''}" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}" aria-label="${esc(im.label || p.name)}">
-            <img src="${esc(im.url)}" alt="" loading="lazy">
-          </button>`).join('')}</div>`
-      : '';
-
     const optionsHtml = opts.map((o, oi) => `
       <div class="product-option" data-opt="${oi}" data-name="${esc(o.name)}">
         <span class="opt-name">${esc(displayOptionName(o.name))}</span>
         <div class="opt-values">
-          ${o.values.map((v, vi) => `<button type="button" class="opt-chip ${vi === 0 ? 'active' : ''}" data-value="${esc(v)}" aria-pressed="${vi === 0 ? 'true' : 'false'}">${esc(v)}</button>`).join('')}
+          ${o.values.map((v, vi) => {
+            const cover = PDP.isColorOptionName?.(o.name)
+              ? (productImages(p).find((im) => String(im.label || '').trim().toLowerCase() === String(v).toLowerCase())?.url || '')
+              : '';
+            return `<button type="button" class="opt-chip ${vi === 0 ? 'active' : ''}" data-value="${esc(v)}" data-cover="${esc(cover)}" aria-pressed="${vi === 0 ? 'true' : 'false'}">${esc(v)}</button>`;
+          }).join('')}
         </div>
       </div>`).join('');
 
@@ -2591,7 +2589,6 @@ function renderProducts() {
       <a class="product-img product-img-btn" href="${esc(href)}" aria-label="${esc(p.name)} · ${esc(t('view_product'))}">
         ${main ? `<img class="pg-main" src="${esc(main)}" alt="${esc(p.name)}" width="480" height="600" loading="lazy">` : '<span class="placeholder">◆</span>'}
       </a>
-      ${thumbs}
       <div class="product-body">
         <a class="product-title-btn" href="${esc(href)}">${esc(p.name)}</a>
         <p>${esc(p.description)}</p>
@@ -2615,19 +2612,8 @@ function renderProducts() {
 
 function wireProductCard(card) {
   const main = card.querySelector('.pg-main');
-  const thumbs = [...card.querySelectorAll('.pg-thumb')];
   const productId = card.dataset.id;
   const product = storeData.products.find((p) => p.id === productId);
-
-  const activateThumbByUrl = (url) => {
-    thumbs.forEach((tb) => tb.classList.toggle('active', tb.dataset.url === url));
-  };
-
-  thumbs.forEach((tb) => tb.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (main) main.src = tb.dataset.url;
-    activateThumbByUrl(tb.dataset.url);
-  }));
 
   card.querySelectorAll('.product-option').forEach((opt) => {
     opt.querySelectorAll('.opt-chip').forEach((chip) => chip.addEventListener('click', (e) => {
@@ -2639,9 +2625,7 @@ function wireProductCard(card) {
       });
       chip.classList.add('active');
       chip.setAttribute('aria-pressed', 'true');
-      const val = (chip.dataset.value || '').toLowerCase();
-      const match = thumbs.find((tb) => tb.dataset.label && tb.dataset.label.toLowerCase() === val);
-      if (match && main) { main.src = match.dataset.url; activateThumbByUrl(match.dataset.url); }
+      if (chip.dataset.cover && main) main.src = chip.dataset.cover;
       applyVariantStockUi(card, product);
     }));
   });
@@ -2669,7 +2653,7 @@ function wireProductCard(card) {
 
   card.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    if (e.target.closest('.add-btn, .opt-chip, .pg-thumb, .wishlist-btn, .product-img-btn, .product-title-btn')) return;
+    if (e.target.closest('.add-btn, .opt-chip, .wishlist-btn, .product-img-btn, .product-title-btn')) return;
     e.preventDefault();
     openPdp(productId);
   });

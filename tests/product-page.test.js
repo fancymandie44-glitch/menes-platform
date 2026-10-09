@@ -48,6 +48,7 @@ const found = findProductBySlug([{ id: 'hat-black', slug: 'casquette' }], 'casqu
 assert.strictEqual(found.id, 'hat-black');
 
 const shop = fs.readFileSync(path.join(__dirname, '../shop.js'), 'utf8');
+assert.ok(!/product-thumbs/.test(shop.split('function renderProducts')[1]?.split('function wireProductCard')[0] || ''), 'grid cards do not list extra product photos');
 assert.ok(shop.includes('openPdpFromLocation'), 'shop opens PDP from /produit URL');
 assert.ok(shop.includes('applyPdpColorGallery'), 'changing color refreshes gallery');
 const admin = fs.readFileSync(path.join(__dirname, '../console.html'), 'utf8');
