@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260928b">
+  <link rel="stylesheet" href="shop.css?v=20261009pdp">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -22,9 +22,9 @@
       else document.documentElement.lang = 'en';
     } catch (e) { document.documentElement.lang = 'en'; }
     try {
-      if (localStorage.getItem('menes_store_cache_v') !== '20260928b') {
+      if (localStorage.getItem('menes_store_cache_v') !== '20261009pdp') {
         localStorage.removeItem('menes_store_data');
-        localStorage.setItem('menes_store_cache_v', '20260928b');
+        localStorage.setItem('menes_store_cache_v', '20261009pdp');
       }
     } catch (e) {}
   </script>
@@ -242,38 +242,58 @@
     </div>
   </aside>
 
-  <div id="pdpOverlay" class="pdp-overlay hidden"></div>
-  <aside id="pdpPanel" class="pdp-panel hidden" aria-hidden="true">
-    <button type="button" id="closePdp" class="pdp-close" aria-label="Fermer">✕</button>
-    <div class="pdp-media">
-      <div class="pdp-img-wrap">
-        <img id="pdpMainImg" alt="">
-        <video id="pdpVideo" class="pdp-video hidden" controls playsinline muted loop></video>
+  <section id="pdpPanel" class="pdp-page hidden" aria-hidden="true">
+    <div class="pdp-wrap">
+      <a href="/#products" id="closePdp" class="pdp-back" data-i18n="back_shop">Retour boutique</a>
+      <div class="pdp-grid">
+        <div class="pdp-media">
+          <div class="pdp-img-wrap" id="pdpImgWrap">
+            <img id="pdpMainImg" alt="" width="720" height="900" decoding="async">
+            <video id="pdpVideo" class="pdp-video hidden" controls playsinline muted loop></video>
+            <button type="button" class="pdp-zoom-btn" id="pdpZoomBtn" data-i18n="pdp_zoom">Agrandir</button>
+            <span class="pdp-counter" id="pdpCounter" hidden>1/1</span>
+          </div>
+          <div id="pdpThumbs" class="pdp-thumbs" role="tablist"></div>
+        </div>
+        <div class="pdp-body">
+          <p class="pdp-cat" id="pdpCat"></p>
+          <h1 id="pdpName"></h1>
+          <div class="pdp-price" id="pdpPrice"></div>
+          <p id="pdpColorName" class="pdp-color-name hidden"></p>
+          <p id="pdpUrgency" class="pdp-urgency hidden"></p>
+          <p class="pdp-desc" id="pdpDesc"></p>
+          <ul id="pdpHighlights" class="pdp-highlights hidden"></ul>
+          <button type="button" class="link-btn pdp-size-btn" id="pdpSizeGuideBtn" data-i18n="size_guide_btn">Size guide</button>
+          <div id="pdpOptions" class="pdp-options"></div>
+          <div class="pdp-qty-row">
+            <span class="opt-name" data-i18n="qty">Quantité</span>
+            <div class="pdp-qty">
+              <button type="button" id="pdpQtyDec" aria-label="−">−</button>
+              <input type="number" id="pdpQty" min="1" value="1" inputmode="numeric">
+              <button type="button" id="pdpQtyInc" aria-label="+">+</button>
+            </div>
+          </div>
+          <button type="button" class="btn-checkout" id="pdpAddBtn" data-i18n="add_to_cart">Add to cart</button>
+          <div class="pdp-proof">
+            <span data-i18n="proof_pay">Secure payment</span>
+            <span data-i18n="proof_ship">Ships CA</span>
+            <span data-i18n="proof_ex">14-day exchange</span>
+          </div>
+          <div id="pdpAccordions" class="pdp-accordions"></div>
+          <div id="pdpReviews" class="pdp-reviews"></div>
+          <button type="button" class="btn-outline-block hidden" id="pdpAddLookBtn" data-i18n="upsell_add_look">Add the look (+1 piece)</button>
+          <div id="pdpRecs" class="pdp-recs hidden" aria-live="polite">
+            <h3 class="pdp-recs-title" data-i18n="complete_look">Complete the look</h3>
+            <div id="pdpRecsList" class="pdp-recs-list"></div>
+          </div>
+        </div>
       </div>
-      <div id="pdpThumbs" class="pdp-thumbs"></div>
     </div>
-    <div class="pdp-body">
-      <p class="pdp-cat" id="pdpCat"></p>
-      <h2 id="pdpName"></h2>
-      <div class="pdp-price" id="pdpPrice"></div>
-      <p id="pdpUrgency" class="pdp-urgency hidden"></p>
-      <p class="pdp-desc" id="pdpDesc"></p>
-      <button type="button" class="link-btn pdp-size-btn" id="pdpSizeGuideBtn" data-i18n="size_guide_btn">Size guide</button>
-      <div id="pdpOptions" class="pdp-options"></div>
-      <div class="pdp-proof">
-        <span data-i18n="proof_pay">Secure payment</span>
-        <span data-i18n="proof_ship">Ships CA</span>
-        <span data-i18n="proof_ex">14-day exchange</span>
-      </div>
-      <div id="pdpReviews" class="pdp-reviews"></div>
-      <button type="button" class="btn-checkout" id="pdpAddBtn" data-i18n="add_to_cart">Add to cart</button>
-      <button type="button" class="btn-outline-block hidden" id="pdpAddLookBtn" data-i18n="upsell_add_look">Add the look (+1 piece)</button>
-      <div id="pdpRecs" class="pdp-recs hidden" aria-live="polite">
-        <h3 class="pdp-recs-title" data-i18n="complete_look">Complete the look</h3>
-        <div id="pdpRecsList" class="pdp-recs-list"></div>
-      </div>
-    </div>
-  </aside>
+  </section>
+  <div id="pdpLightbox" class="pdp-lightbox hidden" hidden>
+    <button type="button" class="pdp-lightbox-close" id="pdpLightboxClose" aria-label="Fermer">✕</button>
+    <img id="pdpLightboxImg" alt="">
+  </div>
 
   <div id="stickyAtc" class="sticky-atc hidden">
     <div class="sticky-atc-inner">
@@ -501,6 +521,7 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20260928b"></script>
+  <script src="lib/product-page.js?v=20261009pdp"></script>
+  <script src="shop.js?v=20261009pdp"></script>
 </body>
 </html>

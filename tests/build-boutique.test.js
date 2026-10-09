@@ -43,6 +43,7 @@ function run() {
     'lib/public-catalog.js',
     'lib/order-pricing.js',
     'lib/cors.js',
+    'lib/product-page.js',
     'lib/platform.js',
     'lib/passport.js',
     'data/store.json',
@@ -57,6 +58,9 @@ function run() {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
+
+  const redirects = fs.readFileSync(path.join(DIST, '_redirects'), 'utf8');
+  assert(redirects.includes('/produit/*'), 'dist/_redirects must serve product URLs');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
   assert(ALLOWED_ORIGINS.includes('https://mymenes.com'), 'CORS missing https://mymenes.com');

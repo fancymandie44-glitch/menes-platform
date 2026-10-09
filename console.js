@@ -799,11 +799,24 @@ function openProductModal(product = null) {
   document.getElementById('productModalTitle').textContent = product ? 'Modifier produit' : 'Nouveau produit';
   document.getElementById('productId').value = product?.id || '';
   document.getElementById('productName').value = product?.name || '';
+  const slugEl = document.getElementById('productSlug');
+  if (slugEl) slugEl.value = product?.slug || product?.id || '';
   document.getElementById('productSku').value = product?.sku || '';
   document.getElementById('productCategory').value = product?.category || 'vetements';
   document.getElementById('productPrice').value = product?.price || '';
   document.getElementById('productCompare').value = product?.comparePrice || '';
   document.getElementById('productDesc').value = product?.description || '';
+  const hi = document.getElementById('productHighlights');
+  if (hi) hi.value = Array.isArray(product?.highlights) ? product.highlights.join('\n') : '';
+  const mat = document.getElementById('productMaterial');
+  if (mat) mat.value = product?.details?.material || '';
+  const care = document.getElementById('productCare');
+  if (care) care.value = product?.details?.care || '';
+  const sw = document.getElementById('productSwatches');
+  if (sw) {
+    const map = product?.swatches && typeof product.swatches === 'object' ? product.swatches : {};
+    sw.value = Object.entries(map).map(([k, v]) => `${k}:${v}`).join(', ');
+  }
   document.getElementById('productTags').value = (product?.tags || []).join(', ');
   document.getElementById('productStock').value = product?.stock || 0;
   const pv = document.getElementById('productVideoUrl');
@@ -964,13 +977,30 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     ? variants.reduce((s, v) => s + v.stock, 0)
     : (parseInt(document.getElementById('productStock').value, 10) || 0);
 
+  const swatchesRaw = document.getElementById('productSwatches')?.value || '';
+  const swatches = {};
+  String(swatchesRaw).split(',').forEach((part) => {
+    const m = String(part).match(/^\s*(.+?)\s*:\s*(#[0-9a-fA-F]{3,8})\s*$/);
+    if (m) swatches[m[1].trim()] = m[2];
+  });
+  const highlights = String(document.getElementById('productHighlights')?.value || '')
+    .split('\n').map((s) => s.trim()).filter(Boolean);
+  const prevProduct = (storeData.products || []).find((p) => p.id === id) || {};
   const product = {
     id, name: document.getElementById('productName').value,
+    slug: (document.getElementById('productSlug')?.value || id).trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-'),
     sku: document.getElementById('productSku').value,
     category: document.getElementById('productCategory').value,
     price: parseFloat(document.getElementById('productPrice').value),
     comparePrice: parseFloat(document.getElementById('productCompare').value) || 0,
     description: document.getElementById('productDesc').value,
+    highlights,
+    details: {
+      ...(prevProduct.details || {}),
+      material: document.getElementById('productMaterial')?.value.trim() || '',
+      care: document.getElementById('productCare')?.value.trim() || '',
+    },
+    swatches,
     options,
     sizes: (options.find((o) => /taille|size/i.test(o.name)) || {}).values || [],
     tags: document.getElementById('productTags').value.split(',').map((s) => s.trim()).filter(Boolean),

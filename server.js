@@ -79,6 +79,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/admin' || urlPath === '/admin/') urlPath = '/console.html';
   if (urlPath === '/console' || urlPath === '/console/') urlPath = '/console.html';
   if (urlPath === '/platform' || urlPath === '/platform/') urlPath = '/console.html';
+  if (/^\/(produit|product|r)\//.test(urlPath)) urlPath = '/index.html';
 
   const filePath = path.join(root, urlPath === '/' ? 'index.html' : urlPath.slice(1));
   if (!filePath.startsWith(root)) {

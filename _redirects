@@ -1,4 +1,6 @@
 /                    /index.html          200
+/produit/*           /index.html          200
+/product/*           /index.html          200
 /console             /console.html        200
 /console/            /console.html        200
 /platform            /console.html        200

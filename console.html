@@ -758,6 +758,7 @@
         <input type="hidden" id="productId">
         <div class="form-grid-2">
           <label>Nom<input type="text" id="productName" required></label>
+          <label>URL produit (slug)<input type="text" id="productSlug" placeholder="casquette"></label>
           <label>SKU<input type="text" id="productSku" placeholder="MENES-HOOD-001"></label>
           <label>Prix (CAD)<input type="number" id="productPrice" min="0" step="0.01" required></label>
           <label>Ancien prix barré (doit être plus élevé que le prix)<input type="number" id="productCompare" min="0" step="0.01" placeholder="ex: 120 si le prix actuel est 90"></label>
@@ -765,6 +766,10 @@
           <label>Catégorie<select id="productCategory"></select></label>
         </div>
         <label>Description<textarea id="productDesc" rows="3"></textarea></label>
+        <label>Points forts (une ligne = une puce)<textarea id="productHighlights" rows="3" placeholder="Coton dense&#10;Broderie avant"></textarea></label>
+        <label>Matière<textarea id="productMaterial" rows="2" placeholder="Coton 400 gsm, broderie."></textarea></label>
+        <label>Entretien<textarea id="productCare" rows="2" placeholder="Lavage à froid, envers."></textarea></label>
+        <label>Pastilles couleur (optionnel)<input type="text" id="productSwatches" placeholder="Noir:#111111, Beige:#d6c4a8"></label>
         <label>Tags (virgule)<input type="text" id="productTags" placeholder="nouveau, drop, limité"></label>
         <label>URL vidéo produit (mp4/webm, optionnel)<input type="url" id="productVideoUrl" placeholder="https://.../produit.mp4"></label>
 
