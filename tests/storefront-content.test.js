@@ -41,7 +41,15 @@ function run() {
   assert(html.includes('id="cartScroll"'), 'cart uses a single mobile scroll region');
   assert(/body\.scroll-locked \.sticky-atc/.test(css), 'sticky add-to-cart hides when the cart is open');
   assert(/z-index:\s*410/.test(css), 'cart panel sits above the sticky add bar');
+  assert(/z-index:\s*520/.test(css), 'checkout modal sits above the cart sheet');
+  assert(/touch-action:\s*pan-y pinch-zoom/.test(css), 'cart allows scroll and pinch-zoom');
+  assert(!/html\.scroll-locked,\s*body\.scroll-locked \{[^}]*touch-action:\s*none/.test(css), 'page lock must not kill pinch-zoom');
   assert(!/\.cart-upsells-list \{[^}]*max-height:\s*220px/.test(css), 'upsells must not nest a second mobile scroller');
+  assert(shop.includes('function fitSheetsToVisualViewport'), 'cart follows the iOS visual viewport while zooming');
+  assert(shop.includes('function openCheckout'), 'checkout is a dedicated step after the cart');
+  assert(shop.includes('openCart();'), 'adding a product opens the cart');
+  assert(html.includes('id="checkoutBackCart"'), 'checkout can return to the cart');
+  assert(/user-scalable=yes/.test(html), 'viewport allows pinch-zoom');
   assert(html.includes('id="themeToggle"'), 'nav has a dark/light toggle');
   assert(shop.includes('function displayOptionName'), 'option labels localize to English');
   assert(shop.includes("taille: 'Size'"), 'Taille option reads as Size in English');

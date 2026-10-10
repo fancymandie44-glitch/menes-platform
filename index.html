@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=8, user-scalable=yes, viewport-fit=cover">
   <meta name="description" content="MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.">
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261010cart3">
+  <link rel="stylesheet" href="shop.css?v=20261010cart5">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -25,9 +25,9 @@
       if (_th === 'dark' || _th === 'light') document.documentElement.dataset.theme = _th;
     } catch (e) { document.documentElement.lang = 'en'; }
     try {
-      if (localStorage.getItem('menes_store_cache_v') !== '20261010cart3') {
+      if (localStorage.getItem('menes_store_cache_v') !== '20261010cart5') {
         localStorage.removeItem('menes_store_data');
-        localStorage.setItem('menes_store_cache_v', '20261010cart3');
+        localStorage.setItem('menes_store_cache_v', '20261010cart5');
       }
     } catch (e) {}
   </script>
@@ -322,6 +322,7 @@
 
   <div id="checkoutModal" class="modal hidden">
     <div class="modal-box modal-checkout">
+      <button type="button" id="checkoutBackCart" class="checkout-back" data-i18n="back_cart">Back to cart</button>
       <h3 data-i18n="checkout_title">Checkout</h3>
       <p class="checkout-secure" data-i18n="checkout_secure">SSL encrypted connection · Data protected</p>
       <form id="checkoutForm">
@@ -528,6 +529,6 @@
 
   <script src="config.js?v=20260805b"></script>
   <script src="lib/product-page.js?v=20261010cart"></script>
-  <script src="shop.js?v=20261010cart3"></script>
+  <script src="shop.js?v=20261010cart5"></script>
 </body>
 </html>

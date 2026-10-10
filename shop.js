@@ -143,6 +143,7 @@ const I18N = {
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
     cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
+    back_cart: 'Retour au panier',
     checkout_title: 'Finaliser la commande', checkout_secure: 'Connexion chiffrée SSL. Données protégées',
     f_name: 'Nom complet', f_email: 'Courriel', f_phone: 'Téléphone', f_address: 'Adresse de livraison',
     pay_label: 'Mode de paiement :', pay_card: 'Carte', pay_crypto: 'Crypto', pay_submit: 'Payer par carte',
@@ -282,6 +283,7 @@ const I18N = {
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
     cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
+    back_cart: 'Back to cart',
     checkout_title: 'Complete your order', checkout_secure: 'SSL encrypted connection. Protected data',
     f_name: 'Full name', f_email: 'Email', f_phone: 'Phone', f_address: 'Shipping address',
     pay_label: 'Payment method:', pay_card: 'Card', pay_crypto: 'Crypto', pay_submit: 'Pay by card',
@@ -908,12 +910,64 @@ function isOverlayOpen() {
 }
 
 let scrollLockY = 0;
+const VIEWPORT_META = 'width=device-width, initial-scale=1.0, maximum-scale=8, user-scalable=yes, viewport-fit=cover';
+
+function resetPageZoom() {
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (!meta) return;
+  meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover');
+  window.setTimeout(() => meta.setAttribute('content', VIEWPORT_META), 60);
+}
+
+function clearSheetViewport(el) {
+  if (!el) return;
+  el.style.top = '';
+  el.style.left = '';
+  el.style.right = '';
+  el.style.bottom = '';
+  el.style.width = '';
+  el.style.height = '';
+  el.style.maxHeight = '';
+}
+
+function boxSheetToVisualViewport(el, fullWidth) {
+  const vv = window.visualViewport;
+  if (!el || !vv) return;
+  el.style.top = `${vv.offsetTop}px`;
+  el.style.height = `${vv.height}px`;
+  el.style.maxHeight = `${vv.height}px`;
+  el.style.bottom = 'auto';
+  if (fullWidth) {
+    el.style.left = `${vv.offsetLeft}px`;
+    el.style.width = `${vv.width}px`;
+    el.style.right = 'auto';
+  }
+}
+
+function fitSheetsToVisualViewport() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const panel = document.getElementById('cartPanel');
+  const overlay = document.getElementById('cartOverlay');
+  const narrow = window.matchMedia('(max-width: 768px)').matches;
+  const cartOpen = panel && !panel.classList.contains('hidden');
+  if (overlay && !overlay.classList.contains('hidden')) boxSheetToVisualViewport(overlay, true);
+  else clearSheetViewport(overlay);
+  if (cartOpen) boxSheetToVisualViewport(panel, narrow);
+  else clearSheetViewport(panel);
+  document.querySelectorAll('.modal').forEach((m) => {
+    if (m.classList.contains('hidden')) clearSheetViewport(m);
+    else boxSheetToVisualViewport(m, true);
+  });
+}
+
 function lockPageScroll() {
   if (document.body.classList.contains('scroll-locked')) return;
   scrollLockY = window.scrollY || window.pageYOffset || 0;
   document.body.classList.add('scroll-locked');
   document.documentElement.classList.add('scroll-locked');
   document.body.style.top = `-${scrollLockY}px`;
+  fitSheetsToVisualViewport();
 }
 
 function unlockPageScroll() {
@@ -922,12 +976,22 @@ function unlockPageScroll() {
   document.documentElement.classList.remove('scroll-locked');
   document.body.style.top = '';
   window.scrollTo(0, scrollLockY || 0);
+  clearSheetViewport(document.getElementById('cartPanel'));
+  clearSheetViewport(document.getElementById('cartOverlay'));
+  document.querySelectorAll('.modal').forEach(clearSheetViewport);
 }
 
 function syncScrollLock() {
   if (isOverlayOpen()) lockPageScroll();
   else unlockPageScroll();
+  fitSheetsToVisualViewport();
 }
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fitSheetsToVisualViewport, { passive: true });
+  window.visualViewport.addEventListener('scroll', fitSheetsToVisualViewport, { passive: true });
+}
+window.addEventListener('orientationchange', () => setTimeout(fitSheetsToVisualViewport, 80));
 
 function setupVipOverlay() {
   if (!shouldShowVipOverlay()) return;
@@ -2978,13 +3042,7 @@ window.addToCart = (id, card, qty = 1) => {
   }
   persistCart();
   updateCartUI({ forceList: true });
-  showToast(t('added'));
-  setTimeout(() => {
-    const cartOpen = !document.getElementById('cartPanel')?.classList.contains('hidden');
-    if (cartOpen || isOverlayOpen()) return;
-    showUpsellModal(id);
-    syncScrollLock();
-  }, 450);
+  openCart();
 };
 
 function cartLineKey(c) {
@@ -3097,7 +3155,10 @@ function updateCartUI(opts = {}) {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const product = (storeData?.products || []).find((p) => p.id === c.id);
+      const thumb = productImages(product)[0]?.url || '';
       return `<div class="cart-item" data-cart-i="${i}">
+        <div class="cart-item-thumb">${thumb ? `<img src="${esc(thumb)}" alt="">` : '◆'}</div>
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -3405,13 +3466,16 @@ document.getElementById('successCloseBtn')?.addEventListener('click', () => {
 });
 
 function openCart() {
+  document.getElementById('upsellModal')?.classList.add('hidden');
   document.getElementById('cartPanel').classList.remove('hidden');
   document.getElementById('cartOverlay').classList.remove('hidden');
   document.getElementById('stickyAtc')?.classList.add('hidden');
   document.getElementById('toast')?.classList.add('hidden');
   const scroller = document.getElementById('cartScroll');
   if (scroller) scroller.scrollTop = 0;
+  resetPageZoom();
   syncScrollLock();
+  fitSheetsToVisualViewport();
 }
 document.getElementById('cartBtn').addEventListener('click', openCart);
 document.getElementById('closeCart').addEventListener('click', closeCart);
@@ -3422,10 +3486,11 @@ function closeCart() {
   if (document.body.classList.contains('pdp-open')) {
     document.getElementById('stickyAtc')?.classList.remove('hidden');
   }
+  resetPageZoom();
   syncScrollLock();
 }
 
-document.getElementById('checkoutBtn').addEventListener('click', () => {
+function openCheckout() {
   if (!cart.length) {
     showToast(t('cart_empty'));
     return;
@@ -3434,9 +3499,21 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
   syncPromoField();
   prefillCheckoutFromPassport({ email: rememberedPassportEmail() });
   renderCheckoutSummary();
+  document.getElementById('cartPanel').classList.add('hidden');
+  document.getElementById('cartOverlay').classList.add('hidden');
   document.getElementById('checkoutModal').classList.remove('hidden');
+  resetPageZoom();
   syncScrollLock();
-});
+  fitSheetsToVisualViewport();
+  document.getElementById('checkoutModal')?.querySelector('.modal-box')?.scrollTo?.(0, 0);
+}
+
+function returnToCartFromCheckout() {
+  document.getElementById('checkoutModal').classList.add('hidden');
+  openCart();
+}
+
+document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
 
 document.getElementById('applyPromoBtn')?.addEventListener('click', () => {
   applyPromoCode(document.getElementById('promoCodeInput')?.value || '');
@@ -3521,10 +3598,8 @@ document.getElementById('checkoutCountry')?.addEventListener('change', () => {
 document.getElementById('checkoutProvince')?.addEventListener('change', renderCheckoutSummary);
 setupAddressAutocomplete();
 populateProvinces();
-document.getElementById('cancelCheckout').addEventListener('click', () => {
-  document.getElementById('checkoutModal').classList.add('hidden');
-  syncScrollLock();
-});
+document.getElementById('cancelCheckout').addEventListener('click', returnToCartFromCheckout);
+document.getElementById('checkoutBackCart')?.addEventListener('click', returnToCartFromCheckout);
 
 document.querySelectorAll('.pay-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
