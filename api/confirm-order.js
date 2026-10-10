@@ -92,7 +92,7 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const orderId = String(body.orderId || body.order || '').trim();
-    const method = String(body.method || 'square').trim().toLowerCase();
+    const method = String(body.method || 'stripe').trim().toLowerCase();
     if (!orderId) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'orderId requis' }) };
     }
@@ -146,15 +146,15 @@ exports.handler = async (event) => {
     }
 
     let verification = { verified: false };
-    if (method === 'square' || method === 'card' || order.payment === 'square' || order.method === 'square') {
-      verification = await verifySquarePayment(orderId);
-    } else if (method === 'stripe' || method === 'klarna' || order.payment === 'stripe') {
-      verification = await verifyStripeSession(orderId);
-    } else if (method === 'paypal') {
-      // PayPal return without capture webhook: keep awaiting unless explicitly trusted via admin
+    if (method === 'paypal') {
       verification = { verified: false, reason: 'paypal_requires_capture' };
     } else if (method === 'crypto') {
       verification = { verified: false, reason: 'crypto_manual' };
+    } else {
+      verification = await verifyStripeSession(orderId);
+      if (!verification.verified && (method === 'square' || order.payment === 'square' || order.method === 'square')) {
+        verification = await verifySquarePayment(orderId);
+      }
     }
 
     // Allow admin override header for ops recovery only

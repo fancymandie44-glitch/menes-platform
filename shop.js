@@ -141,7 +141,7 @@ const I18N = {
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
     foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
-    cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
+    cart_total: 'Total :', cart_tax_hint: 'Taxes incluses', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
     back_cart: 'Retour au panier',
     checkout_title: 'Finaliser la commande', checkout_secure: 'Connexion chiffrée SSL. Données protégées',
@@ -281,7 +281,7 @@ const I18N = {
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
     foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
-    cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
+    cart_total: 'Total:', cart_tax_hint: 'Incl. taxes', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
     back_cart: 'Back to cart',
     checkout_title: 'Complete your order', checkout_secure: 'SSL encrypted connection. Protected data',
@@ -1057,9 +1057,9 @@ const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', '
 
 function computeTax(country, province, subtotal) {
   if (country === 'CA') {
-    const info = CA_TAXES[province];
-    if (info) return { rate: info.rate, amount: subtotal * (info.rate / 100), label: info.label };
-    return { rate: 0, amount: 0, label: '' };
+    const info = CA_TAXES[province] || CA_TAXES.QC;
+    const amount = Math.round(subtotal * (info.rate / 100) * 100) / 100;
+    return { rate: info.rate, amount, label: info.label };
   }
   return { rate: 0, amount: 0, label: '' };
 }
@@ -3119,12 +3119,11 @@ function ensureCartDelegation() {
 
 function updateCartTotalsOnly() {
   const count = cart.reduce((s, c) => s + c.qty, 0);
-  const { subtotal, discount } = currentTotals();
-  const shown = Math.max(0, subtotal - (discount?.amount || 0));
+  const { total } = currentTotals();
   const countEl = document.getElementById('cartCount');
   const totalEl = document.getElementById('cartTotal');
   if (countEl) countEl.textContent = count;
-  if (totalEl) totalEl.textContent = `${shown.toFixed(2)}$`;
+  if (totalEl) totalEl.textContent = `${total.toFixed(2)}$`;
   renderShippingBar();
 }
 
@@ -3183,9 +3182,11 @@ function currentTotals() {
   const discount = computeDiscount(subtotal, discountInfo);
   const taxable = Math.max(0, subtotal - discount.amount);
   const country = document.getElementById('checkoutCountry')?.value || 'CA';
-  const province = document.getElementById('checkoutProvince')?.value || '';
+  let province = document.getElementById('checkoutProvince')?.value || '';
+  if (country === 'CA' && !province) province = 'QC';
   const tax = computeTax(country, province, taxable);
-  return { subtotal, discount, tax, total: taxable + tax.amount };
+  const total = Math.round((taxable + tax.amount) * 100) / 100;
+  return { subtotal, discount, tax, total };
 }
 
 function renderCheckoutSummary() {
@@ -3606,7 +3607,10 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
+    const labels = {
+      stripe: currentLang === 'en' ? 'Pay by card' : 'Payer par carte',
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
     document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
   });
 });
@@ -3628,7 +3632,7 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3722,7 +3726,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'
