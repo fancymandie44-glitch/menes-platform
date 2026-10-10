@@ -3606,7 +3606,10 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
+    const labels = {
+      stripe: currentLang === 'en' ? 'Pay by card' : 'Payer par carte',
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
     document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
   });
 });
@@ -3628,7 +3631,7 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3722,7 +3725,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'

@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261010cart5">
+  <link rel="stylesheet" href="shop.css?v=20261010pay1">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -25,9 +25,9 @@
       if (_th === 'dark' || _th === 'light') document.documentElement.dataset.theme = _th;
     } catch (e) { document.documentElement.lang = 'en'; }
     try {
-      if (localStorage.getItem('menes_store_cache_v') !== '20261010cart5') {
+      if (localStorage.getItem('menes_store_cache_v') !== '20261010pay1') {
         localStorage.removeItem('menes_store_data');
-        localStorage.setItem('menes_store_cache_v', '20261010cart5');
+        localStorage.setItem('menes_store_cache_v', '20261010pay1');
       }
     } catch (e) {}
   </script>
@@ -365,14 +365,14 @@
 
         <p class="pay-label" data-i18n="pay_label">Payment method:</p>
         <div class="pay-methods pay-methods-main">
-          <button type="button" class="pay-btn active" data-method="square">
-            <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Visa · MC · Amex</small>
+          <button type="button" class="pay-btn active" data-method="stripe">
+            <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Stripe · Visa · MC</small>
           </button>
           <button type="button" class="pay-btn" data-method="crypto">
             <span class="pay-icon" aria-hidden="true">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
           </button>
         </div>
-        <input type="hidden" name="method" id="payMethod" value="square">
+        <input type="hidden" name="method" id="payMethod" value="stripe">
         <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Pay by card</button>
         <p class="alt-pay">
           <span data-i18n="alt_pay">Need Klarna or PayPal?</span>
@@ -529,6 +529,6 @@
 
   <script src="config.js?v=20260805b"></script>
   <script src="lib/product-page.js?v=20261010cart"></script>
-  <script src="shop.js?v=20261010cart5"></script>
+  <script src="shop.js?v=20261010pay1"></script>
 </body>
 </html>

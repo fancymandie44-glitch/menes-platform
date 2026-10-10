@@ -61,8 +61,9 @@ exports.handler = async (event) => {
     let result;
     switch (method) {
       case 'stripe':
+      case 'card':
         result = await stripeCheckout(order, false);
-        if (result.error && /expired|non configuré|invalid api key|api key/i.test(result.error)) {
+        if (result.error) {
           const fallback = await squareCheckout(order);
           if (!fallback.error) result = fallback;
         }
@@ -74,8 +75,11 @@ exports.handler = async (event) => {
         result = await paypalCheckout(order);
         break;
       case 'square':
-      case 'card':
         result = await squareCheckout(order);
+        if (result.error) {
+          const fallback = await stripeCheckout(order, false);
+          if (!fallback.error) result = fallback;
+        }
         break;
       case 'crypto':
         result = await cryptoCheckout(order);
@@ -100,7 +104,7 @@ exports.handler = async (event) => {
       };
     }
 
-    const savedStore = await recordOrder(order, method, siteId);
+    const savedStore = await recordOrder(order, result.provider || method, siteId);
     await notifyMerchant(order, method, 'En attente de paiement', savedStore);
 
     return {

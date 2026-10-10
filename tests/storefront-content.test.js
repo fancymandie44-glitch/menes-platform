@@ -49,6 +49,8 @@ function run() {
   assert(shop.includes('function openCheckout'), 'checkout is a dedicated step after the cart');
   assert(shop.includes('openCart();'), 'adding a product opens the cart');
   assert(html.includes('id="checkoutBackCart"'), 'checkout can return to the cart');
+  assert(html.includes('data-method="stripe"'), 'card checkout defaults to Stripe');
+  assert(html.includes('id="payMethod" value="stripe"'), 'pay form posts Stripe by default');
   assert(/user-scalable=yes/.test(html), 'viewport allows pinch-zoom');
   assert(html.includes('id="themeToggle"'), 'nav has a dark/light toggle');
   assert(shop.includes('function displayOptionName'), 'option labels localize to English');

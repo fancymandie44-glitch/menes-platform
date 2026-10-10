@@ -39,8 +39,8 @@ exports.handler = async (event) => {
     }
     const order = priced.order;
 
-    let result = await squareCheckout(order);
-    if (result.error) result = await stripeCheckout(order, false);
+    let result = await stripeCheckout(order, false);
+    if (result.error) result = await squareCheckout(order);
     if (result.error) result = await paypalCheckout(order);
     if (result.error || !result.checkoutUrl) {
       return {
@@ -49,20 +49,21 @@ exports.handler = async (event) => {
         body: JSON.stringify({ error: 'Paiement temporairement indisponible. Réessayez ou contactez-nous.' }),
       };
     }
+    const provider = result.provider || 'stripe';
 
     if (!store.orders) store.orders = [];
     const existing = store.orders.findIndex((o) => o.id === order.id);
     const entry = {
       ...order,
-      payment: 'square',
-      method: 'square',
+      payment: provider,
+      method: provider,
       status: 'pending',
       date: order.date || new Date().toISOString(),
     };
     if (existing >= 0) store.orders[existing] = { ...store.orders[existing], ...entry };
     else store.orders.push(entry);
     await writeSiteStore(siteId, store);
-    await notifyMerchant(order, 'Square', 'En attente de paiement', store);
+    await notifyMerchant(order, provider === 'stripe' ? 'Stripe' : provider, 'En attente de paiement', store);
 
     return {
       statusCode: 200,
