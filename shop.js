@@ -2897,7 +2897,8 @@ function showStickyAtc(product, img) {
   const imgEl = document.getElementById('stickyAtcImg');
   if (img) { imgEl.src = img; imgEl.classList.remove('hidden'); }
   else imgEl.classList.add('hidden');
-  bar.classList.remove('hidden');
+  const cartOpen = !document.getElementById('cartPanel')?.classList.contains('hidden');
+  bar.classList.toggle('hidden', cartOpen);
 }
 
 function addFromPdp() {
@@ -2979,10 +2980,10 @@ window.addToCart = (id, card, qty = 1) => {
   updateCartUI({ forceList: true });
   showToast(t('added'));
   setTimeout(() => {
-    if (!isOverlayOpen() || !document.getElementById('cartPanel')?.classList.contains('hidden')) {
-      showUpsellModal(id);
-      syncScrollLock();
-    }
+    const cartOpen = !document.getElementById('cartPanel')?.classList.contains('hidden');
+    if (cartOpen || isOverlayOpen()) return;
+    showUpsellModal(id);
+    syncScrollLock();
   }, 450);
 };
 
@@ -3403,16 +3404,23 @@ document.getElementById('successCloseBtn')?.addEventListener('click', () => {
   syncScrollLock();
 });
 
-document.getElementById('cartBtn').addEventListener('click', () => {
+function openCart() {
   document.getElementById('cartPanel').classList.remove('hidden');
   document.getElementById('cartOverlay').classList.remove('hidden');
+  document.getElementById('stickyAtc')?.classList.add('hidden');
+  const scroller = document.getElementById('cartScroll');
+  if (scroller) scroller.scrollTop = 0;
   syncScrollLock();
-});
+}
+document.getElementById('cartBtn').addEventListener('click', openCart);
 document.getElementById('closeCart').addEventListener('click', closeCart);
 document.getElementById('cartOverlay').addEventListener('click', closeCart);
 function closeCart() {
   document.getElementById('cartPanel').classList.add('hidden');
   document.getElementById('cartOverlay').classList.add('hidden');
+  if (document.body.classList.contains('pdp-open')) {
+    document.getElementById('stickyAtc')?.classList.remove('hidden');
+  }
   syncScrollLock();
 }
 
@@ -3469,10 +3477,15 @@ document.getElementById('pdpLightbox')?.addEventListener('click', (e) => {
   const wrap = document.getElementById('pdpImgWrap');
   if (!wrap) return;
   let x0 = 0;
-  wrap.addEventListener('touchstart', (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+  let y0 = 0;
+  wrap.addEventListener('touchstart', (e) => {
+    x0 = e.changedTouches[0].clientX;
+    y0 = e.changedTouches[0].clientY;
+  }, { passive: true });
   wrap.addEventListener('touchend', (e) => {
     const dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) < 40 || pdpGallery.length < 2) return;
+    const dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) || pdpGallery.length < 2) return;
     const showAt = renderPdpGallery;
     const next = pdpGalleryIndex + (dx < 0 ? 1 : -1);
     const imgEl = document.getElementById('pdpMainImg');

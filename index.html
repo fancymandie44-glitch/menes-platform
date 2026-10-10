@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.">
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261009grid">
+  <link rel="stylesheet" href="shop.css?v=20261010cart2">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -25,9 +25,9 @@
       if (_th === 'dark' || _th === 'light') document.documentElement.dataset.theme = _th;
     } catch (e) { document.documentElement.lang = 'en'; }
     try {
-      if (localStorage.getItem('menes_store_cache_v') !== '20261009grid') {
+      if (localStorage.getItem('menes_store_cache_v') !== '20261010cart2') {
         localStorage.removeItem('menes_store_data');
-        localStorage.setItem('menes_store_cache_v', '20261009grid');
+        localStorage.setItem('menes_store_cache_v', '20261010cart2');
       }
     } catch (e) {}
   </script>
@@ -229,15 +229,17 @@
       <h3 data-i18n="cart_title">Cart</h3>
       <button id="closeCart" aria-label="Fermer">✕</button>
     </div>
-    <div id="cartItems" class="cart-items"></div>
-    <div id="cartShipUnlock" class="cart-ship-unlock hidden"></div>
-    <div id="cartUpsells" class="cart-upsells hidden">
-      <h4 class="cart-upsells-title" data-i18n="upsell_cart_title">Complete your cart</h4>
-      <div id="cartUpsellsList" class="cart-upsells-list"></div>
-    </div>
-    <div id="cartShippingBar" class="cart-shipping-bar hidden">
-      <p id="cartShippingText" class="cart-shipping-text"></p>
-      <div class="cart-shipping-track"><div id="cartShippingFill" class="cart-shipping-fill"></div></div>
+    <div id="cartScroll" class="cart-scroll">
+      <div id="cartItems" class="cart-items"></div>
+      <div id="cartShipUnlock" class="cart-ship-unlock hidden"></div>
+      <div id="cartUpsells" class="cart-upsells hidden">
+        <h4 class="cart-upsells-title" data-i18n="upsell_cart_title">Complete your cart</h4>
+        <div id="cartUpsellsList" class="cart-upsells-list"></div>
+      </div>
+      <div id="cartShippingBar" class="cart-shipping-bar hidden">
+        <p id="cartShippingText" class="cart-shipping-text"></p>
+        <div class="cart-shipping-track"><div id="cartShippingFill" class="cart-shipping-fill"></div></div>
+      </div>
     </div>
     <div class="cart-footer">
       <div class="cart-secure" data-i18n="cart_secure">100% secure checkout</div>
@@ -525,7 +527,7 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="lib/product-page.js?v=20261009grid"></script>
-  <script src="shop.js?v=20261009grid"></script>
+  <script src="lib/product-page.js?v=20261010cart"></script>
+  <script src="shop.js?v=20261010cart2"></script>
 </body>
 </html>

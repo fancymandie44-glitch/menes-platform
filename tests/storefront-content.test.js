@@ -37,6 +37,11 @@ function run() {
   assert(shop.includes('function guardContrast'), 'theme contrast guard exists');
   assert(shop.includes('function setVisitorAppearance'), 'shop visitors can toggle light/dark');
   assert(shop.includes("THEME_KEY = 'menes_appearance'"), 'appearance is persisted locally');
+  const css = fs.readFileSync(path.join(ROOT, 'shop.css'), 'utf8');
+  assert(html.includes('id="cartScroll"'), 'cart uses a single mobile scroll region');
+  assert(/body\.scroll-locked \.sticky-atc/.test(css), 'sticky add-to-cart hides when the cart is open');
+  assert(/z-index:\s*410/.test(css), 'cart panel sits above the sticky add bar');
+  assert(!/\.cart-upsells-list \{[^}]*max-height:\s*220px/.test(css), 'upsells must not nest a second mobile scroller');
   assert(html.includes('id="themeToggle"'), 'nav has a dark/light toggle');
   assert(shop.includes('function displayOptionName'), 'option labels localize to English');
   assert(shop.includes("taille: 'Size'"), 'Taille option reads as Size in English');
