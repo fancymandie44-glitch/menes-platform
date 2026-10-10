@@ -1,4 +1,4 @@
-const { stripeCheckout, paypalCheckout, squareCheckout, cryptoCheckout } = require('../lib/payments');
+const { stripeCheckout, paypalCheckout, cryptoCheckout } = require('../lib/payments');
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
@@ -62,24 +62,14 @@ exports.handler = async (event) => {
     switch (method) {
       case 'stripe':
       case 'card':
+      case 'square':
         result = await stripeCheckout(order, false);
-        if (result.error) {
-          const fallback = await squareCheckout(order);
-          if (!fallback.error) result = fallback;
-        }
         break;
       case 'klarna':
         result = await stripeCheckout(order, true);
         break;
       case 'paypal':
         result = await paypalCheckout(order);
-        break;
-      case 'square':
-        result = await squareCheckout(order);
-        if (result.error) {
-          const fallback = await stripeCheckout(order, false);
-          if (!fallback.error) result = fallback;
-        }
         break;
       case 'crypto':
         result = await cryptoCheckout(order);

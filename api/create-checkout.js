@@ -1,6 +1,6 @@
 'use strict';
 
-const { stripeCheckout, paypalCheckout, squareCheckout } = require('../lib/payments');
+const { stripeCheckout, paypalCheckout } = require('../lib/payments');
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
@@ -40,7 +40,6 @@ exports.handler = async (event) => {
     const order = priced.order;
 
     let result = await stripeCheckout(order, false);
-    if (result.error) result = await squareCheckout(order);
     if (result.error) result = await paypalCheckout(order);
     if (result.error || !result.checkoutUrl) {
       return {
