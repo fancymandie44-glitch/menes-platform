@@ -48,6 +48,7 @@ const REQUIRED_FILES = [
   'lib/cors.js',
   'lib/order-pricing.js',
   'lib/admin-auth.js',
+  'lib/product-page.js',
   'lib/ambassador-reset.js',
   'lib/public-catalog.js',
 ];

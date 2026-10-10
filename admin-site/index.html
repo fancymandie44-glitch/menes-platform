@@ -758,6 +758,7 @@
         <input type="hidden" id="productId">
         <div class="form-grid-2">
           <label>Nom<input type="text" id="productName" required></label>
+          <label>URL produit (slug)<input type="text" id="productSlug" placeholder="casquette"></label>
           <label>SKU<input type="text" id="productSku" placeholder="MENES-HOOD-001"></label>
           <label>Prix (CAD)<input type="number" id="productPrice" min="0" step="0.01" required></label>
           <label>Ancien prix barré (doit être plus élevé que le prix)<input type="number" id="productCompare" min="0" step="0.01" placeholder="ex: 120 si le prix actuel est 90"></label>
@@ -765,6 +766,10 @@
           <label>Catégorie<select id="productCategory"></select></label>
         </div>
         <label>Description<textarea id="productDesc" rows="3"></textarea></label>
+        <label>Points forts (une ligne = une puce)<textarea id="productHighlights" rows="3" placeholder="Coton dense&#10;Broderie avant"></textarea></label>
+        <label>Matière<textarea id="productMaterial" rows="2" placeholder="Coton 400 gsm, broderie."></textarea></label>
+        <label>Entretien<textarea id="productCare" rows="2" placeholder="Lavage à froid, envers."></textarea></label>
+        <label>Pastilles couleur (optionnel)<input type="text" id="productSwatches" placeholder="Noir:#111111, Beige:#d6c4a8"></label>
         <label>Tags (virgule)<input type="text" id="productTags" placeholder="nouveau, drop, limité"></label>
         <label>URL vidéo produit (mp4/webm, optionnel)<input type="url" id="productVideoUrl" placeholder="https://.../produit.mp4"></label>
 
@@ -775,15 +780,21 @@
         <div class="modal-subhead">Stock par variante <small>(ex: Vert = 0 → les clients voient « épuisé » pour le vert seulement)</small></div>
         <div id="variantsStockEditor" class="variants-stock-editor"></div>
 
-        <div class="modal-subhead">Photos <small>(la 1<sup>re</sup> = principale · studio : fond, recadrage · associe une photo à une variante)</small></div>
-        <div id="productImagesEditor" class="images-editor"></div>
+        <div class="modal-subhead">Photos <small>plusieurs par produit et par couleur · la 1<sup>re</sup> du produit = image carte</small></div>
+        <p class="hint">Ajoute autant de photos que tu veux dans chaque groupe (face, côté, détail). Vide = toutes les couleurs. Une couleur = galerie qui change quand le client clique la pastille.</p>
         <div class="images-add-row">
-          <div class="upload-zone small" id="productUploadZone"><span>Ajouter une photo (fond + crop)</span><input type="file" id="productImageFile" accept="image/*" hidden></div>
+          <label class="img-target-label">Ajouter dans
+            <select id="productImageTarget">
+              <option value="">Produit (toutes les couleurs)</option>
+            </select>
+          </label>
+          <div class="upload-zone small" id="productUploadZone"><span>Ajouter plusieurs photos</span><input type="file" id="productImageFile" accept="image/*" multiple hidden></div>
           <div class="url-add">
             <input type="url" id="productImageUrl" placeholder="ou coller une URL d'image">
             <button type="button" id="addImageUrlBtn" class="btn-outline btn-sm">Ajouter l'URL</button>
           </div>
         </div>
+        <div id="productImagesEditor" class="images-editor"></div>
 
         <div class="checkbox-row">
           <label class="checkbox"><input type="checkbox" id="productActive" checked> Actif</label>
@@ -887,7 +898,7 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js?v=20260928a"></script>
-  <script src="console.js?v=20260928a"></script>
+  <script src="config.js"></script>
+  <script src="console.js"></script>
 </body>
 </html>

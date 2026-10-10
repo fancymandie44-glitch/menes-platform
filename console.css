@@ -396,15 +396,21 @@ a.btn-outline { text-decoration: none; display: inline-block; color: var(--text)
 .gallery-edit-fields input { margin-top: 0 !important; }
 .gallery-edit-row .gallery-upload { margin-top: 0; min-height: 88px; display: grid; place-items: center; }
 .gallery-edit-row .gallery-preview { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; margin: 0; }
-.image-edit-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+.image-group { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 12px; background: var(--surface); }
+.image-group-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.image-group-head strong { font-size: 0.82rem; }
+.image-group-count { font-size: 0.72rem; color: var(--muted); }
+.image-edit-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 8px; }
 .image-edit-row img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
 .image-edit-fields { display: flex; flex-direction: column; gap: 4px; }
 .img-var-label { margin: 0 !important; font-size: 0.72rem !important; }
-.img-var-label input { margin-top: 2px !important; padding: 6px 8px !important; }
+.img-var-label select, .img-var-label input { margin-top: 2px !important; padding: 6px 8px !important; }
+.img-target-label { margin: 0 !important; font-size: 0.78rem !important; }
 .badge-main { font-size: 0.72rem; font-weight: 700; color: var(--green); }
 .btn-link { background: none; border: none; color: var(--blue); cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 600; padding: 2px; text-align: left; }
 .image-edit-actions { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-.images-add-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.images-add-row { display: grid; grid-template-columns: minmax(160px, 0.8fr) 1fr 1fr; gap: 12px; align-items: start; }
+@media (max-width: 800px) { .images-add-row { grid-template-columns: 1fr; } }
 .url-add { display: flex; flex-direction: column; gap: 6px; }
 .url-add input { margin-top: 0 !important; }
 
