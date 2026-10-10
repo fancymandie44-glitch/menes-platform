@@ -908,7 +908,13 @@ body.scroll-locked .modal-box {
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: var(--gold); color: var(--black); padding: 14px 28px; border-radius: var(--radius);
-  z-index: 999; font-size: 0.9rem; font-weight: 600; animation: fadeUp 0.3s;
+  z-index: 360; font-size: 0.9rem; font-weight: 600; animation: fadeUp 0.3s;
+}
+#cartPanel:not(.hidden) ~ #toast,
+body.scroll-locked .toast {
+  bottom: auto;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  z-index: 430;
 }
 @keyframes fadeUp { from { opacity: 0; transform: translate(-50%, 12px); } }
 

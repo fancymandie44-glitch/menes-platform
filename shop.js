@@ -3408,6 +3408,7 @@ function openCart() {
   document.getElementById('cartPanel').classList.remove('hidden');
   document.getElementById('cartOverlay').classList.remove('hidden');
   document.getElementById('stickyAtc')?.classList.add('hidden');
+  document.getElementById('toast')?.classList.add('hidden');
   const scroller = document.getElementById('cartScroll');
   if (scroller) scroller.scrollTop = 0;
   syncScrollLock();
