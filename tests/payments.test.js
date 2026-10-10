@@ -34,6 +34,7 @@ async function run() {
   assert.strictEqual(lines.lines[0].unitCents, 9000, 'Stripe/Square unit must include the promo');
   const charged = lines.lines.reduce((s, l) => s + l.unitCents * l.qty, 0) + lines.taxCents;
   assert.strictEqual(charged, Math.round(priced.order.total * 100), 'provider charge must match trusted total');
+  assert.strictEqual(lines.amountCents, charged);
 
   const viaPromoField = buildTrustedOrder(store, { ...raw, discountCode: '', promoCode: 'JONATHAN10' });
   assert.strictEqual(viaPromoField.order.discount, 10, 'promoCode alias must apply');
@@ -53,6 +54,7 @@ async function run() {
   assert.ok(body.includes('payment_intent_data%5Bshipping%5D%5Baddress%5D%5Bline1%5D'), 'shipping already captured is sent to Stripe');
   assert.ok(body.includes('unit_amount%5D=9000'), 'discounted amount is charged');
   assert.ok(body.includes('JONATHAN10'), 'promo is visible on the Stripe line');
+  assert.ok(body.includes('automatic_tax%5Benabled%5D=false'), 'Stripe must not add a second tax on top');
 
   process.env.SQUARE_ACCESS_TOKEN = 'sq_test';
   process.env.SQUARE_LOCATION_ID = 'LTEST';
