@@ -32,9 +32,10 @@ async function run() {
   const lines = buildProviderLines(priced.order);
   assert.strictEqual(lines.promo, 'JONATHAN10');
   assert.strictEqual(lines.lines[0].unitCents, 9000, 'Stripe/Square unit must include the promo');
-  const charged = lines.lines.reduce((s, l) => s + l.unitCents * l.qty, 0) + lines.taxCents;
+  const charged = lines.lines.reduce((s, l) => s + l.unitCents * l.qty, 0) + lines.taxCents + (lines.shippingCents || 0);
   assert.strictEqual(charged, Math.round(priced.order.total * 100), 'provider charge must match trusted total');
   assert.strictEqual(lines.amountCents, charged);
+  assert.ok((priced.order.shipping || 0) >= 0);
 
   const viaPromoField = buildTrustedOrder(store, { ...raw, discountCode: '', promoCode: 'JONATHAN10' });
   assert.strictEqual(viaPromoField.order.discount, 10, 'promoCode alias must apply');

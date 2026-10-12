@@ -367,7 +367,15 @@ const I18N = {
     gallery_empty: 'Tague',
     gallery_empty_ig: 'sur Instagram avec tes photos.',
     email_ph: 'ton@email.com',
-    addr_ph: 'Commence à taper ton adresse...',
+    addr_ph: 'Numéro et rue — ex. 1208 avenue Copernic',
+    shipping_calc: 'Calculée selon l’adresse',
+    shipping_from: 'Départ: 7701 boul. Maurice-Duplessis, Montréal H1E 1M0',
+    shipping_eta: 'Délai {eta}',
+    country_gb: 'Royaume-Uni',
+    country_de: 'Allemagne',
+    country_es: 'Espagne',
+    country_it: 'Italie',
+    country_nl: 'Pays-Bas',
     proof_pay: 'Paiement sécurisé',
     proof_ship: 'Livraison CA',
     proof_ex: 'Échange 14 jours',
@@ -440,6 +448,11 @@ const I18N = {
     country_fr: 'France',
     country_be: 'Belgique',
     country_ch: 'Suisse',
+    country_gb: 'Royaume-Uni',
+    country_de: 'Allemagne',
+    country_es: 'Espagne',
+    country_it: 'Italie',
+    country_nl: 'Pays-Bas',
     country_other: 'Autre',
   },
   en: {
@@ -507,7 +520,15 @@ const I18N = {
     gallery_empty: 'Tag',
     gallery_empty_ig: 'on Instagram with your photos.',
     email_ph: 'you@email.com',
-    addr_ph: 'Start typing your address...',
+    addr_ph: 'Number and street — e.g. 1208 Copernic Avenue',
+    shipping_calc: 'Calculated from your address',
+    shipping_from: 'Ships from: 7701 Maurice-Duplessis Blvd, Montréal H1E 1M0',
+    shipping_eta: 'ETA {eta}',
+    country_gb: 'United Kingdom',
+    country_de: 'Germany',
+    country_es: 'Spain',
+    country_it: 'Italy',
+    country_nl: 'Netherlands',
     proof_pay: 'Secure payment',
     proof_ship: 'Ships to CA',
     proof_ex: '14-day exchange',
@@ -580,6 +601,11 @@ const I18N = {
     country_fr: 'France',
     country_be: 'Belgium',
     country_ch: 'Switzerland',
+    country_gb: 'United Kingdom',
+    country_de: 'Germany',
+    country_es: 'Spain',
+    country_it: 'Italy',
+    country_nl: 'Netherlands',
     country_other: 'Other',
   },
 };
@@ -1661,7 +1687,8 @@ function syncCountryLabels() {
   const sel = document.getElementById('checkoutCountry');
   if (!sel) return;
   const map = {
-    CA: 'country_ca', US: 'country_us', FR: 'country_fr', BE: 'country_be', CH: 'country_ch', OTHER: 'country_other',
+    CA: 'country_ca', US: 'country_us', FR: 'country_fr', BE: 'country_be', CH: 'country_ch',
+    GB: 'country_gb', DE: 'country_de', ES: 'country_es', IT: 'country_it', NL: 'country_nl', OTHER: 'country_other',
   };
   Array.from(sel.options).forEach((opt) => {
     const key = map[opt.value];
@@ -3357,23 +3384,69 @@ function updateCartUI(opts = {}) {
   renderCartUpsells();
 }
 
+let shippingQuote = { amount: 0, label: '', eta: '', free: false, zone: '' };
+let shipQuoteTimer = null;
+
+async function loadShippingQuote() {
+  const country = document.getElementById('checkoutCountry')?.value || 'CA';
+  const province = document.getElementById('checkoutProvince')?.value || '';
+  const postal = document.getElementById('checkoutPostal')?.value || '';
+  const city = document.getElementById('checkoutCity')?.value || '';
+  const subtotal = cartSubtotal();
+  const discountInfo = getActiveDiscount();
+  const discount = computeDiscount(subtotal, discountInfo);
+  try {
+    const res = await fetch(shopApi('/api/shipping'), {
+      method: 'POST',
+      headers: shopHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        country,
+        province,
+        postal,
+        city,
+        subtotal: Math.max(0, subtotal - discount.amount),
+        items: cart.map((c) => ({ id: c.id, name: c.name, qty: c.qty })),
+        freeThreshold: shippingThreshold(),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data && data.ok) {
+      shippingQuote = data;
+      renderCheckoutSummary();
+      renderShippingBar();
+      const count = cart.reduce((s, c) => s + c.qty, 0);
+      const { total } = currentTotals();
+      const countEl = document.getElementById('cartCount');
+      const totalEl = document.getElementById('cartTotal');
+      if (countEl) countEl.textContent = count;
+      if (totalEl) totalEl.textContent = `${total.toFixed(2)}$`;
+    }
+  } catch { /* keep last quote */ }
+}
+
+function refreshShippingQuote() {
+  clearTimeout(shipQuoteTimer);
+  shipQuoteTimer = setTimeout(loadShippingQuote, 220);
+}
+
 function currentTotals() {
   const subtotal = cartSubtotal();
   const discountInfo = getActiveDiscount();
   const discount = computeDiscount(subtotal, discountInfo);
-  const taxable = Math.max(0, subtotal - discount.amount);
+  const ship = Math.max(0, Number(shippingQuote.amount) || 0);
+  const taxable = Math.max(0, subtotal - discount.amount) + ship;
   const country = document.getElementById('checkoutCountry')?.value || 'CA';
   let province = document.getElementById('checkoutProvince')?.value || '';
   if (country === 'CA' && !province) province = 'QC';
   const tax = computeTax(country, province, taxable);
   const total = Math.round((taxable + tax.amount) * 100) / 100;
-  return { subtotal, discount, tax, total };
+  return { subtotal, discount, tax, shipping: ship, total };
 }
 
 function renderCheckoutSummary() {
   const box = document.getElementById('checkoutSummary');
   if (!box) return;
-  const { subtotal, discount, tax, total } = currentTotals();
+  const { subtotal, discount, tax, shipping, total } = currentTotals();
   const country = document.getElementById('checkoutCountry')?.value || 'CA';
   const taxRow = tax.amount > 0
     ? `<div class="sum-row"><span>${t('taxes')} · ${esc(tax.label)}</span><span>${tax.amount.toFixed(2)}$</span></div>`
@@ -3393,7 +3466,11 @@ function renderCheckoutSummary() {
     <div class="sum-row"><span>${t('subtotal')}</span><span>${subtotal.toFixed(2)}$</span></div>
     ${discRow}
     ${taxRow}
-    <div class="sum-row"><span>${t('shipping')}</span><span>${t('free')}</span></div>
+    <div class="sum-row"><span>${t('shipping')}</span><span>${
+      shippingQuote.free ? t('free') : (shipping > 0 ? `${shipping.toFixed(2)}$` : t('shipping_calc'))
+    }</span></div>
+    ${shippingQuote.eta ? `<div class="sum-row muted"><span>${tFill('shipping_eta', { eta: shippingQuote.eta })}</span><span></span></div>` : ''}
+    <div class="sum-row muted"><span>${t('shipping_from')}</span><span></span></div>
     <div class="sum-row sum-total"><span>${t('grand_total')}</span><span>${total.toFixed(2)}$ CAD</span></div>`;
 }
 
@@ -3525,8 +3602,9 @@ function populateProvinces() {
   if (country === 'CA') {
     opts = CA_PROVINCES.map(([v, fr, en]) => [v, currentLang === 'en' ? (en || fr) : fr]);
   } else if (country === 'US') opts = US_STATES.map((s) => [s, s]);
-  else opts = [['', '-']];
+  else opts = [['', currentLang === 'en' ? 'N/A' : '—']];
   sel.innerHTML = opts.map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join('');
+  sel.disabled = country !== 'CA' && country !== 'US';
 }
 
 function saveCheckoutDraft(customer) {
@@ -3543,14 +3621,6 @@ function saveCheckoutDraft(customer) {
   }));
 }
 
-/* ---------- Address autocomplete (OpenStreetMap / Photon, gratuit) ---------- */
-const PHOTON_STATE_TO_CODE = {
-  quebec: 'QC', québec: 'QC', ontario: 'ON', 'british columbia': 'BC', 'colombie-britannique': 'BC',
-  alberta: 'AB', manitoba: 'MB', saskatchewan: 'SK', 'new brunswick': 'NB', 'nouveau-brunswick': 'NB',
-  'nova scotia': 'NS', 'nouvelle-écosse': 'NS', 'prince edward island': 'PE', 'newfoundland and labrador': 'NL',
-  'northwest territories': 'NT', yukon: 'YT', nunavut: 'NU',
-};
-
 let addrTimer = null;
 function setupAddressAutocomplete() {
   const input = document.getElementById('checkoutAddress');
@@ -3560,26 +3630,27 @@ function setupAddressAutocomplete() {
   input.addEventListener('input', () => {
     const q = input.value.trim();
     clearTimeout(addrTimer);
-    if (q.length < 4) { box.classList.add('hidden'); return; }
+    if (q.length < 3) { box.classList.add('hidden'); return; }
     addrTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`);
-        const data = await res.json();
-        const feats = (data.features || []).filter((f) => f.properties?.name || f.properties?.street);
+        const country = document.getElementById('checkoutCountry')?.value || 'CA';
+        const res = await fetch(shopApi(`/api/address?q=${encodeURIComponent(q)}&country=${encodeURIComponent(country)}`), {
+          headers: shopHeaders(),
+        });
+        const data = await res.json().catch(() => ({}));
+        const feats = Array.isArray(data.results) ? data.results : [];
         if (!feats.length) { box.classList.add('hidden'); return; }
-        box.innerHTML = feats.map((f, i) => {
-          const p = f.properties;
-          const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
-          const sub = [p.city, p.state, p.country].filter(Boolean).join(', ');
-          return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(line || p.name)}</strong><small>${esc(sub)}</small></button>`;
+        box.innerHTML = feats.map((p, i) => {
+          const sub = [p.city, p.province, p.postal, p.country].filter(Boolean).join(', ');
+          return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(p.line)}</strong><small>${esc(sub)}</small></button>`;
         }).join('');
         box.classList.remove('hidden');
         box.querySelectorAll('.addr-sug').forEach((btn) => btn.addEventListener('click', () => {
-          fillAddress(feats[+btn.dataset.i].properties);
+          fillAddress(feats[+btn.dataset.i]);
           box.classList.add('hidden');
         }));
       } catch { box.classList.add('hidden'); }
-    }, 350);
+    }, 280);
   });
 
   document.addEventListener('click', (e) => {
@@ -3588,19 +3659,20 @@ function setupAddressAutocomplete() {
 }
 
 function fillAddress(p) {
-  const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
-  document.getElementById('checkoutAddress').value = line || p.name || '';
-  document.getElementById('checkoutCity').value = p.city || p.town || p.village || '';
-  const cc = (p.countrycode || '').toUpperCase();
+  if (!p) return;
+  document.getElementById('checkoutAddress').value = p.line || '';
+  document.getElementById('checkoutCity').value = p.city || '';
+  const cc = String(p.country || '').toUpperCase();
   const countrySel = document.getElementById('checkoutCountry');
   if (cc && [...countrySel.options].some((o) => o.value === cc)) countrySel.value = cc;
   else if (cc) countrySel.value = 'OTHER';
   populateProvinces();
   const provSel = document.getElementById('checkoutProvince');
-  const code = PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()];
+  const code = String(p.province || '').toUpperCase();
   if (code && [...provSel.options].some((o) => o.value === code)) provSel.value = code;
-  if (p.postcode) document.getElementById('checkoutPostal').value = p.postcode;
+  if (p.postal) document.getElementById('checkoutPostal').value = p.postal;
   renderCheckoutSummary();
+  refreshShippingQuote();
 }
 
 /* ---------- Confetti celebration ---------- */
@@ -3681,6 +3753,7 @@ function openCheckout() {
   syncPromoField();
   prefillCheckoutFromPassport({ email: rememberedPassportEmail() });
   renderCheckoutSummary();
+  loadShippingQuote();
   document.getElementById('cartPanel').classList.add('hidden');
   document.getElementById('cartOverlay').classList.add('hidden');
   document.getElementById('checkoutModal').classList.remove('hidden');
@@ -3778,8 +3851,14 @@ document.getElementById('sizeGuideModal')?.addEventListener('click', (e) => {
 document.getElementById('checkoutCountry')?.addEventListener('change', () => {
   populateProvinces();
   renderCheckoutSummary();
+  refreshShippingQuote();
 });
-document.getElementById('checkoutProvince')?.addEventListener('change', renderCheckoutSummary);
+document.getElementById('checkoutProvince')?.addEventListener('change', () => {
+  renderCheckoutSummary();
+  refreshShippingQuote();
+});
+document.getElementById('checkoutPostal')?.addEventListener('input', refreshShippingQuote);
+document.getElementById('checkoutCity')?.addEventListener('input', refreshShippingQuote);
 setupAddressAutocomplete();
 populateProvinces();
 document.getElementById('cancelCheckout').addEventListener('click', returnToCartFromCheckout);
