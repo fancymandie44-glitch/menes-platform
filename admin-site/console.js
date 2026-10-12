@@ -67,7 +67,7 @@ let pendingLogo = null;
 const TAB_TITLES = {
   dashboard: 'Tableau de bord', sites: 'Boutiques & marques', domains: 'Domaines',
   products: 'Produits', collections: 'Collections', orders: 'Commandes',
-  customers: 'Clients', marketing: 'Marketing', ambassadors: 'Ambassadeurs',
+  customers: 'Clients', marketing: 'Marketing & ads', ambassadors: 'Ambassadeurs',
   appearance: 'Apparence & thème', design: 'Design & contenu',
   sections: 'Sections page', payments: 'Paiements', settings: 'Paramètres', publish: 'Déploiement',
 };
@@ -220,6 +220,7 @@ function switchTab(tab) {
     ambassadors: renderAmbassadors,
     sites: renderSites, domains: renderDomains, design: loadDesignForm, appearance: loadAppearanceForm,
     sections: () => { renderSectionEditors(); renderGalleryEditor(); },
+    settings: loadPixelFields,
   };
   // Paint tab chrome first, then heavy content — feels instant on click
   requestAnimationFrame(() => {
@@ -317,6 +318,7 @@ function normalizeLoadedStore(data) {
   if (!Array.isArray(out.campaigns)) out.campaigns = [];
   if (!Array.isArray(out.products)) out.products = [];
   if (!out.site || typeof out.site !== 'object') out.site = {};
+  if (!out.site.pixels || typeof out.site.pixels !== 'object') out.site.pixels = { ga4: '', meta: '', tiktok: '' };
   return out;
 }
 
@@ -335,15 +337,18 @@ async function loadStore() {
     } else {
       try { localStorage.setItem(storageKeyForSite(activeSiteId), JSON.stringify(storeData)); } catch { /* quota */ }
     }
+    loadPixelFields();
     return;
   }
   if (localBackup) {
     storeData = normalizeLoadedStore(localBackup);
     window.__menesCatalogBackup = localBackup;
     showCatalogRestoreBanner(localBackup);
+    loadPixelFields();
     return;
   }
   storeData = normalizeLoadedStore({ site: {}, products: [], orders: [], customers: [], discounts: [], collections: [] });
+  loadPixelFields();
 }
 
 async function saveStore(msg = 'Sauvegardé') {
@@ -364,6 +369,15 @@ async function saveStore(msg = 'Sauvegardé') {
         storeData.discounts.push(d);
         have.add(code);
       }
+    }
+    const ga4 = document.getElementById('pixelGa4');
+    if (ga4) {
+      if (!storeData.site) storeData.site = {};
+      storeData.site.pixels = {
+        ga4: ga4.value.trim(),
+        meta: document.getElementById('pixelMeta')?.value.trim() || '',
+        tiktok: document.getElementById('pixelTiktok')?.value.trim() || '',
+      };
     }
     const res = await fetch(apiUrl('/api/store'), { method: 'POST', headers: headers(), body: JSON.stringify({ ...storeData, _siteId: activeSiteId }) });
     const data = await res.json().catch(() => ({}));
@@ -538,7 +552,263 @@ function updateDashboard() {
   document.getElementById('recentOrders').innerHTML = recent.length
     ? recent.map((o) => `<div class="mini-item"><span>#${esc(o.id)} · ${esc(o.customer?.name || 'Client')}<br><span class="mini-item-status">${esc(orderStatusLabel(o.status || 'pending'))}</span></span><span>${formatMoney(o.total || 0)}</span></div>`).join('')
     : '<p class="empty">Aucune commande</p>';
+  loadAnalyticsDashboard();
 }
+
+let analyticsData = null;
+
+async function loadAnalyticsDashboard() {
+  try {
+    const res = await fetch(apiUrl('/api/analytics?days=30'), { headers: headers() });
+    if (!res.ok) return;
+    analyticsData = await res.json();
+    renderAnalyticsDashboard();
+    renderAdsStudio();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function funnelMax(funnel) {
+  return Math.max(funnel.page_view || 0, funnel.product_view || 0, funnel.add_to_cart || 0, funnel.begin_checkout || 0, funnel.purchase || 0, 1);
+}
+
+function renderAnalyticsDashboard() {
+  const data = analyticsData || {};
+  const funnel = data.funnel || {};
+  const range = data.range || {};
+  const visitorsEl = document.getElementById('statVisitors');
+  const convEl = document.getElementById('statConv');
+  if (visitorsEl) visitorsEl.textContent = String(range.page_view || range.sessions || 0);
+  if (convEl) convEl.textContent = `${funnel.conversion || 0}%`;
+
+  const max = funnelMax(funnel);
+  const rows = [
+    ['Visites', funnel.page_view || 0],
+    ['Fiches produit', funnel.product_view || 0],
+    ['Ajouts panier', funnel.add_to_cart || 0],
+    ['Checkout', funnel.begin_checkout || 0],
+    ['Ventes', funnel.purchase || 0],
+  ];
+  const funnelEl = document.getElementById('analyticsFunnel');
+  if (funnelEl) {
+    funnelEl.innerHTML = rows.map(([label, n]) => `
+      <div class="funnel-row">
+        <span class="funnel-label">${esc(label)}</span>
+        <div class="funnel-track"><div class="funnel-bar" style="width:${Math.max(4, (n / max) * 100)}%"></div></div>
+        <span class="funnel-val">${n}</span>
+      </div>`).join('') + `<p class="hint" style="margin:10px 0 0">Panier ${funnel.viewToCart || 0}% · Checkout ${funnel.cartToCheckout || 0}% · Paiement ${funnel.checkoutToSale || 0}%</p>`;
+  }
+
+  const topEl = document.getElementById('analyticsTopProducts');
+  if (topEl) {
+    const products = data.products || [];
+    topEl.innerHTML = products.length
+      ? products.map((p) => `<div class="mini-item"><span>${esc(p.name || p.id)}<br><span class="mini-item-status">${p.product_view || 0} vues · ${p.add_to_cart || 0} panier · ${p.purchase || 0} ventes</span></span><span>${formatMoney(p.revenue || 0)}</span></div>`).join('')
+      : '<p class="empty">Pas encore de vues produit. Ouvre la boutique pour commencer à mesurer.</p>';
+  }
+
+  const srcEl = document.getElementById('analyticsSources');
+  if (srcEl) {
+    const sources = data.sources || [];
+    srcEl.innerHTML = sources.length
+      ? sources.map((s) => `<div class="mini-item"><span>${esc(s.key)}<br><span class="mini-item-status">${s.page_view || 0} vues · ${s.ad_click || 0} clics ads</span></span><span>${s.purchase || 0} ventes · ${formatMoney(s.revenue || 0)}</span></div>`).join('')
+      : '<p class="empty">Aucune source trackée. Lance une pub avec une URL ?ad=</p>';
+  }
+
+  const recEl = document.getElementById('analyticsRecent');
+  if (recEl) {
+    const recent = data.recent || [];
+    recEl.innerHTML = recent.length
+      ? recent.slice(0, 8).map((e) => `<div class="mini-item"><span>${esc(e.type)} · ${esc(e.path || '')}<br><span class="mini-item-status">${esc(e.at || '')}</span></span><span>${e.revenue ? formatMoney(e.revenue) : (e.ad || '')}</span></div>`).join('')
+      : '<p class="empty">En attente de trafic</p>';
+  }
+}
+
+function shopPublicUrl() {
+  return (document.getElementById('viewStoreLink')?.href || 'https://www.mymenes.com').replace(/\/$/, '');
+}
+
+function fillAdDestinations() {
+  const sel = document.getElementById('adDestination');
+  if (!sel) return;
+  const current = sel.value;
+  const extras = (storeData?.products || []).filter((p) => p.active !== false).slice(0, 40).map((p) => {
+    const slug = p.slug || p.id;
+    return `<option value="/produit/${esc(slug)}">${esc(p.name)}</option>`;
+  }).join('');
+  sel.innerHTML = `<option value="/">Accueil boutique</option><option value="/#products">Collection</option>${extras}`;
+  if (current) sel.value = current;
+}
+
+function adFormPayload() {
+  return {
+    id: document.getElementById('adEditId')?.value || undefined,
+    name: document.getElementById('adName')?.value,
+    platform: document.getElementById('adPlatform')?.value,
+    headline: document.getElementById('adHeadline')?.value,
+    primaryText: document.getElementById('adPrimary')?.value,
+    cta: document.getElementById('adCta')?.value,
+    destination: document.getElementById('adDestination')?.value,
+    promoCode: document.getElementById('adPromo')?.value,
+    spend: document.getElementById('adSpend')?.value,
+    slug: document.getElementById('adSlug')?.value,
+  };
+}
+
+function showAdCopy(ad) {
+  const box = document.getElementById('adCopyBox');
+  if (!box || !ad) return;
+  const copy = ad.copy || {};
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <h4>URL trackée</h4>
+        <p class="ad-url">${esc(ad.url || copy.url || '')}</p>
+    <div class="btn-row">
+      <button type="button" class="btn-outline btn-sm" data-copy="${encodeURIComponent(ad.url || '')}">Copier l’URL</button>
+    </div>
+    <h4>Meta Ads</h4>
+    <pre>${esc(copy.meta?.primaryText || '')}\n\n${esc(copy.meta?.headline || '')}\nCTA: ${esc(copy.meta?.cta || '')}</pre>
+    <button type="button" class="btn-outline btn-sm" data-copy="${encodeURIComponent(`${copy.meta?.primaryText || ''}\n${copy.meta?.headline || ''}\n${ad.url || ''}`)}">Copier Meta</button>
+    <h4>TikTok</h4>
+    <pre>${esc(copy.tiktok?.caption || '')}</pre>
+    <button type="button" class="btn-outline btn-sm" data-copy="${encodeURIComponent(copy.tiktok?.caption || '')}">Copier TikTok</button>
+    <p class="hint" style="margin-top:12px">Colle ça dans Ads Manager, budget + audience là-bas, et utilise uniquement cette URL. Les clics <code>?ad=${esc(ad.slug || '')}</code> et les ventes reviennent dans ce studio.</p>`;
+}
+
+function renderAdsStudio() {
+  fillAdDestinations();
+  const list = document.getElementById('adsList');
+  if (!list) return;
+  const ads = analyticsData?.ads || [];
+  list.innerHTML = ads.length
+    ? ads.map((ad) => `
+      <div class="ad-row" data-id="${esc(ad.id)}">
+        <div class="ad-row-head">
+          <h4>${esc(ad.name)}</h4>
+          <span class="ad-meta">${esc(ad.platform)} · ${esc(ad.slug)}</span>
+        </div>
+        <div class="ad-kpis">
+          <span>Clics <strong>${ad.clicks || 0}</strong></span>
+          <span>Paniers <strong>${ad.add_to_cart || 0}</strong></span>
+          <span>Ventes <strong>${ad.purchases || 0}</strong></span>
+          <span>Revenu <strong>${formatMoney(ad.revenue || 0)}</strong></span>
+          <span>ROAS <strong>${ad.roas == null ? '—' : ad.roas + 'x'}</strong></span>
+        </div>
+        <p class="ad-url">${esc(ad.url || '')}</p>
+        <div class="btn-row">
+          <button type="button" class="btn-outline btn-sm" data-copy="${encodeURIComponent(ad.url || '')}">Copier URL</button>
+          <button type="button" class="btn-outline btn-sm" data-edit="${esc(ad.id)}">Modifier</button>
+          <button type="button" class="btn-outline btn-sm btn-danger" data-del="${esc(ad.id)}">Supprimer</button>
+        </div>
+      </div>`).join('')
+    : '<p class="empty">Aucune pub. Crée-en une pour obtenir une URL trackée et le copy Meta/TikTok.</p>';
+}
+
+function resetAdForm() {
+  ['adEditId', 'adName', 'adHeadline', 'adPrimary', 'adPromo', 'adSlug'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const cta = document.getElementById('adCta');
+  if (cta) cta.value = 'Shop now';
+  const spend = document.getElementById('adSpend');
+  if (spend) spend.value = '';
+  document.getElementById('adCopyBox')?.classList.add('hidden');
+}
+
+async function saveAdCampaign() {
+  try {
+    const res = await fetch(apiUrl('/api/analytics'), {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ action: 'save-ad', ad: adFormPayload() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast(data.error || 'Impossible de sauver la pub', 'error');
+      return;
+    }
+    if (!analyticsData) analyticsData = {};
+    analyticsData.ads = data.ads || [];
+    renderAdsStudio();
+    if (data.ad) showAdCopy(data.ad);
+    toast('Pub prête — copie l’URL dans Ads Manager', 'success');
+  } catch (err) {
+    toast('API ads indisponible', 'error');
+  }
+}
+
+document.getElementById('adSaveBtn')?.addEventListener('click', saveAdCampaign);
+document.getElementById('adResetBtn')?.addEventListener('click', resetAdForm);
+document.getElementById('adsList')?.addEventListener('click', async (e) => {
+  const copy = e.target.closest('[data-copy]');
+  if (copy) {
+    try {
+      await navigator.clipboard.writeText(decodeURIComponent(copy.getAttribute('data-copy') || ''));
+      toast('Copié', 'success');
+    } catch { toast('Copie impossible'); }
+    return;
+  }
+  const editId = e.target.closest('[data-edit]')?.getAttribute('data-edit');
+  if (editId) {
+    const ad = (analyticsData?.ads || []).find((a) => a.id === editId);
+    if (!ad) return;
+    document.getElementById('adEditId').value = ad.id;
+    document.getElementById('adName').value = ad.name || '';
+    document.getElementById('adPlatform').value = ad.platform || 'meta';
+    document.getElementById('adHeadline').value = ad.headline || '';
+    document.getElementById('adPrimary').value = ad.primaryText || '';
+    document.getElementById('adCta').value = ad.cta || 'Shop now';
+    fillAdDestinations();
+    document.getElementById('adDestination').value = ad.destination || '/';
+    document.getElementById('adPromo').value = ad.promoCode || '';
+    document.getElementById('adSpend').value = ad.spend || '';
+    document.getElementById('adSlug').value = ad.slug || '';
+    showAdCopy(ad);
+    document.getElementById('adName')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const delId = e.target.closest('[data-del]')?.getAttribute('data-del');
+  if (delId && confirm('Supprimer cette pub ?')) {
+    try {
+      const res = await fetch(apiUrl('/api/analytics'), {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ action: 'delete-ad', id: delId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (analyticsData) analyticsData.ads = data.ads || [];
+      renderAdsStudio();
+      toast('Pub supprimée');
+    } catch { toast('Suppression impossible', 'error'); }
+  }
+});
+document.getElementById('adCopyBox')?.addEventListener('click', async (e) => {
+  const copy = e.target.closest('[data-copy]');
+  if (!copy) return;
+  try { await navigator.clipboard.writeText(decodeURIComponent(copy.getAttribute('data-copy') || '')); toast('Copié', 'success'); } catch {}
+});
+
+function loadPixelFields() {
+  const p = storeData?.site?.pixels || {};
+  const ga4 = document.getElementById('pixelGa4');
+  const meta = document.getElementById('pixelMeta');
+  const tiktok = document.getElementById('pixelTiktok');
+  if (ga4) ga4.value = p.ga4 || '';
+  if (meta) meta.value = p.meta || '';
+  if (tiktok) tiktok.value = p.tiktok || '';
+}
+
+document.getElementById('savePixelsBtn')?.addEventListener('click', async () => {
+  if (!storeData.site) storeData.site = {};
+  storeData.site.pixels = {
+    ga4: document.getElementById('pixelGa4')?.value.trim() || '',
+    meta: document.getElementById('pixelMeta')?.value.trim() || '',
+    tiktok: document.getElementById('pixelTiktok')?.value.trim() || '',
+  };
+  await saveStore('Pixels sauvegardés');
+});
 
 // Sites
 function renderSites() {
@@ -799,11 +1069,24 @@ function openProductModal(product = null) {
   document.getElementById('productModalTitle').textContent = product ? 'Modifier produit' : 'Nouveau produit';
   document.getElementById('productId').value = product?.id || '';
   document.getElementById('productName').value = product?.name || '';
+  const slugEl = document.getElementById('productSlug');
+  if (slugEl) slugEl.value = product?.slug || product?.id || '';
   document.getElementById('productSku').value = product?.sku || '';
   document.getElementById('productCategory').value = product?.category || 'vetements';
   document.getElementById('productPrice').value = product?.price || '';
   document.getElementById('productCompare').value = product?.comparePrice || '';
   document.getElementById('productDesc').value = product?.description || '';
+  const hi = document.getElementById('productHighlights');
+  if (hi) hi.value = Array.isArray(product?.highlights) ? product.highlights.join('\n') : '';
+  const mat = document.getElementById('productMaterial');
+  if (mat) mat.value = product?.details?.material || '';
+  const care = document.getElementById('productCare');
+  if (care) care.value = product?.details?.care || '';
+  const sw = document.getElementById('productSwatches');
+  if (sw) {
+    const map = product?.swatches && typeof product.swatches === 'object' ? product.swatches : {};
+    sw.value = Object.entries(map).map(([k, v]) => `${k}:${v}`).join(', ');
+  }
   document.getElementById('productTags').value = (product?.tags || []).join(', ');
   document.getElementById('productStock').value = product?.stock || 0;
   const pv = document.getElementById('productVideoUrl');
@@ -847,34 +1130,77 @@ function variantValuesList() {
   return vals;
 }
 
+function imageTargetOptionsHtml(selected) {
+  const variants = variantValuesList();
+  const extras = [...new Set(productImagesState.map((im) => (im.label || '').trim()).filter(Boolean))]
+    .filter((v) => !variants.includes(v));
+  const opts = [['', 'Produit (toutes les couleurs)'], ...variants.map((v) => [v, v]), ...extras.map((v) => [v, v])];
+  return opts.map(([val, label]) => `<option value="${esc(val)}" ${selected === val ? 'selected' : ''}>${esc(label)}</option>`).join('');
+}
+
+function syncProductImageTarget() {
+  const sel = document.getElementById('productImageTarget');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = imageTargetOptionsHtml(cur);
+  if (![...sel.options].some((o) => o.value === cur)) sel.value = '';
+}
+
 function renderProductImagesEditor() {
   const box = document.getElementById('productImagesEditor');
   if (!box) return;
+  syncProductImageTarget();
+  const variants = variantValuesList();
+  const groups = ['', ...variants];
+  productImagesState.forEach((im) => {
+    const lab = (im.label || '').trim();
+    if (lab && !groups.includes(lab)) groups.push(lab);
+  });
   if (!productImagesState.length) {
-    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Ajoute-en ci-dessous.</p>';
+    box.innerHTML = '<p class="empty" style="padding:16px">Aucune photo. Choisis un groupe ci-dessus puis ajoute plusieurs fichiers d’un coup.</p>';
     return;
   }
-  const variants = variantValuesList();
-  box.innerHTML = productImagesState.map((im, i) => `
-    <div class="image-edit-row" data-i="${i}">
-      <img src="${esc(im.url)}" alt="">
-      <div class="image-edit-fields">
-        ${i === 0 ? '<span class="badge-main">Principale</span>' : `<button type="button" class="btn-link makeMain" data-i="${i}">Définir principale</button>`}
-        <label class="img-var-label">Associer à la variante
-          <input list="variantOptionsList" class="image-variant" data-i="${i}" value="${esc(im.label || '')}" placeholder="ex: Olive Green">
-        </label>
-      </div>
-      <div class="image-edit-actions">
-        <button type="button" class="btn-link studioImg" data-i="${i}">Studio</button>
-        <button type="button" class="btn-link recropImg" data-i="${i}">Recadrer</button>
-        <button type="button" class="del-row delImg" data-i="${i}">Suppr.</button>
-      </div>
-    </div>`).join('')
-    + `<datalist id="variantOptionsList">${variants.map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
+  box.innerHTML = groups.map((key) => {
+    const rows = productImagesState
+      .map((im, i) => ({ im, i }))
+      .filter(({ im }) => (im.label || '').trim() === key);
+    const title = key ? `Couleur / variante : ${key}` : 'Photos produit (toutes les couleurs)';
+    const list = rows.length
+      ? rows.map(({ im, i }) => `
+        <div class="image-edit-row" data-i="${i}">
+          <img src="${esc(im.url)}" alt="">
+          <div class="image-edit-fields">
+            ${i === 0 ? '<span class="badge-main">Principale (carte boutique)</span>' : `<button type="button" class="btn-link makeMain" data-i="${i}">Définir principale</button>`}
+            <label class="img-var-label">Groupe
+              <select class="image-variant" data-i="${i}">${imageTargetOptionsHtml((im.label || '').trim())}</select>
+            </label>
+          </div>
+          <div class="image-edit-actions">
+            <button type="button" class="btn-link addMoreToGroup" data-label="${esc(key)}">+ Photos</button>
+            <button type="button" class="btn-link studioImg" data-i="${i}">Studio</button>
+            <button type="button" class="btn-link recropImg" data-i="${i}">Recadrer</button>
+            <button type="button" class="del-row delImg" data-i="${i}">Suppr.</button>
+          </div>
+        </div>`).join('')
+      : `<p class="empty" style="padding:8px">Aucune photo dans ce groupe. Tu peux en ajouter plusieurs.</p>
+         <button type="button" class="btn-outline btn-sm addMoreToGroup" data-label="${esc(key)}">Ajouter des photos à ${esc(key || 'produit')}</button>`;
+    return `<section class="image-group" data-group="${esc(key)}">
+      <div class="image-group-head"><strong>${esc(title)}</strong><span class="image-group-count">${rows.length} photo${rows.length > 1 ? 's' : ''}</span></div>
+      ${list}
+    </section>`;
+  }).join('');
 
-  box.querySelectorAll('.image-variant').forEach((inp) => inp.addEventListener('input', () => { productImagesState[+inp.dataset.i].label = inp.value; }));
+  box.querySelectorAll('.image-variant').forEach((inp) => inp.addEventListener('change', () => {
+    productImagesState[+inp.dataset.i].label = inp.value;
+    renderProductImagesEditor();
+  }));
   box.querySelectorAll('.delImg').forEach((b) => b.addEventListener('click', () => { productImagesState.splice(+b.dataset.i, 1); renderProductImagesEditor(); }));
   box.querySelectorAll('.makeMain').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.i; const [im] = productImagesState.splice(i, 1); productImagesState.unshift(im); renderProductImagesEditor(); }));
+  box.querySelectorAll('.addMoreToGroup').forEach((b) => b.addEventListener('click', () => {
+    const sel = document.getElementById('productImageTarget');
+    if (sel) sel.value = b.dataset.label || '';
+    document.getElementById('productImageFile')?.click();
+  }));
   box.querySelectorAll('.recropImg').forEach((b) => b.addEventListener('click', () => {
     const i = +b.dataset.i;
     openCropper(productImagesState[i].url, defaultAspectFor(), (dataUrl) => { productImagesState[i].url = dataUrl; renderProductImagesEditor(); }, { studio: false });
@@ -898,11 +1224,13 @@ function renderProductOptionsEditor() {
   box.querySelectorAll('.opt-name-in').forEach((inp) => inp.addEventListener('input', () => {
     productOptionsState[+inp.dataset.i].name = inp.value;
     rebuildVariantsFromOptions(true);
+    syncProductImageTarget();
   }));
   box.querySelectorAll('.opt-values-in').forEach((inp) => inp.addEventListener('input', () => {
     productOptionsState[+inp.dataset.i].values = inp.value;
     updateVariantDatalist();
     rebuildVariantsFromOptions(true);
+    renderProductImagesEditor();
   }));
   box.querySelectorAll('.delOpt').forEach((b) => b.addEventListener('click', () => {
     productOptionsState.splice(+b.dataset.i, 1);
@@ -922,11 +1250,15 @@ document.getElementById('addOptionBtn')?.addEventListener('click', () => {
   rebuildVariantsFromOptions(true);
 });
 
+function currentImageTarget() {
+  return (document.getElementById('productImageTarget')?.value || '').trim();
+}
+
 document.getElementById('addImageUrlBtn')?.addEventListener('click', () => {
   const input = document.getElementById('productImageUrl');
   const url = input.value.trim();
   if (!url) return;
-  productImagesState.push({ url, label: '' });
+  productImagesState.push({ url, label: currentImageTarget() });
   input.value = '';
   renderProductImagesEditor();
 });
@@ -964,13 +1296,30 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     ? variants.reduce((s, v) => s + v.stock, 0)
     : (parseInt(document.getElementById('productStock').value, 10) || 0);
 
+  const swatchesRaw = document.getElementById('productSwatches')?.value || '';
+  const swatches = {};
+  String(swatchesRaw).split(',').forEach((part) => {
+    const m = String(part).match(/^\s*(.+?)\s*:\s*(#[0-9a-fA-F]{3,8})\s*$/);
+    if (m) swatches[m[1].trim()] = m[2];
+  });
+  const highlights = String(document.getElementById('productHighlights')?.value || '')
+    .split('\n').map((s) => s.trim()).filter(Boolean);
+  const prevProduct = (storeData.products || []).find((p) => p.id === id) || {};
   const product = {
     id, name: document.getElementById('productName').value,
+    slug: (document.getElementById('productSlug')?.value || id).trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-'),
     sku: document.getElementById('productSku').value,
     category: document.getElementById('productCategory').value,
     price: parseFloat(document.getElementById('productPrice').value),
     comparePrice: parseFloat(document.getElementById('productCompare').value) || 0,
     description: document.getElementById('productDesc').value,
+    highlights,
+    details: {
+      ...(prevProduct.details || {}),
+      material: document.getElementById('productMaterial')?.value.trim() || '',
+      care: document.getElementById('productCare')?.value.trim() || '',
+    },
+    swatches,
     options,
     sizes: (options.find((o) => /taille|size/i.test(o.name)) || {}).values || [],
     tags: document.getElementById('productTags').value.split(',').map((s) => s.trim()).filter(Boolean),
@@ -1439,6 +1788,8 @@ async function runCampaign(action) {
 }
 
 function renderMarketing() {
+  fillAdDestinations();
+  renderAdsStudio();
   document.getElementById('mktAnnouncement').value = storeData.site?.announcement || '';
   const discounts = storeData.discounts || [];
   document.getElementById('discountsList').innerHTML = discounts.map((d, i) => `
@@ -2004,17 +2355,21 @@ function defaultAspectFor() {
   const zone = document.getElementById('productUploadZone');
   const fileInput = document.getElementById('productImageFile');
   zone?.addEventListener('click', () => fileInput?.click());
-  fileInput?.addEventListener('change', () => {
-    if (!fileInput.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      openCropper(e.target.result, defaultAspectFor(), (dataUrl) => {
-        productImagesState.push({ url: dataUrl, label: '' });
-        renderProductImagesEditor();
-      }, { studio: true });
-    };
-    reader.readAsDataURL(fileInput.files[0]);
+  fileInput?.addEventListener('change', async () => {
+    const files = [...(fileInput.files || [])];
     fileInput.value = '';
+    if (!files.length) return;
+    const label = currentImageTarget();
+    for (const file of files) {
+      try {
+        const dataUrl = await compressImage(file, 1200, 0.86);
+        productImagesState.push({ url: dataUrl, label });
+      } catch {
+        toast('Impossible de lire une photo', 'error');
+      }
+    }
+    renderProductImagesEditor();
+    toast(files.length > 1 ? `${files.length} photos ajoutées` : 'Photo ajoutée');
   });
 })();
 

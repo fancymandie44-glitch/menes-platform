@@ -75,7 +75,7 @@
         <button class="nav-btn" data-tab="collections">Collections</button>
         <button class="nav-btn" data-tab="orders">Commandes</button>
         <button class="nav-btn" data-tab="customers">Clients</button>
-        <button class="nav-btn" data-tab="marketing">Marketing</button>
+        <button class="nav-btn" data-tab="marketing">Marketing & ads</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
 
         <div class="nav-group-label">Boutique en ligne</div>
@@ -157,6 +157,14 @@
               <span class="stat-num" id="statSites">1</span>
               <span class="stat-label">Boutiques</span>
             </div>
+            <div class="stat-card">
+              <span class="stat-num" id="statVisitors">0</span>
+              <span class="stat-label">Visites (30 j)</span>
+            </div>
+            <div class="stat-card highlight">
+              <span class="stat-num" id="statConv">0%</span>
+              <span class="stat-label">Conversion visites → ventes</span>
+            </div>
           </div>
           <div class="grid-2">
             <div class="card chart-card">
@@ -182,13 +190,34 @@
                 <button onclick="switchTab('orders')" class="quick-card">Commandes</button>
                 <button onclick="switchTab('sites')" class="quick-card">Nouvelle marque</button>
                 <button onclick="switchTab('domains')" class="quick-card">Ajouter domaine</button>
-                <button onclick="switchTab('marketing')" class="quick-card">Code promo</button>
+                <button onclick="switchTab('marketing')" class="quick-card">Ads & promo</button>
                 <button onclick="switchTab('design')" class="quick-card">Modifier design</button>
               </div>
             </div>
             <div class="card">
               <h3>Commandes récentes</h3>
               <div id="recentOrders" class="mini-list"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Tunnel boutique · 30 jours</h3>
+              <p class="hint">Vues, paniers, checkout, ventes — pour voir ce qui marche vraiment.</p>
+              <div id="analyticsFunnel" class="funnel"></div>
+            </div>
+            <div class="card">
+              <h3>Produits qui convertissent</h3>
+              <div id="analyticsTopProducts" class="mini-list"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Sources de trafic</h3>
+              <div id="analyticsSources" class="mini-list"></div>
+            </div>
+            <div class="card">
+              <h3>Activité récente</h3>
+              <div id="analyticsRecent" class="mini-list"></div>
             </div>
           </div>
           <div class="card info-card">
@@ -288,6 +317,45 @@
         <!-- Marketing -->
         <section id="tab-marketing" class="tab">
           <h2>Marketing</h2>
+          <div class="card ad-studio">
+            <div class="mkt-head">
+              <h3>Studio ads</h3>
+              <span class="mkt-status">Meta · TikTok · Instagram · Google</span>
+            </div>
+            <p class="hint">Crée une pub, copie le texte + l’URL trackée, colle-les dans Ads Manager. Les clics et ventes reviennent ici. MENES ne dépense pas ton budget Meta à ta place — tu lances depuis Meta/TikTok avec ce kit.</p>
+            <div class="form-grid-2">
+              <label>Nom interne<input type="text" id="adName" placeholder="Drop hoodie IG avril"></label>
+              <label>Plateforme
+                <select id="adPlatform">
+                  <option value="meta">Meta Ads</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok Ads</option>
+                  <option value="google">Google Ads</option>
+                  <option value="other">Autre</option>
+                </select>
+              </label>
+              <label>Titre / headline<input type="text" id="adHeadline" placeholder="STREET LUXE. C'EST MENES."></label>
+              <label>CTA<input type="text" id="adCta" placeholder="Shop now"></label>
+              <label>Destination
+                <select id="adDestination">
+                  <option value="/">Accueil boutique</option>
+                  <option value="/#products">Collection</option>
+                </select>
+              </label>
+              <label>Code promo (optionnel)<input type="text" id="adPromo" placeholder="DROP10"></label>
+              <label>Dépenses estimées (CAD)<input type="number" id="adSpend" min="0" step="1" placeholder="0"></label>
+              <label>Slug URL<input type="text" id="adSlug" placeholder="hoodie-drop"></label>
+            </div>
+            <label>Texte principal<textarea id="adPrimary" rows="4" placeholder="Pièces limitées. Qualité premium. Livraison Québec / Canada."></textarea></label>
+            <div class="btn-row">
+              <button type="button" id="adSaveBtn" class="btn-primary">Créer / mettre à jour la pub</button>
+              <button type="button" id="adResetBtn" class="btn-outline">Nouveau brouillon</button>
+            </div>
+            <input type="hidden" id="adEditId" value="">
+            <div id="adCopyBox" class="ad-copy hidden"></div>
+            <h4 class="mkt-count">Campagnes ads</h4>
+            <div id="adsList" class="ads-list"></div>
+          </div>
           <div class="grid-2">
             <div class="card">
               <h3>Codes promo</h3>
@@ -691,8 +759,7 @@
             </div>
             <div class="card">
               <h3>Square</h3>
-              <p class="hint">Carte / wallet via Square. Requis : <code>SQUARE_ACCESS_TOKEN</code> + <code>SQUARE_LOCATION_ID</code>.</p>
-              <p class="pay-status-note">Statut : configuré si les deux variables sont présentes.</p>
+              <p class="hint">Plus utilisé pour la carte boutique. Le checkout carte passe par Stripe uniquement.</p>
             </div>
             <div class="card">
               <h3>PayPal</h3>
@@ -729,6 +796,14 @@
                 <input type="file" id="importFile" accept=".json" hidden>
               </div>
             </div>
+            <div class="card">
+              <h3>Pixels &amp; tracking externe</h3>
+              <p class="hint">IDs publics seulement. Les ventes MENES restent dans le tableau de bord même sans pixel.</p>
+              <label>GA4 Measurement ID<input type="text" id="pixelGa4" placeholder="G-XXXXXXXX"></label>
+              <label>Meta Pixel ID<input type="text" id="pixelMeta" placeholder="1234567890"></label>
+              <label>TikTok Pixel ID<input type="text" id="pixelTiktok" placeholder="CXXXXXXXX"></label>
+              <button type="button" id="savePixelsBtn" class="btn-primary">Sauvegarder les pixels</button>
+            </div>
           </div>
         </section>
 
@@ -758,6 +833,7 @@
         <input type="hidden" id="productId">
         <div class="form-grid-2">
           <label>Nom<input type="text" id="productName" required></label>
+          <label>URL produit (slug)<input type="text" id="productSlug" placeholder="casquette"></label>
           <label>SKU<input type="text" id="productSku" placeholder="MENES-HOOD-001"></label>
           <label>Prix (CAD)<input type="number" id="productPrice" min="0" step="0.01" required></label>
           <label>Ancien prix barré (doit être plus élevé que le prix)<input type="number" id="productCompare" min="0" step="0.01" placeholder="ex: 120 si le prix actuel est 90"></label>
@@ -765,6 +841,10 @@
           <label>Catégorie<select id="productCategory"></select></label>
         </div>
         <label>Description<textarea id="productDesc" rows="3"></textarea></label>
+        <label>Points forts (une ligne = une puce)<textarea id="productHighlights" rows="3" placeholder="Coton dense&#10;Broderie avant"></textarea></label>
+        <label>Matière<textarea id="productMaterial" rows="2" placeholder="Coton 400 gsm, broderie."></textarea></label>
+        <label>Entretien<textarea id="productCare" rows="2" placeholder="Lavage à froid, envers."></textarea></label>
+        <label>Pastilles couleur (optionnel)<input type="text" id="productSwatches" placeholder="Noir:#111111, Beige:#d6c4a8"></label>
         <label>Tags (virgule)<input type="text" id="productTags" placeholder="nouveau, drop, limité"></label>
         <label>URL vidéo produit (mp4/webm, optionnel)<input type="url" id="productVideoUrl" placeholder="https://.../produit.mp4"></label>
 
@@ -775,15 +855,21 @@
         <div class="modal-subhead">Stock par variante <small>(ex: Vert = 0 → les clients voient « épuisé » pour le vert seulement)</small></div>
         <div id="variantsStockEditor" class="variants-stock-editor"></div>
 
-        <div class="modal-subhead">Photos <small>(la 1<sup>re</sup> = principale · studio : fond, recadrage · associe une photo à une variante)</small></div>
-        <div id="productImagesEditor" class="images-editor"></div>
+        <div class="modal-subhead">Photos <small>plusieurs par produit et par couleur · la 1<sup>re</sup> du produit = image carte</small></div>
+        <p class="hint">Ajoute autant de photos que tu veux dans chaque groupe (face, côté, détail). Vide = toutes les couleurs. Une couleur = galerie qui change quand le client clique la pastille.</p>
         <div class="images-add-row">
-          <div class="upload-zone small" id="productUploadZone"><span>Ajouter une photo (fond + crop)</span><input type="file" id="productImageFile" accept="image/*" hidden></div>
+          <label class="img-target-label">Ajouter dans
+            <select id="productImageTarget">
+              <option value="">Produit (toutes les couleurs)</option>
+            </select>
+          </label>
+          <div class="upload-zone small" id="productUploadZone"><span>Ajouter plusieurs photos</span><input type="file" id="productImageFile" accept="image/*" multiple hidden></div>
           <div class="url-add">
             <input type="url" id="productImageUrl" placeholder="ou coller une URL d'image">
             <button type="button" id="addImageUrlBtn" class="btn-outline btn-sm">Ajouter l'URL</button>
           </div>
         </div>
+        <div id="productImagesEditor" class="images-editor"></div>
 
         <div class="checkbox-row">
           <label class="checkbox"><input type="checkbox" id="productActive" checked> Actif</label>

@@ -44,10 +44,13 @@ const REQUIRED_FILES = [
   'api/health.js',
   'api/auth.js',
   'api/create-checkout.js',
+  'api/analytics.js',
   'lib/platform.js',
+  'lib/analytics.js',
   'lib/cors.js',
   'lib/order-pricing.js',
   'lib/admin-auth.js',
+  'lib/product-page.js',
   'lib/ambassador-reset.js',
   'lib/public-catalog.js',
 ];

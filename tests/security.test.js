@@ -13,6 +13,10 @@ assert.strictEqual(passwordsMatch('secret', 'secret'), true);
 assert.strictEqual(passwordsMatch('secret', 'other'), false);
 assert.strictEqual(passwordsMatch('', 'secret'), false);
 
+const analyticsJs = fs.readFileSync(path.join(__dirname, '../api/analytics.js'), 'utf8');
+assert.ok(analyticsJs.includes('allowRequest'), 'public analytics ingest must be rate-limited');
+assert.ok(analyticsJs.includes('await checkAdminAuth'), 'analytics GET must require admin');
+
 const store = {
   site: { name: 'MENES', language: 'fr' },
   products: [{ id: 'hat', name: 'Hat', price: 10, active: true, stock: 9 }],
@@ -28,6 +32,11 @@ assert.strictEqual(pub.reviews.length, 0, 'pending reviews must stay private');
 const checkoutJs = fs.readFileSync(path.join(__dirname, '../api/create-checkout.js'), 'utf8');
 assert.ok(checkoutJs.includes('buildTrustedOrder'), 'create-checkout must not trust client prices');
 assert.ok(!/item\.price \* 100/.test(checkoutJs), 'create-checkout must not use client line prices');
+assert.ok(checkoutJs.includes('stripeCheckout'), 'create-checkout uses Stripe');
+assert.ok(!checkoutJs.includes('squareCheckout'), 'create-checkout must not send cards to Square');
+const payJs = fs.readFileSync(path.join(__dirname, '../api/pay.js'), 'utf8');
+assert.ok(payJs.includes("case 'square'"), 'old Square clients are accepted');
+assert.ok(!/fallback = await squareCheckout/.test(payJs), 'card pay must not fall back to Square');
 
 const reviewsJs = fs.readFileSync(path.join(__dirname, '../api/reviews.js'), 'utf8');
 assert.ok(reviewsJs.includes("status = 'approved'"), 'public reviews must force approved status');
