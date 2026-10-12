@@ -3,6 +3,8 @@ const DRAFT_KEY = 'menes_checkout_draft';
 const VIP_KEY = 'menes_vip';
 const PROMO_KEY = 'menes_promo_code';
 const ATTR_KEY = 'menes_ambassador_attr';
+const MARKETING_KEY = 'menes_marketing_attr';
+const SESSION_KEY = 'menes_session_id';
 const WISHLIST_KEY = 'menes_wishlist';
 const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
 const PASSPORT_EMAIL_KEY = 'menes_passport_email';
@@ -38,6 +40,181 @@ function saveAmbassadorAttribution(attr) {
     appliedPromoCode = String(attr.promoCode).toUpperCase();
     localStorage.setItem(PROMO_KEY, appliedPromoCode);
   }
+}
+
+function marketingSessionId() {
+  try {
+    let id = sessionStorage.getItem(SESSION_KEY);
+    if (!id) {
+      id = `s_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+      sessionStorage.setItem(SESSION_KEY, id);
+      sessionStorage.setItem(`${SESSION_KEY}_new`, '1');
+    }
+    return id;
+  } catch {
+    return '';
+  }
+}
+
+function consumeSessionStart() {
+  try {
+    if (sessionStorage.getItem(`${SESSION_KEY}_new`) === '1') {
+      sessionStorage.removeItem(`${SESSION_KEY}_new`);
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+function getMarketingAttribution() {
+  try {
+    const raw = localStorage.getItem(MARKETING_KEY);
+    if (!raw) return {};
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return {};
+    return data;
+  } catch {
+    return {};
+  }
+}
+
+function saveMarketingAttribution(next) {
+  const prev = getMarketingAttribution();
+  const merged = { ...prev, ...next, capturedAt: new Date().toISOString() };
+  try { localStorage.setItem(MARKETING_KEY, JSON.stringify(merged)); } catch {}
+  return merged;
+}
+
+function captureMarketingParams() {
+  const params = new URLSearchParams(location.search);
+  const ad = (params.get('ad') || params.get('campaign') || '').trim();
+  const utmSource = (params.get('utm_source') || '').trim();
+  const utmMedium = (params.get('utm_medium') || '').trim();
+  const utmCampaign = (params.get('utm_campaign') || '').trim();
+  const promo = (params.get('promo') || '').trim();
+  if (promo && !appliedPromoCode) {
+    appliedPromoCode = promo.toUpperCase();
+    try { localStorage.setItem(PROMO_KEY, appliedPromoCode); } catch {}
+  }
+  if (!ad && !utmSource && !utmCampaign) return getMarketingAttribution();
+  const attr = saveMarketingAttribution({
+    ad: ad || undefined,
+    utmSource: utmSource || undefined,
+    utmMedium: utmMedium || undefined,
+    utmCampaign: utmCampaign || undefined,
+  });
+  if (ad) trackShopEvent('ad_click', { ad });
+  return attr;
+}
+
+function pixelPayload(type, extra = {}) {
+  const value = Number(extra.revenue) || 0;
+  const item = extra.productId ? [{ id: extra.productId, name: extra.productName, quantity: extra.qty || 1 }] : [];
+  return { type, value, currency: 'CAD', items: item, ...extra };
+}
+
+function fireThirdPartyPixels(type, extra) {
+  const payload = pixelPayload(type, extra);
+  try {
+    if (typeof window.gtag === 'function') {
+      const map = {
+        page_view: 'page_view',
+        product_view: 'view_item',
+        add_to_cart: 'add_to_cart',
+        begin_checkout: 'begin_checkout',
+        purchase: 'purchase',
+        ad_click: 'select_content',
+      };
+      window.gtag('event', map[type] || type, {
+        currency: 'CAD',
+        value: payload.value,
+        items: payload.items,
+      });
+    }
+    if (typeof window.fbq === 'function') {
+      const map = {
+        page_view: 'PageView',
+        product_view: 'ViewContent',
+        add_to_cart: 'AddToCart',
+        begin_checkout: 'InitiateCheckout',
+        purchase: 'Purchase',
+        ad_click: 'ViewContent',
+      };
+      if (type === 'page_view') window.fbq('track', 'PageView');
+      else window.fbq('track', map[type] || 'ViewContent', { value: payload.value, currency: 'CAD' });
+    }
+    if (window.ttq && typeof window.ttq.track === 'function') {
+      const map = {
+        page_view: 'Pageview',
+        product_view: 'ViewContent',
+        add_to_cart: 'AddToCart',
+        begin_checkout: 'InitiateCheckout',
+        purchase: 'CompletePayment',
+        ad_click: 'ClickButton',
+      };
+      window.ttq.track(map[type] || 'ClickButton', { value: payload.value, currency: 'CAD' });
+    }
+  } catch {}
+}
+
+function installPixels(site) {
+  const p = site?.pixels || {};
+  if (p.ga4 && !document.getElementById('menes-ga4')) {
+    const s = document.createElement('script');
+    s.id = 'menes-ga4';
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(p.ga4)}`;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag() { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', p.ga4, { anonymize_ip: true });
+  }
+  if (p.meta && !document.getElementById('menes-meta-pixel')) {
+    const s = document.createElement('script');
+    s.id = 'menes-meta-pixel';
+    s.text = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${p.meta}');fbq('track','PageView');`;
+    document.head.appendChild(s);
+  }
+  if (p.tiktok && !document.getElementById('menes-tiktok-pixel')) {
+    const s = document.createElement('script');
+    s.id = 'menes-tiktok-pixel';
+    s.text = `!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie'];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i='https://analytics.tiktok.com/i18n/pixel/events.js';ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=i;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};var o=d.createElement('script');o.type='text/javascript';o.async=!0;o.src=i+'?sdkid='+e+'&lib='+t;var a=d.getElementsByTagName('script')[0];a.parentNode.insertBefore(o,a)};ttq.load('${p.tiktok}');ttq.page()}(window,document,'ttq');`;
+    document.head.appendChild(s);
+  }
+}
+
+function trackShopEvent(type, extra = {}) {
+  const m = getMarketingAttribution();
+  const body = {
+    type,
+    path: location.pathname + location.search,
+    sessionId: marketingSessionId(),
+    sessionStart: extra.sessionStart === true,
+    ad: extra.ad || m.ad || '',
+    utmSource: extra.utmSource || m.utmSource || '',
+    utmMedium: extra.utmMedium || m.utmMedium || '',
+    utmCampaign: extra.utmCampaign || m.utmCampaign || '',
+    productId: extra.productId || '',
+    productName: extra.productName || '',
+    revenue: extra.revenue || 0,
+    qty: extra.qty || 1,
+    orderId: extra.orderId || '',
+  };
+  fireThirdPartyPixels(type, body);
+  const payload = JSON.stringify(body);
+  try {
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      if (navigator.sendBeacon(shopApi('/api/analytics'), blob)) return;
+    }
+  } catch {}
+  fetch(shopApi('/api/analytics'), {
+    method: 'POST',
+    headers: shopHeaders({ 'Content-Type': 'application/json' }),
+    body: payload,
+    keepalive: true,
+  }).catch(() => {});
 }
 
 async function captureAmbassadorRef() {
@@ -1565,10 +1742,12 @@ async function refreshStore(opts = {}) {
   const fingerprint = `${(next.products || []).length}:${(next.products || []).map((p) => `${p.id}:${p.price}:${p.stock}:${p.active}:${p.image || ''}`).join('|')}:${next.site?.name}:${next.site?.heroTitle}:${next.site?.heroSubtitle}:${next.site?.announcement}:${next.site?.heroImage || ''}:${(next.discounts || []).map((d) => d.code + d.value).join(',')}`;
   if (!opts.force && fingerprint === window.__menesStoreFp && storeData) {
     storeData = next;
+    installPixels(storeData.site);
     return;
   }
   window.__menesStoreFp = fingerprint;
   storeData = next;
+  installPixels(storeData.site);
   applyLanguage();
   applyTheme();
   renderSite();
@@ -2894,6 +3073,7 @@ function openPdp(id, opts = {}) {
     pdpNavigating = false;
   }
   window.scrollTo(0, 0);
+  trackShopEvent('product_view', { productId: product.id, productName: product.name, path: path });
 }
 
 function closePdp(opts = {}) {
@@ -3042,6 +3222,7 @@ window.addToCart = (id, card, qty = 1) => {
   }
   persistCart();
   updateCartUI({ forceList: true });
+  trackShopEvent('add_to_cart', { productId: product.id, productName: product.name, qty: add, revenue: product.price * add });
   openCart();
 };
 
@@ -3507,6 +3688,8 @@ function openCheckout() {
   syncScrollLock();
   fitSheetsToVisualViewport();
   document.getElementById('checkoutModal')?.querySelector('.modal-box')?.scrollTo?.(0, 0);
+  const totals = typeof currentTotals === 'function' ? currentTotals() : {};
+  trackShopEvent('begin_checkout', { revenue: totals.total || 0 });
 }
 
 function returnToCartFromCheckout() {
@@ -3657,6 +3840,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     discountCode: appliedPromoCode || '',
     attribution: attribution || undefined,
     ambassadorId: attribution?.ambassadorId || undefined,
+    marketing: { ...getMarketingAttribution(), sessionId: marketingSessionId() },
     tax,
     status: 'pending',
     date: new Date().toISOString(),
@@ -3963,8 +4147,11 @@ document.getElementById('cryptoCloseBtn').addEventListener('click', () => {
 
 async function init() {
   initCustomCursor();
+  marketingSessionId();
+  captureMarketingParams();
   await captureAmbassadorRef();
   await refreshStore();
+  trackShopEvent('page_view', { sessionStart: consumeSessionStart() });
   openPdpFromLocation();
   document.querySelectorAll('.nav a[href^="#"]').forEach((a) => {
     a.addEventListener('click', (e) => {

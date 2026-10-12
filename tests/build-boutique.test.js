@@ -40,6 +40,8 @@ function run() {
     'api/auth.js',
     'api/pay.js',
     'api/confirm-order.js',
+    'api/analytics.js',
+    'lib/analytics.js',
     'lib/public-catalog.js',
     'lib/order-pricing.js',
     'lib/cors.js',

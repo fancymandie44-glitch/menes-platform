@@ -49,6 +49,7 @@ assert.ok(passwordsMatch('env-admin-secret', 'env-admin-secret'));
     platform: fs.readFileSync(path.join(__dirname, '../api/platform.js'), 'utf8'),
     reviews: fs.readFileSync(path.join(__dirname, '../api/reviews.js'), 'utf8'),
     campaigns: fs.readFileSync(path.join(__dirname, '../api/campaigns.js'), 'utf8'),
+    analytics: fs.readFileSync(path.join(__dirname, '../api/analytics.js'), 'utf8'),
     auth: fs.readFileSync(path.join(__dirname, '../api/auth.js'), 'utf8'),
     amb: fs.readFileSync(path.join(__dirname, '../api/ambassador.js'), 'utf8'),
     ambAuth: fs.readFileSync(path.join(__dirname, '../lib/ambassador-auth.js'), 'utf8'),
@@ -60,6 +61,7 @@ assert.ok(passwordsMatch('env-admin-secret', 'env-admin-secret'));
   assert.ok(files.platform.includes('await auth(event)'), 'platform API must await admin auth');
   assert.ok(files.reviews.includes('await checkAdminAuth'), 'reviews API must await admin auth');
   assert.ok(files.campaigns.includes('await checkAdminAuth'), 'campaigns API must await admin auth');
+  assert.ok(files.analytics.includes('await checkAdminAuth'), 'analytics API must await admin auth');
   assert.ok(files.auth.includes("action === 'forgot-admin'"), 'auth API must handle admin forgot');
   assert.ok(files.auth.includes("action === 'reset-admin'"), 'auth API must handle admin reset');
   assert.ok(files.amb.includes("action === 'forgot-password'"), 'ambassador API must handle forgot');

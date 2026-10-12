@@ -230,6 +230,13 @@ exports.handler = async (event) => {
 
     await writeSiteStore(siteId, store);
 
+    try {
+      const { recordEvent, purchaseEventFromOrder } = require('../lib/analytics');
+      await recordEvent(siteId, purchaseEventFromOrder(order));
+    } catch (e) {
+      console.error('analytics purchase', e.message);
+    }
+
     return {
       statusCode: 200,
       headers,

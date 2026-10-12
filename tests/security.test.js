@@ -13,6 +13,10 @@ assert.strictEqual(passwordsMatch('secret', 'secret'), true);
 assert.strictEqual(passwordsMatch('secret', 'other'), false);
 assert.strictEqual(passwordsMatch('', 'secret'), false);
 
+const analyticsJs = fs.readFileSync(path.join(__dirname, '../api/analytics.js'), 'utf8');
+assert.ok(analyticsJs.includes('allowRequest'), 'public analytics ingest must be rate-limited');
+assert.ok(analyticsJs.includes('await checkAdminAuth'), 'analytics GET must require admin');
+
 const store = {
   site: { name: 'MENES', language: 'fr' },
   products: [{ id: 'hat', name: 'Hat', price: 10, active: true, stock: 9 }],

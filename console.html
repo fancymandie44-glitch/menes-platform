@@ -75,7 +75,7 @@
         <button class="nav-btn" data-tab="collections">Collections</button>
         <button class="nav-btn" data-tab="orders">Commandes</button>
         <button class="nav-btn" data-tab="customers">Clients</button>
-        <button class="nav-btn" data-tab="marketing">Marketing</button>
+        <button class="nav-btn" data-tab="marketing">Marketing & ads</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
 
         <div class="nav-group-label">Boutique en ligne</div>
@@ -157,6 +157,14 @@
               <span class="stat-num" id="statSites">1</span>
               <span class="stat-label">Boutiques</span>
             </div>
+            <div class="stat-card">
+              <span class="stat-num" id="statVisitors">0</span>
+              <span class="stat-label">Visites (30 j)</span>
+            </div>
+            <div class="stat-card highlight">
+              <span class="stat-num" id="statConv">0%</span>
+              <span class="stat-label">Conversion visites → ventes</span>
+            </div>
           </div>
           <div class="grid-2">
             <div class="card chart-card">
@@ -182,13 +190,34 @@
                 <button onclick="switchTab('orders')" class="quick-card">Commandes</button>
                 <button onclick="switchTab('sites')" class="quick-card">Nouvelle marque</button>
                 <button onclick="switchTab('domains')" class="quick-card">Ajouter domaine</button>
-                <button onclick="switchTab('marketing')" class="quick-card">Code promo</button>
+                <button onclick="switchTab('marketing')" class="quick-card">Ads & promo</button>
                 <button onclick="switchTab('design')" class="quick-card">Modifier design</button>
               </div>
             </div>
             <div class="card">
               <h3>Commandes récentes</h3>
               <div id="recentOrders" class="mini-list"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Tunnel boutique · 30 jours</h3>
+              <p class="hint">Vues, paniers, checkout, ventes — pour voir ce qui marche vraiment.</p>
+              <div id="analyticsFunnel" class="funnel"></div>
+            </div>
+            <div class="card">
+              <h3>Produits qui convertissent</h3>
+              <div id="analyticsTopProducts" class="mini-list"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Sources de trafic</h3>
+              <div id="analyticsSources" class="mini-list"></div>
+            </div>
+            <div class="card">
+              <h3>Activité récente</h3>
+              <div id="analyticsRecent" class="mini-list"></div>
             </div>
           </div>
           <div class="card info-card">
@@ -288,6 +317,45 @@
         <!-- Marketing -->
         <section id="tab-marketing" class="tab">
           <h2>Marketing</h2>
+          <div class="card ad-studio">
+            <div class="mkt-head">
+              <h3>Studio ads</h3>
+              <span class="mkt-status">Meta · TikTok · Instagram · Google</span>
+            </div>
+            <p class="hint">Crée une pub, copie le texte + l’URL trackée, colle-les dans Ads Manager. Les clics et ventes reviennent ici. MENES ne dépense pas ton budget Meta à ta place — tu lances depuis Meta/TikTok avec ce kit.</p>
+            <div class="form-grid-2">
+              <label>Nom interne<input type="text" id="adName" placeholder="Drop hoodie IG avril"></label>
+              <label>Plateforme
+                <select id="adPlatform">
+                  <option value="meta">Meta Ads</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok Ads</option>
+                  <option value="google">Google Ads</option>
+                  <option value="other">Autre</option>
+                </select>
+              </label>
+              <label>Titre / headline<input type="text" id="adHeadline" placeholder="STREET LUXE. C'EST MENES."></label>
+              <label>CTA<input type="text" id="adCta" placeholder="Shop now"></label>
+              <label>Destination
+                <select id="adDestination">
+                  <option value="/">Accueil boutique</option>
+                  <option value="/#products">Collection</option>
+                </select>
+              </label>
+              <label>Code promo (optionnel)<input type="text" id="adPromo" placeholder="DROP10"></label>
+              <label>Dépenses estimées (CAD)<input type="number" id="adSpend" min="0" step="1" placeholder="0"></label>
+              <label>Slug URL<input type="text" id="adSlug" placeholder="hoodie-drop"></label>
+            </div>
+            <label>Texte principal<textarea id="adPrimary" rows="4" placeholder="Pièces limitées. Qualité premium. Livraison Québec / Canada."></textarea></label>
+            <div class="btn-row">
+              <button type="button" id="adSaveBtn" class="btn-primary">Créer / mettre à jour la pub</button>
+              <button type="button" id="adResetBtn" class="btn-outline">Nouveau brouillon</button>
+            </div>
+            <input type="hidden" id="adEditId" value="">
+            <div id="adCopyBox" class="ad-copy hidden"></div>
+            <h4 class="mkt-count">Campagnes ads</h4>
+            <div id="adsList" class="ads-list"></div>
+          </div>
           <div class="grid-2">
             <div class="card">
               <h3>Codes promo</h3>
@@ -727,6 +795,14 @@
                 <button id="importDataBtn" class="btn-outline">Importer</button>
                 <input type="file" id="importFile" accept=".json" hidden>
               </div>
+            </div>
+            <div class="card">
+              <h3>Pixels &amp; tracking externe</h3>
+              <p class="hint">IDs publics seulement. Les ventes MENES restent dans le tableau de bord même sans pixel.</p>
+              <label>GA4 Measurement ID<input type="text" id="pixelGa4" placeholder="G-XXXXXXXX"></label>
+              <label>Meta Pixel ID<input type="text" id="pixelMeta" placeholder="1234567890"></label>
+              <label>TikTok Pixel ID<input type="text" id="pixelTiktok" placeholder="CXXXXXXXX"></label>
+              <button type="button" id="savePixelsBtn" class="btn-primary">Sauvegarder les pixels</button>
             </div>
           </div>
         </section>
