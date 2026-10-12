@@ -16,6 +16,10 @@ assert.strictEqual(passwordsMatch('', 'secret'), false);
 const analyticsJs = fs.readFileSync(path.join(__dirname, '../api/analytics.js'), 'utf8');
 assert.ok(analyticsJs.includes('allowRequest'), 'public analytics ingest must be rate-limited');
 assert.ok(analyticsJs.includes('await checkAdminAuth'), 'analytics GET must require admin');
+const addressJs = fs.readFileSync(path.join(__dirname, '../api/address.js'), 'utf8');
+assert.ok(addressJs.includes('allowRequest'), 'address lookup must be rate-limited');
+const shipJs = fs.readFileSync(path.join(__dirname, '../api/shipping.js'), 'utf8');
+assert.ok(shipJs.includes('allowRequest'), 'shipping quotes must be rate-limited');
 
 const store = {
   site: { name: 'MENES', language: 'fr' },
