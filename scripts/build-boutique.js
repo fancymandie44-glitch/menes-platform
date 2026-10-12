@@ -50,6 +50,7 @@ const REQUIRED_FILES = [
   'lib/platform.js',
   'lib/analytics.js',
   'lib/shipping.js',
+  'lib/tax.js',
   'lib/address-search.js',
   'lib/cors.js',
   'lib/order-pricing.js',

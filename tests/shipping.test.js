@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const { quoteShipping, ORIGIN } = require('../lib/shipping');
+const { quoteTax } = require('../lib/tax');
 const {
   parseQuery, scoreCandidate, normalizePhoton, normalizeArcGIS, formatCaPostal, houseRelation,
 } = require('../lib/address-search');
@@ -124,12 +125,25 @@ const fr = buildTrustedOrder(store, {
   items: [{ id: 'hoodie', qty: 1 }],
 });
 assert.ok(fr.order.shipping > 0, 'France shipping must appear on the trusted order');
-assert.strictEqual(fr.order.tax.amount, 0);
+assert.ok(fr.order.tax.amount > 0, 'France must collect TVA 20%');
+assert.match(fr.order.tax.label, /TVA 20%/);
+assert.strictEqual(
+  fr.order.tax.amount,
+  Math.round((fr.order.subtotal - fr.order.discount + fr.order.shipping) * 0.20 * 100) / 100,
+);
+
+const frVat = quoteTax({ country: 'FR', amount: 100 });
+assert.strictEqual(frVat.amount, 20);
+assert.strictEqual(quoteTax({ country: 'BE', amount: 100 }).amount, 21);
+assert.strictEqual(quoteTax({ country: 'US', amount: 100 }).amount, 0);
+assert.ok(quoteTax({ country: 'CA', province: 'QC', amount: 100 }).amount > 14);
 
 const shopJs = fs.readFileSync(path.join(__dirname, '../shop.js'), 'utf8');
 assert.ok(shopJs.includes('/api/address'));
 assert.ok(shopJs.includes('/api/shipping'));
 assert.ok(!shopJs.includes('photon.komoot.io/api'));
+assert.ok(shopJs.includes("FR: { rate: 20"));
+assert.ok(shopJs.includes('TVA 20%'));
 const searchSrc = fs.readFileSync(path.join(__dirname, '../lib/address-search.js'), 'utf8');
 assert.ok(searchSrc.includes('geocode.arcgis.com'));
 assert.ok(searchSrc.includes('PostalExt'));

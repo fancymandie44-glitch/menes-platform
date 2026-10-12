@@ -329,7 +329,7 @@ const I18N = {
     coming: 'Drop bientôt. Suis-nous sur Instagram.',
     f_country: 'Pays', f_city: 'Ville', f_province: 'Province / État', f_postal: 'Code postal',
     sum_title: 'Récapitulatif', subtotal: 'Sous-total', taxes: 'Taxes', shipping: 'Livraison', free: 'Gratuite',
-    grand_total: 'Total', tax_intl: 'Taxes selon la destination', discount: 'Rabais',
+    grand_total: 'Total', tax_intl: 'Droits et taxes à la douane', discount: 'Rabais',
     promo_label: 'Code promo', promo_apply: 'Appliquer', promo_ok: 'Code appliqué', promo_bad: 'Code invalide',
     promo_vip: 'Trouve un ambassadeur MENES pour −10%', size_guide: 'Guide des tailles',
     promo_ph: 'Code ambassadeur',
@@ -482,7 +482,7 @@ const I18N = {
     coming: 'Drop coming soon. Follow us on Instagram.',
     f_country: 'Country', f_city: 'City', f_province: 'Province / State', f_postal: 'Postal code',
     sum_title: 'Summary', subtotal: 'Subtotal', taxes: 'Taxes', shipping: 'Shipping', free: 'Free',
-    grand_total: 'Total', tax_intl: 'Taxes based on destination', discount: 'Discount',
+    grand_total: 'Total', tax_intl: 'Duties & tax at customs', discount: 'Discount',
     promo_label: 'Promo code', promo_apply: 'Apply', promo_ok: 'Code applied', promo_bad: 'Invalid code',
     promo_vip: 'Find a MENES ambassador for 10% off', size_guide: 'Size guide',
     promo_ph: 'Ambassador code',
@@ -702,7 +702,7 @@ const DEFAULT_SITE_EN = {
     { q: 'What materials do you use?', a: 'It depends on the piece: dense cotton for hoodies and tees, structured panels and mesh on trucker hats, ribbed cotton for socks, and metal hardware on jewelry. Each product page lists the details for that drop.' },
     { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT) with a 15-minute quote window, plus Klarna and PayPal on the alternate payment page. Card details never sit on our servers.' },
     { q: 'How does the ambassador program work?', a: 'MENES ambassadors hold exclusive codes. There is no public coupon on the site. Find someone in the circle, enter their code at checkout, and unlock 10% off. Want to become an ambassador? Message us on Instagram.' },
-    { q: 'Do you ship outside Canada?', a: 'Yes. Canada is our home lane. The United States and selected international destinations are available at checkout; duties and taxes follow the destination.' },
+    { q: 'Do you ship outside Canada?', a: 'Yes. Canada is our home lane. France, the EU, the UK and Switzerland show destination VAT at checkout (for example France TVA 20%). The United States and other countries have no national VAT on our invoice; duties may be collected at customs.' },
     { q: 'Are some pieces pre-order?', a: 'A few drops are made in small runs. If a product is marked pre-order, you pay now and we ship when that run is ready, not as next-day inventory.' },
   ],
   design: {
@@ -766,7 +766,7 @@ const DEFAULT_SITE_FR = {
     { q: 'Quelles matières utilisez-vous ?', a: 'Ça dépend de la pièce : coton dense pour les hoodies et t-shirts, panneaux structurés et mesh sur les truckers, coton côtelé pour les bas, métal sur les bijoux. Chaque fiche produit détaille le drop.' },
     { q: 'Quels modes de paiement acceptez-vous ?', a: 'Carte (Square), crypto (BTC, ETH, USDT) avec une fenêtre de 15 minutes, plus Klarna et PayPal sur la page de paiement alternatif. Les données de carte ne restent pas sur nos serveurs.' },
     { q: 'Comment fonctionne le programme ambassadeur ?', a: 'Les ambassadeurs MENES détiennent des codes exclusifs. Il n’y a pas de coupon public sur le site. Trouve quelqu’un du cercle, entre son code à la caisse, et débloque −10 %. Tu veux le devenir ? Écris-nous sur Instagram.' },
-    { q: 'Livrez-vous hors Canada ?', a: 'Oui. Le Canada est notre voie principale. Les États-Unis et certaines destinations internationales sont proposés à la caisse ; droits et taxes suivent la destination.' },
+    { q: 'Livrez-vous hors Canada ?', a: 'Oui. Le Canada est notre voie principale. France, UE, Royaume-Uni et Suisse affichent la TVA du pays à la caisse (ex. France TVA 20 %). États-Unis et autres pays : pas de TVA nationale sur la facture ; des droits peuvent s’appliquer à la douane.' },
     { q: 'Certaines pièces sont-elles en précommande ?', a: 'Quelques drops se font en petites séries. Si un produit est marqué précommande, tu paies maintenant et on expédie quand la série est prête, pas en stock lendemain.' },
   ],
   design: {
@@ -1258,13 +1258,25 @@ const CA_PROVINCES = [
 
 const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
 
+const DEST_TAXES = {
+  FR: { rate: 20, label: 'TVA 20%' },
+  BE: { rate: 21, label: 'TVA 21%' },
+  DE: { rate: 19, label: 'MwSt 19%' },
+  ES: { rate: 21, label: 'IVA 21%' },
+  IT: { rate: 22, label: 'IVA 22%' },
+  NL: { rate: 21, label: 'BTW 21%' },
+  CH: { rate: 8.1, label: 'TVA 8,1%' },
+  GB: { rate: 20, label: 'VAT 20%' },
+};
+
 function computeTax(country, province, subtotal) {
-  if (country === 'CA') {
-    const info = CA_TAXES[province] || CA_TAXES.QC;
-    const amount = Math.round(subtotal * (info.rate / 100) * 100) / 100;
-    return { rate: info.rate, amount, label: info.label };
-  }
-  return { rate: 0, amount: 0, label: '' };
+  const cc = String(country || 'CA').toUpperCase();
+  let info = null;
+  if (cc === 'CA') info = CA_TAXES[province] || CA_TAXES.QC;
+  else if (DEST_TAXES[cc]) info = DEST_TAXES[cc];
+  if (!info || !info.rate) return { rate: 0, amount: 0, label: '' };
+  const amount = Math.round(subtotal * (info.rate / 100) * 100) / 100;
+  return { rate: info.rate, amount, label: info.label };
 }
 
 function cartSubtotal() {

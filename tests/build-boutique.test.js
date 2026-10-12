@@ -45,6 +45,7 @@ function run() {
     'api/shipping.js',
     'lib/analytics.js',
     'lib/shipping.js',
+    'lib/tax.js',
     'lib/address-search.js',
     'lib/public-catalog.js',
     'lib/order-pricing.js',
