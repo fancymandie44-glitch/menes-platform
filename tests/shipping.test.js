@@ -2,12 +2,16 @@
 
 const assert = require('assert');
 const { quoteShipping, ORIGIN } = require('../lib/shipping');
-const { parseQuery, scoreCandidate, normalizePhoton } = require('../lib/address-search');
+const {
+  parseQuery, scoreCandidate, normalizePhoton, normalizeArcGIS, formatCaPostal, houseRelation,
+} = require('../lib/address-search');
 const { buildTrustedOrder } = require('../lib/order-pricing');
 const fs = require('fs');
 const path = require('path');
 
 assert.strictEqual(ORIGIN.postal, 'H1E 1M0');
+assert.strictEqual(formatCaPostal('H1E', '1V9'), 'H1E 1V9');
+assert.strictEqual(formatCaPostal('H1E 4G6'), 'H1E 4G6');
 
 const local = quoteShipping({
   country: 'CA', province: 'QC', city: 'Montréal', postal: 'H1E 1V9',
@@ -33,9 +37,11 @@ assert.ok(!france.free);
 const world = quoteShipping({ country: 'OTHER', subtotal: 80, items: [{ name: 'Tee', qty: 1 }] });
 assert.ok(world.amount > france.amount - 5);
 
-const parsed = parseQuery('1208 avenue copernic montreal');
-assert.strictEqual(parsed.house, '1208');
+const parsed = parseQuery('12086 avenue copernic montreal');
+assert.strictEqual(parsed.house, '12086');
 assert.ok(parsed.streetTokens.includes('copernic'));
+assert.strictEqual(houseRelation('1208', '12086'), 'prefix');
+assert.strictEqual(houseRelation('12086', '12086'), 'exact');
 
 const copernicStreet = normalizePhoton({
   properties: {
@@ -51,17 +57,48 @@ const wrongHouse = normalizePhoton({
   },
   geometry: { coordinates: [-73.56, 45.49] },
 });
-const rightHouse = {
-  ...copernicStreet,
-  housenumber: '1208',
-  line: '1208 Avenue Copernic',
-  kind: 'house',
-};
-const sStreet = scoreCandidate(parsed, { ...copernicStreet });
-const sWrong = scoreCandidate(parsed, { ...wrongHouse });
-const sRight = scoreCandidate(parsed, { ...rightHouse });
+const osmWrongZip = normalizePhoton({
+  properties: {
+    type: 'house', housenumber: '12086', street: 'Avenue Copernic',
+    city: 'Montréal', state: 'Québec', postcode: 'H1E 4G6', countrycode: 'CA',
+  },
+  geometry: { coordinates: [-73.59, 45.63] },
+});
+const arcgisRight = normalizeArcGIS({
+  attributes: {
+    AddNum: '12086',
+    StPreType: 'Av',
+    StName: 'Copernic',
+    City: 'Montreal',
+    RegionAbbr: 'QC',
+    Postal: 'H1E',
+    PostalExt: '1V9',
+    Country: 'CAN',
+    Addr_type: 'PointAddress',
+    ShortLabel: '12086 Av Copernic',
+  },
+});
+assert.strictEqual(arcgisRight.postal, 'H1E 1V9');
+assert.strictEqual(arcgisRight.country, 'CA');
+assert.strictEqual(arcgisRight.city, 'Montréal');
+assert.strictEqual(arcgisRight.housenumber, '12086');
+assert.match(arcgisRight.street, /Copernic/);
+assert.match(arcgisRight.line, /12086/);
+
+const streetCopy = { ...copernicStreet };
+const sStreet = scoreCandidate(parsed, streetCopy, 'CA');
+assert.ok(!streetCopy.housenumber, 'must not invent a civic number on a street-only hit');
+const sWrong = scoreCandidate(parsed, { ...wrongHouse }, 'CA');
+const sOsm = scoreCandidate(parsed, { ...osmWrongZip }, 'CA');
+const sArcgis = scoreCandidate(parsed, { ...arcgisRight }, 'CA');
 assert.ok(sStreet > sWrong, 'matching Copernic street must beat a random 1208');
-assert.ok(sRight >= sStreet, '1208 + Copernic ranks first');
+assert.ok(sOsm > sStreet, '12086 Copernic ranks above the street');
+assert.ok(sArcgis >= sOsm, 'ArcGIS H1E 1V9 ranks at or above OSM H1E 4G6');
+
+const prefixParsed = parseQuery('1208 avenue copernic montreal');
+const sPrefixRight = scoreCandidate(prefixParsed, { ...arcgisRight }, 'CA');
+const sPrefixWrong = scoreCandidate(prefixParsed, { ...wrongHouse }, 'CA');
+assert.ok(sPrefixRight > sPrefixWrong, '1208 on Copernic should complete toward 12086, not a downtown 1208');
 
 const store = {
   products: [{ id: 'hoodie', name: 'Hoodie MENES', price: 85, active: true, stock: 9 }],
@@ -71,7 +108,7 @@ const store = {
 const ca = buildTrustedOrder(store, {
   customer: {
     name: 'A', email: 'a@b.com', phone: '5141112222',
-    address: '1208 Avenue Copernic', city: 'Montréal', province: 'QC', postal: 'H1E 1V9', country: 'CA',
+    address: '12086 Avenue Copernic', city: 'Montréal', province: 'QC', postal: 'H1E 1V9', country: 'CA',
   },
   items: [{ id: 'hoodie', qty: 1 }],
 });
@@ -93,5 +130,8 @@ const shopJs = fs.readFileSync(path.join(__dirname, '../shop.js'), 'utf8');
 assert.ok(shopJs.includes('/api/address'));
 assert.ok(shopJs.includes('/api/shipping'));
 assert.ok(!shopJs.includes('photon.komoot.io/api'));
+const searchSrc = fs.readFileSync(path.join(__dirname, '../lib/address-search.js'), 'utf8');
+assert.ok(searchSrc.includes('geocode.arcgis.com'));
+assert.ok(searchSrc.includes('PostalExt'));
 
 console.log('ok: address ranking and origin shipping');
