@@ -57,8 +57,14 @@
         <button class="nav-btn" data-tab="collections">Collections</button>
         <button class="nav-btn" data-tab="orders">Commandes</button>
         <button class="nav-btn" data-tab="customers">Clients</button>
-        <button class="nav-btn" data-tab="marketing">Marketing</button>
+        <button class="nav-btn" data-tab="marketing">Marketing & ads</button>
+        <button class="nav-btn" data-tab="suppliers">Fournisseurs</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
+
+        <div class="nav-group-label">Copilot</div>
+        <button class="nav-btn" data-tab="health">Site Health</button>
+        <button class="nav-btn" data-tab="approvals">Approvals</button>
+        <button class="nav-btn" data-tab="copilot-audit">Audit Copilot</button>
 
         <div class="nav-group-label">Boutique en ligne</div>
         <button class="nav-btn" data-tab="appearance">Apparence & thème</button>
@@ -327,6 +333,50 @@
             <div id="mktCampaignHistory" class="mkt-history"></div>
           </div>
 
+          <div class="card">
+            <div class="mkt-head">
+              <h3>Studio ads</h3>
+              <span id="adComplianceBadge" class="mkt-status">English copy · paused until you confirm</span>
+            </div>
+            <p class="hint">Autofill reads the product, fills every field, then waits. Copilot never activates spend without an Approvals click. Daily cap is enforced in code.</p>
+            <div class="form-grid-2">
+              <label>Product
+                <select id="adProduct"></select>
+              </label>
+              <label>Platform
+                <select id="adPlatform">
+                  <option value="meta">Meta Ads</option>
+                  <option value="tiktok">TikTok Ads</option>
+                  <option value="google">Google Ads</option>
+                </select>
+              </label>
+              <label>Campaign name<input type="text" id="adCampaignName"></label>
+              <label>Objective
+                <select id="adObjective">
+                  <option value="sales">Sales</option>
+                  <option value="traffic">Traffic</option>
+                </select>
+              </label>
+              <label>Daily budget CAD<input type="number" id="adBudget" min="1" step="1" value="15"></label>
+              <label>CTA<input type="text" id="adCta" value="SHOP_NOW"></label>
+              <label>Audience<textarea id="adAudience" rows="2"></textarea></label>
+              <label>Placements<input type="text" id="adPlacements" placeholder="facebook_feed, instagram_reels"></label>
+              <label>Headline<input type="text" id="adHeadline"></label>
+              <label>Landing page URL<input type="url" id="adLanding"></label>
+            </div>
+            <label>Primary text<textarea id="adPrimary" rows="3"></textarea></label>
+            <label>Description<input type="text" id="adDescription"></label>
+            <label>UTM query<input type="text" id="adUtm" placeholder="utm_source=meta&utm_medium=paid"></label>
+            <label>A/B variations<textarea id="adVariations" rows="5"></textarea></label>
+            <label>Prompt (optional)<input type="text" id="adPrompt" placeholder="create a Meta ad for the MENES M Keyz Crossbody Bag"></label>
+            <div class="btn-row">
+              <button type="button" id="adAutofillBtn" class="btn-primary">Autofill with AI</button>
+              <button type="button" id="adSaveDraftBtn" class="btn-outline">Save draft</button>
+            </div>
+            <h4 class="mkt-count">Campagnes ads</h4>
+            <div id="adsList" class="ads-list"></div>
+          </div>
+
           <div class="grid-2">
             <div class="card">
               <div class="mkt-head">
@@ -343,6 +393,41 @@
               <div id="mktReviews"></div>
             </div>
           </div>
+        </section>
+
+        <section id="tab-suppliers" class="tab">
+          <div class="tab-header"><h2>Fournisseurs</h2></div>
+          <p class="hint">Copilot pings each catalog URL on the health schedule and flags dead links. Low-risk flag is reversible.</p>
+          <div class="card">
+            <div class="form-grid-2">
+              <label>Name<input type="text" id="supName" placeholder="Dropship partner"></label>
+              <label>Catalog URL<input type="url" id="supUrl" placeholder="https://"></label>
+            </div>
+            <button type="button" id="addSupplierBtn" class="btn-primary">Add supplier</button>
+          </div>
+          <div id="suppliersList" class="data-table-wrap" style="margin-top:16px"></div>
+        </section>
+
+        <section id="tab-health" class="tab">
+          <div class="tab-header"><h2>Site Health</h2></div>
+          <p class="hint">Uptime, catalog holes, supplier links, ads pointing at 404s, SEO basics. Critical pass every 15 minutes; full audit daily.</p>
+          <div class="btn-row">
+            <button type="button" id="healthRunBtn" class="btn-primary">Run health check</button>
+            <button type="button" id="healthHealBtn" class="btn-outline">Run + safe heals</button>
+          </div>
+          <div id="healthBoard" style="margin-top:16px"></div>
+        </section>
+
+        <section id="tab-approvals" class="tab">
+          <div class="tab-header"><h2>Approvals</h2></div>
+          <p class="hint">Price changes, publishing ads, and spend wait here. Nothing goes live until you click Approve.</p>
+          <div id="approvalsList"></div>
+        </section>
+
+        <section id="tab-copilot-audit" class="tab">
+          <div class="tab-header"><h2>Audit Copilot</h2></div>
+          <p class="hint">Every tool call is logged. One-click undo on low-risk heals.</p>
+          <div id="copilotAuditList" class="audit-list"></div>
         </section>
 
         <!-- Ambassadors -->
@@ -868,8 +953,28 @@
     </div>
   </div>
 
+  <button type="button" id="copilotFab" class="copilot-fab" aria-label="Open Copilot">AI</button>
+  <div id="copilotPanel" class="copilot-panel hidden" role="dialog" aria-label="MENES Copilot">
+    <div class="copilot-head">
+      <strong>Copilot</strong>
+      <button type="button" id="copilotClose" class="btn-outline btn-sm">Close</button>
+    </div>
+    <div class="copilot-quick">
+      <button type="button" data-copilot-q="Run a health check and tell me what's broken.">Run health check</button>
+      <button type="button" data-copilot-q="What's broken on this store right now?">What's broken?</button>
+      <button type="button" data-copilot-q="Summarize today: orders, health, and ads.">Summarize today</button>
+      <button type="button" data-copilot-q="Create a Meta ad draft for the best in-stock product. English only. Do not publish.">Create ad</button>
+    </div>
+    <div id="copilotLog" class="copilot-log"></div>
+    <form id="copilotForm" class="copilot-form">
+      <textarea id="copilotInput" placeholder="Ask Copilot… e.g. create a Meta ad for the MENES M Keyz Crossbody Bag"></textarea>
+      <button class="btn-primary" type="submit">Send</button>
+    </form>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
   <script src="config.js"></script>
   <script src="console.js"></script>
+  <script src="console-copilot.js"></script>
 </body>
 </html>

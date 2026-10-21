@@ -29,6 +29,12 @@ const checkoutJs = fs.readFileSync(path.join(__dirname, '../api/create-checkout.
 assert.ok(checkoutJs.includes('buildTrustedOrder'), 'create-checkout must not trust client prices');
 assert.ok(!/item\.price \* 100/.test(checkoutJs), 'create-checkout must not use client line prices');
 
+const copilotJs = fs.readFileSync(path.join(__dirname, '../api/copilot.js'), 'utf8');
+assert.ok(copilotJs.includes('checkAdminAuth'), 'copilot must require admin auth');
+assert.ok(copilotJs.includes('allowRequest'), 'copilot must be rate-limited');
+const copilotUi = fs.readFileSync(path.join(__dirname, '../console-copilot.js'), 'utf8');
+assert.doesNotMatch(copilotUi, /ANTHROPIC_API_KEY|sk-ant-/);
+
 const reviewsJs = fs.readFileSync(path.join(__dirname, '../api/reviews.js'), 'utf8');
 assert.ok(reviewsJs.includes("status = 'approved'"), 'public reviews must force approved status');
 

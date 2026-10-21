@@ -669,3 +669,37 @@ body.nav-open { overflow: hidden; }
 @media (min-width: 901px) {
   .menu-toggle, .sidebar-close, .sidebar-backdrop { display: none !important; }
 }
+
+/* Copilot */
+.copilot-fab {
+  position: fixed; right: 22px; bottom: 22px; z-index: 240;
+  width: 52px; height: 52px; border-radius: 50%; border: none;
+  background: var(--gold); color: #050505; font-weight: 800; cursor: pointer;
+  box-shadow: var(--shadow); font-family: var(--font-display); letter-spacing: 0.04em;
+}
+.copilot-panel {
+  position: fixed; right: 18px; bottom: 84px; z-index: 241;
+  width: min(420px, calc(100vw - 24px)); height: min(640px, calc(100vh - 120px));
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  display: flex; flex-direction: column; box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+}
+.copilot-panel.hidden { display: none !important; }
+.copilot-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.copilot-head strong { font-family: var(--font-display); }
+.copilot-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.copilot-quick button { font: inherit; font-size: 0.75rem; padding: 6px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+.copilot-log { flex: 1; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.copilot-msg { padding: 10px 12px; border-radius: 10px; line-height: 1.45; font-size: 0.9rem; white-space: pre-wrap; }
+.copilot-msg.user { background: var(--highlight-bg); align-self: flex-end; max-width: 90%; }
+.copilot-msg.bot { background: var(--bg); border: 1px solid var(--border); }
+.copilot-msg.sys { color: var(--muted); font-size: 0.78rem; }
+.copilot-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
+.copilot-form textarea { flex: 1; min-height: 44px; resize: none; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); }
+.health-score { font-size: 2.4rem; font-family: var(--font-display); }
+.health-issue { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; background: var(--surface); }
+.health-issue.critical { border-color: var(--red); }
+.health-issue.warning { border-color: var(--gold); }
+.sev { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 700; }
+.ads-list, .audit-list { display: flex; flex-direction: column; gap: 8px; }
+.ad-row, .audit-row { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+.approval-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
