@@ -58,6 +58,8 @@ const REQUIRED_FILES = [
   'api/site-health.js',
   'images/products/socks/black.jpg',
   'images/products/socks/kltr-orange.jpg',
+  'images/lookbook/drop-table.jpg',
+  'images/lookbook/crew-steps.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];

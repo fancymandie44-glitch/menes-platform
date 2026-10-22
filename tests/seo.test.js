@@ -85,6 +85,7 @@ assert.ok(shopJs.includes('/produit/'), 'shop uses clean product paths');
 assert.ok(shopJs.includes('application/ld+json'), 'shop writes Product JSON-LD');
 assert.ok(shopJs.includes('function applySeo'), 'applySeo still exists');
 assert.ok(shopJs.includes('openProductFromLocation'), 'boot opens /produit/:slug');
+assert.ok(shopJs.includes('function renderLookbook'), 'lookbook section is wired');
 assert.ok(shopJs.includes('function openPdp(id, fromRoot, navOpts'), 'PDP history opts must not clash with product options');
 
 const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
@@ -92,6 +93,9 @@ assert.ok(indexHtml.includes('https://www.mymenes.com/'));
 assert.ok(indexHtml.includes('<base href="/">'), 'product URLs need root-relative assets');
 assert.ok(indexHtml.includes('src="/shop.js'), 'shop.js is root-relative');
 assert.ok(!indexHtml.includes('boutiquemenes.netlify.app'), 'homepage canonical is not the Netlify subdomain');
+assert.ok(indexHtml.includes('id="lookbook"'), 'homepage has the drop lookbook');
+assert.ok(fs.existsSync(path.join(__dirname, '../images/lookbook/drop-table.jpg')), 'drop table photo is in the repo');
+assert.ok(fs.existsSync(path.join(__dirname, '../images/lookbook/cyan-window.jpg')), 'sock lifestyle photos are in the repo');
 
 const ship = fs.readFileSync(path.join(__dirname, '../livraison.html'), 'utf8');
 assert.ok(ship.includes('contact@mymenes.com'), 'shipping page uses the public email');

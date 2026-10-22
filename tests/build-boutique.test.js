@@ -55,6 +55,8 @@ function run() {
     'images/products/socks/black.jpg',
     'images/products/socks/green.jpg',
     'images/products/socks/kltr-orange.jpg',
+    'images/lookbook/drop-table.jpg',
+    'images/lookbook/crew-steps.jpg',
   ];
 
   for (const rel of required) {

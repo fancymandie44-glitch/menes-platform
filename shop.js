@@ -126,7 +126,7 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_looks: 'Looks', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -180,6 +180,10 @@ const I18N = {
     vip_welcome: 'Bienvenue dans le cercle MENES!',
     gallery_empty: 'Photos clients bientôt. Tag',
     gallery_empty_ig: 'sur Instagram.',
+    lookbook_label: 'Le drop',
+    lookbook_title: 'Toutes les couleurs sur la table.',
+    lookbook_text: 'Voici un drop MENES avant la rue : chaque paire, chaque revers, alignés à Montréal. Choisis ta couleur. Porte-la fort.',
+    lookbook_cta: 'Voir les Summer Socks',
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
@@ -249,7 +253,7 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_looks: 'Looks', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -303,6 +307,10 @@ const I18N = {
     vip_welcome: 'Welcome to the MENES circle!',
     gallery_empty: 'Customer photos soon. Tag',
     gallery_empty_ig: 'on Instagram.',
+    lookbook_label: 'The drop',
+    lookbook_title: 'Every color on the table.',
+    lookbook_text: 'This is how a MENES drop looks before it hits the street: every cuff, every pair, laid out in Montreal. Pick a color. Wear it loud.',
+    lookbook_cta: 'Shop Summer Socks',
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
@@ -1379,7 +1387,7 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
@@ -1447,6 +1455,7 @@ function renderSite() {
   }
 
   renderBundle(s, sec);
+  renderLookbook(sec);
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
@@ -1496,6 +1505,21 @@ function renderBundle(/* s, sec */) {
   toggle('bundle', false);
 }
 
+function renderLookbook(sec) {
+  const show = sec.lookbook !== false;
+  toggle('lookbook', show);
+  if (!show) return;
+  const title = document.getElementById('lookbookTitle');
+  const text = document.getElementById('lookbookText');
+  const cta = document.getElementById('lookbookCta');
+  if (title) title.textContent = t('lookbook_title');
+  if (text) text.textContent = t('lookbook_text');
+  if (cta) {
+    cta.textContent = t('lookbook_cta');
+    cta.href = '/produit/summer-socks';
+  }
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const items = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
@@ -1523,6 +1547,7 @@ function renderGallery(s, sec, raw) {
   }
 
   empty.classList.add('hidden');
+  grid.classList.toggle('gallery-grid--mosaic', items.length >= 4);
   grid.innerHTML = items.map((g) => {
     const handle = (g.handle || '').trim();
     const caption = (g.caption || '').trim();
