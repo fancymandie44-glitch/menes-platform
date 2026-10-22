@@ -49,5 +49,6 @@ const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 assert.ok(html.includes('id="reviewsMoreBtn"'), 'see-more control is on the homepage');
 assert.ok(src.includes("muted: '#d5d0c6'"), 'dark theme uses readable cream muted text');
 assert.ok(src.includes('hexLum'), 'theme rejects black-on-black text');
+require('child_process').execFileSync(process.execPath, ['--check', path.join(__dirname, '../shop.js')]);
 
 console.log('ok: cart photo + color-from-image selection');

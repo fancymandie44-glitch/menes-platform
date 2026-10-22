@@ -85,6 +85,7 @@ assert.ok(shopJs.includes('/produit/'), 'shop uses clean product paths');
 assert.ok(shopJs.includes('application/ld+json'), 'shop writes Product JSON-LD');
 assert.ok(shopJs.includes('function applySeo'), 'applySeo still exists');
 assert.ok(shopJs.includes('openProductFromLocation'), 'boot opens /produit/:slug');
+assert.ok(shopJs.includes('function openPdp(id, fromRoot, navOpts'), 'PDP history opts must not clash with product options');
 
 const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 assert.ok(indexHtml.includes('https://www.mymenes.com/'));

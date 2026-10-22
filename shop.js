@@ -2617,7 +2617,7 @@ function wireProductCard(card) {
   });
 }
 
-function openPdp(id, fromRoot, opts = {}) {
+function openPdp(id, fromRoot, navOpts = {}) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
@@ -2715,7 +2715,7 @@ function openPdp(id, fromRoot, opts = {}) {
   showStickyAtc(product, main);
   syncScrollLock();
   applySeo(product);
-  if (!opts.skipHistory) {
+  if (!navOpts.skipHistory) {
     const next = productPath(product);
     if (location.pathname !== next) {
       history.pushState({ pdp: product.id }, '', next);
