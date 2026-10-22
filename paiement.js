@@ -102,7 +102,8 @@ function renderSummary() {
   const itemRows = draft.items.map((item) => {
     const variant = item.variantStr || item.size;
     const variantLabel = variant && variant !== 'Unique' ? ` · ${esc(variant)}` : '';
-    return `<div class="sum-row"><span>${esc(item.name)}${variantLabel} ×${item.qty}</span><span>${(item.price * item.qty).toFixed(2)}$</span></div>`;
+    const photo = item.image && !String(item.image).startsWith('data:') ? item.image : '';
+    return `<div class="sum-row sum-row-item">${photo ? `<img class="sum-thumb" src="${esc(photo)}" alt="">` : ''}<span>${esc(item.name)}${variantLabel} ×${item.qty}</span><span>${(item.price * item.qty).toFixed(2)}$</span></div>`;
   });
 
   const subtotal = draft.subtotal ?? draft.total;

@@ -1872,6 +1872,7 @@ function quickAddProduct(id) {
       variantStr: 'Unique',
       size: 'Unique',
       qty: 1,
+      image: compactProductImage(imageForVariant(product, {})),
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -1997,6 +1998,84 @@ function productImages(p) {
   }
   if (p.image) return [{ url: p.image, label: '' }];
   return [];
+}
+
+function imageKey(im) {
+  const label = String(im?.label || '').trim();
+  if (label) return label.toLowerCase();
+  const path = String(im?.url || '').split('?')[0];
+  const file = path.split('/').pop() || '';
+  return file.replace(/\.[a-z0-9]+$/i, '').replace(/^kltr-/, '').toLowerCase();
+}
+
+function compactProductImage(url) {
+  const u = String(url || '');
+  if (!u || u.startsWith('data:')) return '';
+  return u;
+}
+
+function imageForVariant(product, variantMap) {
+  const imgs = productImages(product);
+  if (!imgs.length) return '';
+  const vals = Object.values(variantMap || {}).map((v) => String(v || '').trim().toLowerCase()).filter(Boolean);
+  if (vals.length) {
+    const hit = imgs.find((im) => vals.includes(imageKey(im)));
+    if (hit) return hit.url;
+  }
+  return imgs[0].url;
+}
+
+function cartLineImage(line) {
+  const product = (storeData?.products || []).find((p) => p.id === line?.id);
+  if (product) return imageForVariant(product, line.variant) || compactProductImage(line.image) || product.image || '';
+  return compactProductImage(line?.image);
+}
+
+function activateChip(root, value) {
+  const want = String(value || '').trim().toLowerCase();
+  if (!root || !want) return false;
+  let found = false;
+  root.querySelectorAll('.product-option').forEach((opt) => {
+    const chips = [...opt.querySelectorAll('.opt-chip')];
+    const match = chips.find((c) => String(c.dataset.value || '').trim().toLowerCase() === want);
+    if (!match) return;
+    chips.forEach((c) => {
+      const on = c === match;
+      c.classList.toggle('active', on);
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    found = true;
+  });
+  return found;
+}
+
+function applySelectedMedia(root, product, url) {
+  if (!root || !url) return;
+  const main = root.querySelector('.pg-main, #pdpMainImg');
+  if (main) {
+    main.src = url;
+    main.classList.remove('hidden');
+  }
+  root.querySelectorAll('.pg-thumb, #pdpThumbs button[data-url]').forEach((tb) => {
+    tb.classList.toggle('active', tb.dataset.url === url);
+  });
+  if (root.id === 'pdpPanel') {
+    const videoEl = document.getElementById('pdpVideo');
+    if (videoEl) videoEl.classList.add('hidden');
+    const sticky = document.getElementById('stickyAtcImg');
+    if (sticky) {
+      sticky.src = url;
+      sticky.classList.remove('hidden');
+    }
+  }
+}
+
+function selectVariantFromImage(root, product, im) {
+  if (!root || !im?.url) return;
+  applySelectedMedia(root, product, im.url);
+  activateChip(root, imageKey(im));
+  applyVariantStockUi(root, product);
+  if (root.id === 'pdpPanel') renderPdpUrgency(product);
 }
 
 function productOptions(p) {
@@ -2256,8 +2335,7 @@ function wireProductCard(card) {
 
   thumbs.forEach((tb) => tb.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (main) main.src = tb.dataset.url;
-    activateThumbByUrl(tb.dataset.url);
+    selectVariantFromImage(card, product, { url: tb.dataset.url, label: tb.dataset.label });
   }));
 
   card.querySelectorAll('.product-option').forEach((opt) => {
@@ -2270,9 +2348,13 @@ function wireProductCard(card) {
       });
       chip.classList.add('active');
       chip.setAttribute('aria-pressed', 'true');
-      const val = (chip.dataset.value || '').toLowerCase();
-      const match = thumbs.find((tb) => tb.dataset.label && tb.dataset.label.toLowerCase() === val);
-      if (match && main) { main.src = match.dataset.url; activateThumbByUrl(match.dataset.url); }
+      const url = imageForVariant(product, readSelectedVariant(card));
+      if (url) applySelectedMedia(card, product, url);
+      else {
+        const val = (chip.dataset.value || '').toLowerCase();
+        const match = thumbs.find((tb) => tb.dataset.label && tb.dataset.label.toLowerCase() === val);
+        if (match && main) { main.src = match.dataset.url; activateThumbByUrl(match.dataset.url); }
+      }
       applyVariantStockUi(card, product);
     }));
   });
@@ -2290,7 +2372,7 @@ function wireProductCard(card) {
     if (currentFilter === 'wishlist' && !isWishlisted(productId)) renderProducts();
   });
 
-  const openCardPdp = () => openPdp(productId);
+  const openCardPdp = () => openPdp(productId, card);
   card.querySelector('.product-img-btn')?.addEventListener('click', openCardPdp);
   card.querySelector('.product-title-btn')?.addEventListener('click', openCardPdp);
 
@@ -2302,12 +2384,13 @@ function wireProductCard(card) {
   });
 }
 
-function openPdp(id) {
+function openPdp(id, fromRoot) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
   const imgs = productImages(product);
-  const main = imgs[0]?.url || '';
+  const preset = fromRoot ? readSelectedVariant(fromRoot) : {};
+  const main = imageForVariant(product, preset) || imgs[0]?.url || '';
   const opts = productOptions(product);
   document.getElementById('pdpName').textContent = product.name;
   document.getElementById('pdpCat').textContent = [
@@ -2350,22 +2433,21 @@ function openPdp(id) {
     else { imgEl.removeAttribute('src'); imgEl.classList.add('hidden'); }
   }
   document.getElementById('pdpThumbs').innerHTML = imgs.map((im, i) => `
-    <button type="button" class="${i === 0 && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}">
-      <img src="${esc(im.url)}" alt="">
+    <button type="button" class="${im.url === main && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}">
+      <img src="${esc(im.url)}" alt="${esc(im.label || product.name)}">
     </button>`).join('')
     + (product.videoUrl ? `<button type="button" class="active" data-video="${esc(product.videoUrl)}">Video</button>` : '');
+  const pdpPanel = document.getElementById('pdpPanel');
   document.getElementById('pdpThumbs').querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.getElementById('pdpThumbs').querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
       if (btn.dataset.video && videoEl) {
+        document.getElementById('pdpThumbs').querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
         videoEl.src = btn.dataset.video;
         videoEl.classList.remove('hidden');
         imgEl.classList.add('hidden');
-      } else {
-        if (videoEl) { videoEl.classList.add('hidden'); }
-        imgEl.src = btn.dataset.url;
-        imgEl.classList.remove('hidden');
+        return;
       }
+      selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
     });
   });
   document.getElementById('pdpOptions').innerHTML = opts.map((o, oi) => `
@@ -2380,13 +2462,17 @@ function openPdp(id) {
       if (chip.classList.contains('is-oos') || chip.disabled) return;
       opt.querySelectorAll('.opt-chip').forEach((c) => c.classList.remove('active'));
       chip.classList.add('active');
-      applyVariantStockUi(document.getElementById('pdpPanel'), product);
+      const url = imageForVariant(product, readSelectedVariant(pdpPanel));
+      if (url) applySelectedMedia(pdpPanel, product, url);
+      applyVariantStockUi(pdpPanel, product);
       renderPdpUrgency(product);
     }));
   });
+  Object.values(preset).forEach((value) => activateChip(pdpPanel, value));
+  if (main) applySelectedMedia(pdpPanel, product, main);
   document.getElementById('pdpAddBtn').textContent = product.preorder ? t('preorder_btn') : t('add_to_cart');
   document.getElementById('pdpSizeGuideBtn').textContent = t('size_guide');
-  applyVariantStockUi(document.getElementById('pdpPanel'), product);
+  applyVariantStockUi(pdpPanel, product);
   renderPdpUrgency(product);
   renderPdpReviews(product.id);
   renderPdpRecommendations(product);
@@ -2482,8 +2568,11 @@ window.addToCart = (id, card) => {
     return;
   }
 
-  if (existing) existing.qty = nextQty;
-  else {
+  const lineImage = compactProductImage(imageForVariant(product, variant));
+  if (existing) {
+    existing.qty = nextQty;
+    if (lineImage) existing.image = lineImage;
+  } else {
     cart.push({
       id,
       name: product.name,
@@ -2492,6 +2581,7 @@ window.addToCart = (id, card) => {
       variantStr,
       size: variantStr,
       qty: 1,
+      image: lineImage,
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2621,7 +2711,9 @@ function updateCartUI(opts = {}) {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const photo = cartLineImage(c);
       return `<div class="cart-item" data-cart-i="${i}">
+        ${photo ? `<div class="cart-item-photo"><img src="${esc(photo)}" alt="${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}"></div>` : ''}
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -2669,7 +2761,8 @@ function renderCheckoutSummary() {
       const pre = c.preorder
         ? ` <em class="sum-preorder">(${esc(t('preorder_cart'))}${c.preorderNote ? `: ${esc(c.preorderNote)}` : ''})</em>`
         : '';
-      return `<div class="sum-row"><span>${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}${pre} ×${c.qty}</span><span>${(c.price * c.qty).toFixed(2)}$</span></div>`;
+      const photo = cartLineImage(c);
+      return `<div class="sum-row sum-row-item">${photo ? `<img class="sum-thumb" src="${esc(photo)}" alt="">` : ''}<span>${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}${pre} ×${c.qty}</span><span>${(c.price * c.qty).toFixed(2)}$</span></div>`;
     }).join('')}</div>
     <div class="sum-row"><span>${t('subtotal')}</span><span>${subtotal.toFixed(2)}$</span></div>
     ${discRow}
@@ -3034,6 +3127,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
       size: c.size || c.variantStr,
       variantStr: c.variantStr || c.size,
       variant: c.variant || {},
+      image: compactProductImage(c.image || cartLineImage(c)),
       preorder: !!c.preorder,
       preorderNote: c.preorderNote || '',
     })),
