@@ -49,6 +49,9 @@ function run() {
     'api/site-health.js',
     'console-copilot.js',
     'data/store.json',
+    'images/products/socks/black.jpg',
+    'images/products/socks/green.jpg',
+    'images/products/socks/kltr-orange.jpg',
   ];
 
   for (const rel of required) {
