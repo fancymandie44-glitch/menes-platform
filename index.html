@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,13 +7,20 @@
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
   <meta property="og:description" content="Luxury streetwear. Premium clothing, secure checkout, shipping across Quebec and Canada.">
-  <meta property="og:url" content="https://boutiquemenes.netlify.app/">
-  <link rel="canonical" href="https://boutiquemenes.netlify.app/">
+  <meta property="og:url" content="https://www.mymenes.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MENES">
+  <meta property="og:image" content="https://www.mymenes.com/images/products/socks/black.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MENES | Luxury Streetwear">
+  <meta name="twitter:description" content="Luxury streetwear. Premium clothing, secure checkout, shipping across Quebec and Canada.">
+  <link rel="canonical" href="https://www.mymenes.com/">
+  <base href="/">
   <title>MENES | Luxury Streetwear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261022ink">
+  <link rel="stylesheet" href="/shop.css?v=20261022story">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -27,13 +34,14 @@
   <div id="announceBar" class="announce hidden"></div>
 
   <nav class="nav">
-    <a href="#" class="nav-brand">
+    <a href="/" class="nav-brand">
       <img id="navLogo" class="nav-logo-img hidden" alt="MENES" width="36" height="36">
       <span id="navBrand">MENES</span>
     </a>
     <div class="nav-links">
       <a href="#products" data-i18n="nav_shop">Shop</a>
       <a href="#gallery" data-i18n="nav_community">Community</a>
+      <a href="#lookbook" data-i18n="nav_story">Story</a>
       <a href="#why" data-i18n="nav_why">Why MENES</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
@@ -89,6 +97,26 @@
     </div>
   </section>
 
+  <section id="lookbook" class="lookbook-section">
+    <div class="lookbook-frame">
+      <img src="/images/lookbook/drop-table.jpg" alt="MENES drop table" width="1600" height="1067">
+      <div class="lookbook-panel">
+        <span class="section-label" data-i18n="lookbook_label">The story</span>
+        <h2 id="lookbookTitle" data-i18n="lookbook_title">It starts on the table.</h2>
+        <p id="lookbookText" data-i18n="lookbook_text">Before MENES hits the street, every color is laid out in Montreal. Same room. Same drop. Then it walks out the door — on real people. That’s the whole story.</p>
+        <a href="/produit/summer-socks" class="hero-cta" id="lookbookCta" data-i18n="lookbook_cta">Shop Summer Socks</a>
+      </div>
+    </div>
+    <div class="lookbook-strip" aria-hidden="true">
+      <a href="/produit/summer-socks"><img src="/images/lookbook/cyan-window.jpg" alt=""></a>
+      <a href="/produit/summer-socks"><img src="/images/lookbook/pink-walk.jpg" alt=""></a>
+      <a href="/produit/summer-socks"><img src="/images/lookbook/green-close.jpg" alt=""></a>
+      <a href="/produit/summer-socks"><img src="/images/lookbook/purple-car.jpg" alt=""></a>
+      <a href="/produit/summer-socks"><img src="/images/lookbook/black-yeezy.jpg" alt=""></a>
+      <a href="/produit/summer-socks"><img src="/images/lookbook/red-jordan.jpg" alt=""></a>
+    </div>
+  </section>
+
   <section id="bundle" class="bundle-section hidden">
     <div class="container bundle-inner">
       <div class="bundle-copy">
@@ -111,7 +139,7 @@
         <p class="section-sub" id="gallerySubtitle"></p>
       </div>
       <div id="galleryGrid" class="gallery-grid"></div>
-      <p class="gallery-empty hidden" id="galleryEmpty"><span data-i18n="gallery_empty">Customer photos coming soon. Tag</span> <a id="galleryIgLink" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">@menes_jewelry</a> <span data-i18n="gallery_empty_ig">on Instagram.</span></p>
+      <p class="gallery-empty hidden" id="galleryEmpty"><span data-i18n="gallery_empty">Customer photos coming soon. Tag</span> <a id="galleryIgLink" href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">@menes_vs1</a> <span data-i18n="gallery_empty_ig">on Instagram.</span></p>
     </div>
   </section>
 
@@ -169,8 +197,8 @@
       <h2 data-i18n="label_contact">Contact</h2>
       <p class="contact-sub" data-i18n="contact_sub">Got a question? We reply within 24h.</p>
       <div class="contact-links">
-        <a id="linkInstagram" href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">Instagram</a>
-        <a id="linkEmail" href="mailto:contact@menes.store">Email</a>
+        <a id="linkInstagram" href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">Instagram @menes_vs1</a>
+        <a id="linkEmail" href="mailto:contact@mymenes.com">contact@mymenes.com</a>
         <a id="linkPhone" href="#" class="hidden">Téléphone</a>
       </div>
     </div>
@@ -191,9 +219,9 @@
         <span data-i18n="foot_pci">Secure checkout via Stripe / PayPal</span>
       </div>
       <nav class="footer-legal">
-        <a href="livraison.html" data-i18n="foot_shipping">Shipping</a>
-        <a href="retours.html" data-i18n="foot_returns">Returns & exchanges</a>
-        <a href="confidentialite.html" data-i18n="foot_privacy">Privacy</a>
+        <a href="/livraison" data-i18n="foot_shipping">Shipping</a>
+        <a href="/retours" data-i18n="foot_returns">Returns & exchanges</a>
+        <a href="/confidentialite" data-i18n="foot_privacy">Privacy</a>
       </nav>
       <p>© 2026 <span id="footerBrand">MENES</span> · <span data-i18n="foot_rights">All rights reserved</span></p>
     </div>
@@ -231,6 +259,7 @@
         <video id="pdpVideo" class="pdp-video hidden" controls playsinline muted loop></video>
       </div>
       <div id="pdpThumbs" class="pdp-thumbs"></div>
+      <div id="pdpLooks" class="pdp-looks hidden"></div>
     </div>
     <div class="pdp-body">
       <p class="pdp-cat" id="pdpCat"></p>
@@ -480,7 +509,7 @@
   <div id="menesCursorDot" class="menes-cursor-dot" aria-hidden="true"></div>
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
-  <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20261022ink"></script>
+  <script src="/config.js?v=20260805b"></script>
+  <script src="/shop.js?v=20261022story"></script>
 </body>
 </html>

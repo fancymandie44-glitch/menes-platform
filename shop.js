@@ -13,6 +13,7 @@ const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
 const LANG_KEY = 'menes_lang_v2';
 const API = '/api/store';
+const SITE_ORIGIN = 'https://www.mymenes.com';
 
 function getAmbassadorAttribution() {
   try {
@@ -125,7 +126,7 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -179,6 +180,11 @@ const I18N = {
     vip_welcome: 'Bienvenue dans le cercle MENES!',
     gallery_empty: 'Photos clients bientôt. Tag',
     gallery_empty_ig: 'sur Instagram.',
+    lookbook_label: 'L\'histoire',
+    lookbook_title: 'Ça commence sur la table.',
+    lookbook_text: 'Avant la rue, chaque couleur MENES est alignée à Montréal. Même pièce. Même drop. Après, ça sort — sur de vrais looks. C\'est toute l\'histoire.',
+    lookbook_cta: 'Voir les Summer Socks',
+    lookbook_worn: 'Porté dans la rue',
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
@@ -248,7 +254,7 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -302,6 +308,11 @@ const I18N = {
     vip_welcome: 'Welcome to the MENES circle!',
     gallery_empty: 'Customer photos soon. Tag',
     gallery_empty_ig: 'on Instagram.',
+    lookbook_label: 'The story',
+    lookbook_title: 'It starts on the table.',
+    lookbook_text: 'Before MENES hits the street, every color is laid out in Montreal. Same room. Same drop. Then it walks out the door — on real people. That’s the whole story.',
+    lookbook_cta: 'Shop Summer Socks',
+    lookbook_worn: 'Worn in the street',
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
@@ -380,7 +391,7 @@ const DEFAULT_SITE_EN = {
   heroCta: 'Shop the collection',
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
-  gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
+  gallerySubtitle: 'Join the community. Tag @menes_vs1 to get featured.',
   guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
     { icon: '◆', title: '100% secure payment', text: 'Card, Crypto, Klarna, PayPal' },
@@ -1099,10 +1110,10 @@ function setVisitorLang(lang, opts = {}) {
     applySectionOrder();
     renderFilters();
     renderProducts();
-    applySeo();
+    applySeo(activePdpId ? storeData?.products?.find((p) => p.id === activePdpId) : null);
     updateCartUI();
     populateProvinces();
-    if (activePdpId) openPdp(activePdpId);
+    if (activePdpId) openPdp(activePdpId, null, { skipHistory: true });
   }
 }
 
@@ -1156,22 +1167,161 @@ function syncCountryLabels() {
   });
 }
 
-function applySeo() {
-  const s = storeData.site || {};
+function productSlug(product) {
+  const raw = product?.slug || product?.id || product?.name || '';
+  return String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'produit';
+}
+
+function productPath(product) {
+  return `/produit/${productSlug(product)}`;
+}
+
+function productSlugFromPath(pathname) {
+  const parts = String(pathname || '').replace(/\/+$/, '').split('/').filter(Boolean);
+  if (parts[0] === 'produit' && parts[1]) return productSlug({ id: decodeURIComponent(parts[1]) });
+  return '';
+}
+
+function findProductBySlug(products, slug) {
+  const want = productSlug({ id: slug });
+  if (!want) return null;
+  const list = Array.isArray(products) ? products : [];
+  return list.find((p) => productSlug(p) === want)
+    || list.find((p) => productSlug({ id: p.id }) === want)
+    || list.find((p) => productSlug({ id: p.name }) === want)
+    || null;
+}
+
+function absoluteAssetUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw || raw.startsWith('data:')) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('//')) return `https:${raw}`;
+  return `${SITE_ORIGIN}${raw.startsWith('/') ? raw : `/${raw}`}`;
+}
+
+function upsertMeta(selector, attrs) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement('meta');
+    Object.entries(attrs).forEach(([k, v]) => {
+      if (k !== 'content') el.setAttribute(k, v);
+    });
+    document.head.appendChild(el);
+  }
+  if (attrs.content != null) el.setAttribute('content', attrs.content);
+  return el;
+}
+
+function setCanonical(url) {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = url;
+}
+
+function setJsonLd(data) {
+  let el = document.getElementById('menes-jsonld');
+  if (!el) {
+    el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.id = 'menes-jsonld';
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+}
+
+function productJsonLd(product) {
+  const images = productImages(product).map((im) => absoluteAssetUrl(im.url)).filter(Boolean);
+  const reviews = reviewsForProduct(product.id);
+  const stats = reviewStats(reviews);
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: String(product.description || `${product.name} — MENES luxury streetwear.`).slice(0, 320),
+    sku: String(product.id || productSlug(product)),
+    brand: { '@type': 'Brand', name: storeData?.site?.name || 'MENES' },
+    url: `${SITE_ORIGIN}${productPath(product)}`,
+    image: images,
+    offers: {
+      '@type': 'Offer',
+      url: `${SITE_ORIGIN}${productPath(product)}`,
+      priceCurrency: storeData?.site?.currency || 'CAD',
+      price: Number(product.price).toFixed(2),
+      availability: product.preorder ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: storeData?.site?.name || 'MENES' },
+    },
+  };
+  if (stats.count > 0) {
+    data.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: String(stats.avg),
+      reviewCount: String(stats.count),
+      bestRating: '5',
+      worstRating: '1',
+    };
+    data.review = reviews.slice(0, 20).map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: String(r.authorName || 'Client MENES').slice(0, 80) },
+      datePublished: r.createdAt || undefined,
+      name: r.title || undefined,
+      reviewBody: String(r.body || r.title || '').slice(0, 1200),
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: String(Math.max(1, Math.min(5, Number(r.rating) || 5))),
+        bestRating: '5',
+        worstRating: '1',
+      },
+    }));
+  }
+  return data;
+}
+
+function applySeo(product) {
+  const s = storeData?.site || {};
   const seo = s.seo || {};
   const name = s.name || 'MENES';
   const enSeo = seo.en || {};
-  if (currentLang === 'en') {
-    document.title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
+  let title;
+  let description;
+  let url = `${SITE_ORIGIN}/`;
+  let image = absoluteAssetUrl(s.logo || s.heroImage || s.favicon || '/images/products/socks/black.jpg');
+  let type = 'website';
+  if (product) {
+    title = `${product.name} | ${name}`;
+    description = String(product.description || `${product.name} — ${name} luxury streetwear.`).slice(0, 320);
+    url = `${SITE_ORIGIN}${productPath(product)}`;
+    const first = productImages(product)[0]?.url;
+    if (first) image = absoluteAssetUrl(first) || image;
+    type = 'product';
+  } else if (currentLang === 'en') {
+    title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
+    description = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
   } else {
-    document.title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    if (seo.description) meta.content = seo.description;
+    title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
+    description = seo.description || 'MENES. Streetwear luxe. Vêtements premium, paiement sécurisé, livraison au Québec et au Canada.';
   }
+  document.title = title;
+  upsertMeta('meta[name="description"]', { name: 'description', content: description });
+  upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
+  upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
+  upsertMeta('meta[property="og:url"]', { property: 'og:url', content: url });
+  upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
+  upsertMeta('meta[property="og:image"]', { property: 'og:image', content: image });
+  upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: title });
+  upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
+  setCanonical(url);
+  setJsonLd(product
+    ? productJsonLd(product)
+    : [
+      { '@context': 'https://schema.org', '@type': 'Organization', name, url: SITE_ORIGIN, logo: image || undefined },
+      { '@context': 'https://schema.org', '@type': 'WebSite', name, url: SITE_ORIGIN },
+    ]);
   if (s.favicon) {
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
@@ -1233,13 +1383,13 @@ async function refreshStore(opts = {}) {
   applySectionOrder();
   renderFilters();
   renderProducts();
-  applySeo();
+  applySeo(activePdpId ? next.products?.find((p) => p.id === activePdpId) : null);
   setupReveal();
   syncPromoField();
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
@@ -1307,6 +1457,7 @@ function renderSite() {
   }
 
   renderBundle(s, sec);
+  renderLookbook(sec);
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
@@ -1334,7 +1485,7 @@ function renderSite() {
   toggle('guarantee', sec.guarantee !== false && s.guarantee);
   if (s.guarantee) document.getElementById('guaranteeText').textContent = s.guarantee;
 
-  const igHandle = raw.instagramHandle || '@menes_jewelry';
+  const igHandle = raw.instagramHandle || '@menes_vs1';
   if (raw.instagram) {
     document.getElementById('linkInstagram').href = raw.instagram;
     document.getElementById('linkInstagram').textContent = `Instagram ${igHandle}`;
@@ -1356,6 +1507,21 @@ function renderBundle(/* s, sec */) {
   toggle('bundle', false);
 }
 
+function renderLookbook(sec) {
+  const show = sec.lookbook !== false;
+  toggle('lookbook', show);
+  if (!show) return;
+  const title = document.getElementById('lookbookTitle');
+  const text = document.getElementById('lookbookText');
+  const cta = document.getElementById('lookbookCta');
+  if (title) title.textContent = t('lookbook_title');
+  if (text) text.textContent = t('lookbook_text');
+  if (cta) {
+    cta.textContent = t('lookbook_cta');
+    cta.href = '/produit/summer-socks';
+  }
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const items = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
@@ -1368,7 +1534,7 @@ function renderGallery(s, sec, raw) {
   const igLink = document.getElementById('galleryIgLink');
   if (src.instagram) {
     igLink.href = src.instagram;
-    igLink.textContent = src.instagramHandle || '@menes_jewelry';
+    igLink.textContent = src.instagramHandle || '@menes_vs1';
   }
 
   const grid = document.getElementById('galleryGrid');
@@ -1383,6 +1549,7 @@ function renderGallery(s, sec, raw) {
   }
 
   empty.classList.add('hidden');
+  grid.classList.toggle('gallery-grid--mosaic', items.length >= 4);
   grid.innerHTML = items.map((g) => {
     const handle = (g.handle || '').trim();
     const caption = (g.caption || '').trim();
@@ -1676,14 +1843,36 @@ function setupReviewsUI() {
 
   const params = new URLSearchParams(location.search);
   if (params.get('review') === '1') {
-    const pid = params.get('product') || '';
+    const pid = params.get('product') || productSlugFromPath(location.pathname) || '';
     reviewPrefillProductId = pid;
     setTimeout(() => openReviewModal(pid), 500);
     const clean = new URL(location.href);
     clean.searchParams.delete('review');
+    const match = findProductBySlug(storeData?.products || [], pid) || (storeData?.products || []).find((p) => p.id === pid);
+    if (match) clean.pathname = productPath(match);
     clean.searchParams.delete('product');
     history.replaceState({}, '', clean.pathname + (clean.search || '') + clean.hash);
   }
+}
+
+function openProductFromLocation() {
+  const params = new URLSearchParams(location.search);
+  const key = productSlugFromPath(location.pathname) || params.get('product') || '';
+  if (!key) {
+    applySeo();
+    return;
+  }
+  const product = findProductBySlug(storeData?.products || [], key)
+    || (storeData?.products || []).find((p) => p.id === key);
+  if (!product) {
+    applySeo();
+    return;
+  }
+  const clean = new URL(location.href);
+  clean.pathname = productPath(product);
+  clean.searchParams.delete('product');
+  history.replaceState({ pdp: product.id }, '', clean.pathname + (clean.search || '') + clean.hash);
+  openPdp(product.id, null, { skipHistory: true });
 }
 
 function renderFilters() {
@@ -2071,6 +2260,21 @@ function productImages(p) {
   return [];
 }
 
+function isLifestyleImage(im) {
+  const url = String(im?.url || '');
+  return /\/images\/lookbook\//.test(url) || Boolean(im?.look);
+}
+
+function productPackImages(p) {
+  const all = productImages(p);
+  const pack = all.filter((im) => !isLifestyleImage(im));
+  return pack.length ? pack : all;
+}
+
+function productLookImages(p) {
+  return productImages(p).filter(isLifestyleImage);
+}
+
 function imageKey(im) {
   const label = String(im?.label || '').trim();
   if (label) return label.toLowerCase();
@@ -2086,7 +2290,7 @@ function compactProductImage(url) {
 }
 
 function imageForVariant(product, variantMap) {
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   if (!imgs.length) return '';
   const vals = Object.values(variantMap || {}).map((v) => String(v || '').trim().toLowerCase()).filter(Boolean);
   if (vals.length) {
@@ -2332,7 +2536,7 @@ function renderProducts() {
       ? `<p class="product-stock-left">${esc(tFill('stock_left', { n: remaining }))}</p>`
       : '';
     const wishlisted = isWishlisted(p.id);
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const main = imgs[0]?.url || '';
     const opts = productOptions(p);
     const pStats = reviewStats(reviewsForProduct(p.id));
@@ -2455,11 +2659,12 @@ function wireProductCard(card) {
   });
 }
 
-function openPdp(id, fromRoot) {
+function openPdp(id, fromRoot, navOpts = {}) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
+  const looks = productLookImages(product);
   const preset = fromRoot ? readSelectedVariant(fromRoot) : {};
   const main = imageForVariant(product, preset) || imgs[0]?.url || '';
   const opts = productOptions(product);
@@ -2509,6 +2714,33 @@ function openPdp(id, fromRoot) {
     </button>`).join('')
     + (product.videoUrl ? `<button type="button" class="active" data-video="${esc(product.videoUrl)}">Video</button>` : '');
   const pdpPanel = document.getElementById('pdpPanel');
+  const looksEl = document.getElementById('pdpLooks');
+  if (looksEl) {
+    if (!looks.length) {
+      looksEl.innerHTML = '';
+      looksEl.classList.add('hidden');
+    } else {
+      looksEl.classList.remove('hidden');
+      looksEl.innerHTML = `
+        <p class="pdp-looks-label">${esc(t('lookbook_worn'))}</p>
+        <div class="pdp-looks-grid">
+          ${looks.map((im) => `
+            <button type="button" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}">
+              <img src="${esc(im.url)}" alt="${esc(im.label || product.name)}" loading="lazy">
+            </button>`).join('')}
+        </div>`;
+      looksEl.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
+          looksEl.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+          const color = (btn.dataset.label || '').toLowerCase();
+          document.getElementById('pdpThumbs')?.querySelectorAll('button').forEach((b) => {
+            b.classList.toggle('active', (b.dataset.label || '').toLowerCase() === color);
+          });
+        });
+      });
+    }
+  }
   document.getElementById('pdpThumbs').querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.dataset.video && videoEl) {
@@ -2519,6 +2751,7 @@ function openPdp(id, fromRoot) {
         return;
       }
       selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
+      looksEl?.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
     });
   });
   document.getElementById('pdpOptions').innerHTML = opts.map((o, oi) => `
@@ -2552,15 +2785,29 @@ function openPdp(id, fromRoot) {
   document.getElementById('pdpPanel').setAttribute('aria-hidden', 'false');
   showStickyAtc(product, main);
   syncScrollLock();
+  applySeo(product);
+  if (!navOpts.skipHistory) {
+    const next = productPath(product);
+    if (location.pathname !== next) {
+      history.pushState({ pdp: product.id }, '', next);
+      pdpHistoryPushed = true;
+    } else {
+      history.replaceState({ pdp: product.id }, '', next + location.search + location.hash);
+    }
+  }
 }
 
-function closePdp() {
+let pdpHistoryPushed = false;
+
+function closePdp(opts = {}) {
   document.getElementById('pdpPanel')?.classList.add('hidden');
   document.getElementById('pdpOverlay')?.classList.add('hidden');
   document.getElementById('pdpPanel')?.setAttribute('aria-hidden', 'true');
   document.getElementById('stickyAtc')?.classList.add('hidden');
   document.getElementById('pdpRecs')?.classList.add('hidden');
   document.getElementById('pdpRecsList')?.replaceChildren();
+  const looksEl = document.getElementById('pdpLooks');
+  if (looksEl) { looksEl.innerHTML = ''; looksEl.classList.add('hidden'); }
   const pdpReviews = document.getElementById('pdpReviews');
   if (pdpReviews) pdpReviews.innerHTML = '';
   const videoEl = document.getElementById('pdpVideo');
@@ -2571,6 +2818,16 @@ function closePdp() {
   }
   activePdpId = null;
   syncScrollLock();
+  applySeo();
+  if (opts.skipHistory) return;
+  if (location.pathname.startsWith('/produit/')) {
+    if (pdpHistoryPushed && history.state?.pdp) {
+      pdpHistoryPushed = false;
+      history.back();
+      return;
+    }
+    history.replaceState({}, '', '/');
+  }
 }
 
 function showStickyAtc(product, img) {
@@ -3470,7 +3727,7 @@ async function showCryptoPayment(order, total) {
   if (!wallets.length) {
     document.getElementById('cryptoTimer').classList.add('hidden');
     tabs.innerHTML = '';
-    const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_jewelry';
+    const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_vs1';
     panel.innerHTML = `<p class="crypto-empty">Contacte-nous sur <a href="${ig}" target="_blank" rel="noopener">Instagram</a> ou par email pour recevoir l'adresse de paiement crypto. Ta commande #${order.id} est enregistrée.</p>`;
     return;
   }
@@ -3576,7 +3833,29 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  document.querySelector('.nav-brand')?.addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    closePdp({ skipHistory: true });
+    history.pushState({}, '', '/');
+    applySeo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  openProductFromLocation();
 }
+
+window.addEventListener('popstate', () => {
+  pdpHistoryPushed = false;
+  const slug = productSlugFromPath(location.pathname);
+  if (slug) {
+    const product = findProductBySlug(storeData?.products || [], slug);
+    if (product) openPdp(product.id, null, { skipHistory: true });
+    else applySeo();
+    return;
+  }
+  if (activePdpId) closePdp({ skipHistory: true });
+  else applySeo();
+});
 
 window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY && e.newValue) { storeData = JSON.parse(e.newValue); renderSite(); renderFilters(); renderProducts(); }

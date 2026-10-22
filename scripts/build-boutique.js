@@ -51,10 +51,15 @@ const REQUIRED_FILES = [
   'lib/public-catalog.js',
   'lib/copilot-config.js',
   'lib/copilot-tools.js',
+  'lib/seo.js',
   'api/copilot.js',
+  'api/seo-page.js',
+  'api/sitemap.js',
   'api/site-health.js',
   'images/products/socks/black.jpg',
   'images/products/socks/kltr-orange.jpg',
+  'images/lookbook/drop-table.jpg',
+  'images/lookbook/crew-steps.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];
@@ -105,6 +110,9 @@ function main() {
   const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
   if (!shopJs.includes('LOW_STOCK_LIMIT') || !shopJs.includes('PASSPORT_EMAIL_KEY')) {
     throw new Error('build-boutique: shop.js is missing required features');
+  }
+  if (!shopJs.includes("SITE_ORIGIN = 'https://www.mymenes.com'") || !shopJs.includes('/produit/')) {
+    throw new Error('build-boutique: shop.js is missing public product URLs');
   }
 
   console.log('Boutique dist ready:', DIST);

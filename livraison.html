@@ -1,30 +1,85 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#050505">
-  <title>Livraison | MENES</title>
+  <meta name="description" content="MENES shipping from Montreal. Quebec, Canada, and international delivery. Contact contact@mymenes.com or Instagram @menes_vs1.">
+  <link rel="canonical" href="https://www.mymenes.com/livraison">
+  <meta property="og:title" content="Shipping | MENES">
+  <meta property="og:url" content="https://www.mymenes.com/livraison">
+  <title>Shipping | MENES</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260805d">
+  <link rel="stylesheet" href="/shop.css?v=20261022ship">
+  <script>
+    try {
+      var _ml = localStorage.getItem('menes_lang_v2');
+      document.documentElement.lang = (_ml === 'fr' || _ml === 'en') ? _ml : 'en';
+    } catch (e) { document.documentElement.lang = 'en'; }
+  </script>
 </head>
 <body class="legal-page theme-obsidian">
-  <nav class="nav"><a href="/" class="nav-brand"><span>MENES</span></a><a href="/">← Boutique</a></nav>
+  <nav class="nav">
+    <a href="/" class="nav-brand"><span>MENES</span></a>
+    <div class="nav-links">
+      <button type="button" id="langToggle" class="nav-lang-btn" aria-label="Passer en français">FR</button>
+      <a href="/">← Shop</a>
+    </div>
+  </nav>
   <main class="container legal-content">
-    <h1>Livraison</h1>
-    <h2>Délais</h2>
+    <p class="section-label" data-en="Support" data-fr="Support">Support</p>
+    <h1 data-en="Shipping" data-fr="Livraison">Shipping</h1>
+    <p data-en="Orders ship from Montreal, Quebec. Tracking is emailed as soon as your parcel leaves the warehouse." data-fr="Les commandes partent de Montréal, Québec. Tu reçois un courriel de suivi dès que le colis quitte l’entrepôt.">Orders ship from Montreal, Quebec. Tracking is emailed as soon as your parcel leaves the warehouse.</p>
+
+    <h2 data-en="Delivery times" data-fr="Délais">Delivery times</h2>
     <ul>
-      <li><strong>Québec :</strong> 3 à 5 jours ouvrables</li>
-      <li><strong>Reste du Canada :</strong> 5 à 10 jours ouvrables</li>
+      <li><strong data-en="Quebec:" data-fr="Québec :">Quebec:</strong> <span data-en="3 to 5 business days" data-fr="3 à 5 jours ouvrables">3 to 5 business days</span></li>
+      <li><strong data-en="Rest of Canada:" data-fr="Reste du Canada :">Rest of Canada:</strong> <span data-en="5 to 10 business days" data-fr="5 à 10 jours ouvrables">5 to 10 business days</span></li>
+      <li><strong data-en="United States & international:" data-fr="États-Unis et international :">United States & international:</strong> <span data-en="quoted at checkout (typically 7 to 15 business days)" data-fr="calculé au paiement (environ 7 à 15 jours ouvrables)">quoted at checkout (typically 7 to 15 business days)</span></li>
     </ul>
-    <h2>Frais</h2>
-    <p>Les frais de livraison sont calculés selon ta adresse au moment du paiement. Livraison gratuite sur commandes de 150$ et plus (sujet à changement).</p>
-    <h2>Suivi</h2>
-    <p>Tu recevras un courriel avec ton numéro de suivi dès l'expédition de ta commande.</p>
-    <h2>Questions</h2>
-    <p>Pour toute question sur ta livraison, écris-nous à <a href="mailto:contact@menes.store">contact@menes.store</a> ou sur <a href="https://www.instagram.com/menes_jewelry" target="_blank" rel="noopener">Instagram @menes_jewelry</a>.</p>
+    <p data-en="Preorders ship when the piece is ready — not with in-stock items." data-fr="Les précommandes partent quand la pièce est prête — pas avec le stock immédiat.">Preorders ship when the piece is ready — not with in-stock items.</p>
+
+    <h2 data-en="Rates" data-fr="Frais">Rates</h2>
+    <p data-en="Shipping is calculated from your address at checkout. Free shipping on orders of $150 CAD and over (threshold can change)." data-fr="Les frais sont calculés selon ton adresse au paiement. Livraison gratuite dès 150$ CAD (seuil sujet à changement).">Shipping is calculated from your address at checkout. Free shipping on orders of $150 CAD and over (threshold can change).</p>
+
+    <h2 data-en="Tracking" data-fr="Suivi">Tracking</h2>
+    <p data-en="You get a tracking number by email when the order ships. If nothing shows after a few days, write us with your order number." data-fr="Tu reçois un numéro de suivi par courriel à l’expédition. Si rien n’apparaît après quelques jours, écris-nous avec ton numéro de commande.">You get a tracking number by email when the order ships. If nothing shows after a few days, write us with your order number.</p>
+
+    <h2 data-en="Contact" data-fr="Contact">Contact</h2>
+    <p data-en="Questions about a delivery? We reply within 24h." data-fr="Une question sur ta livraison? On répond en 24h.">Questions about a delivery? We reply within 24h.</p>
+    <p>
+      <a href="mailto:contact@mymenes.com">contact@mymenes.com</a>
+      ·
+      <a href="https://www.instagram.com/menes_vs1" target="_blank" rel="noopener">Instagram @menes_vs1</a>
+    </p>
   </main>
+  <script>
+    (function () {
+      var key = 'menes_lang_v2';
+      function lang() {
+        try { return localStorage.getItem(key) === 'fr' ? 'fr' : 'en'; } catch (e) { return 'en'; }
+      }
+      function apply(next) {
+        document.documentElement.lang = next;
+        document.querySelectorAll('[data-en]').forEach(function (el) {
+          el.textContent = next === 'fr' ? (el.getAttribute('data-fr') || el.getAttribute('data-en')) : el.getAttribute('data-en');
+        });
+        var btn = document.getElementById('langToggle');
+        if (btn) {
+          btn.textContent = next === 'en' ? 'FR' : 'EN';
+          btn.setAttribute('aria-label', next === 'en' ? 'Passer en français' : 'Switch to English');
+        }
+        document.title = next === 'fr' ? 'Livraison | MENES' : 'Shipping | MENES';
+      }
+      apply(lang());
+      document.getElementById('langToggle')?.addEventListener('click', function () {
+        var next = lang() === 'en' ? 'fr' : 'en';
+        try { localStorage.setItem(key, next); } catch (e) {}
+        apply(next);
+      });
+    })();
+  </script>
 </body>
 </html>

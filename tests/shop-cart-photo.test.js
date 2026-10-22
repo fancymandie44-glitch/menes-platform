@@ -15,7 +15,7 @@ const start = src.indexOf('function productImages');
 const end = src.indexOf('function productOptions');
 assert.ok(start >= 0 && end > start, 'product image helpers are contiguous');
 const helpers = {};
-new Function(`${src.slice(start, end)}\nObject.assign(this, { productImages, imageKey, compactProductImage, imageForVariant });`).call(helpers);
+new Function(`${src.slice(start, end)}\nObject.assign(this, { productImages, productPackImages, productLookImages, isLifestyleImage, imageKey, compactProductImage, imageForVariant });`).call(helpers);
 
 const socks = {
   image: '/images/products/socks/black.jpg?v=crop2',
@@ -39,6 +39,18 @@ assert.strictEqual(
 assert.strictEqual(helpers.compactProductImage('data:image/jpeg;base64,xxx'), '');
 assert.ok(helpers.compactProductImage('/images/products/socks/pink.jpg?v=crop2'));
 
+const mixed = {
+  images: [
+    { url: '/images/products/socks/pink.jpg?v=crop2', label: 'Pink' },
+    { url: '/images/lookbook/pink-walk.jpg', label: 'Pink' },
+    { url: '/images/lookbook/cyan-window.jpg', label: 'Cyan' },
+  ],
+};
+assert.strictEqual(helpers.productPackImages(mixed).length, 1);
+assert.strictEqual(helpers.productLookImages(mixed).length, 2);
+assert.strictEqual(helpers.imageForVariant(mixed, { Color: 'Pink' }), '/images/products/socks/pink.jpg?v=crop2');
+assert.ok(src.includes('pdpLooks'), 'street looks render below the product thumbs');
+
 const css = fs.readFileSync(path.join(__dirname, '../shop.css'), 'utf8');
 assert.ok(css.includes('.cart-item-photo'), 'cart photo styles exist');
 
@@ -49,5 +61,6 @@ const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 assert.ok(html.includes('id="reviewsMoreBtn"'), 'see-more control is on the homepage');
 assert.ok(src.includes("muted: '#d5d0c6'"), 'dark theme uses readable cream muted text');
 assert.ok(src.includes('hexLum'), 'theme rejects black-on-black text');
+require('child_process').execFileSync(process.execPath, ['--check', path.join(__dirname, '../shop.js')]);
 
 console.log('ok: cart photo + color-from-image selection');
