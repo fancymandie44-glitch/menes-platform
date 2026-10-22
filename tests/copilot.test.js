@@ -14,6 +14,7 @@ const { fallbackDraft } = require('../lib/copilot-agent');
 const { TOOLS } = require('../lib/copilot-tools');
 
 assert.ok(COPILOT_MODEL && !COPILOT_MODEL.includes(' '), 'model is a single constant');
+assert.ok(COPILOT_MODEL.startsWith('claude-'), 'default model is a Claude id');
 assert.ok(!enforceBudgetCaps({ dailyBudget: COPILOT_DAILY_BUDGET_CAP + 10 }).ok, 'daily cap in code');
 assert.ok(!enforceBudgetCaps({ lifetimeBudget: COPILOT_TOTAL_BUDGET_CAP + 10 }).ok, 'total cap in code');
 assert.ok(enforceBudgetCaps({ dailyBudget: 5, lifetimeBudget: 20 }).ok);
