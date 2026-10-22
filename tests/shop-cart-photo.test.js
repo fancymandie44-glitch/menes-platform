@@ -42,4 +42,10 @@ assert.ok(helpers.compactProductImage('/images/products/socks/pink.jpg?v=crop2')
 const css = fs.readFileSync(path.join(__dirname, '../shop.css'), 'utf8');
 assert.ok(css.includes('.cart-item-photo'), 'cart photo styles exist');
 
+assert.ok(src.includes('reviews_more'), 'see-more copy exists');
+assert.ok(src.includes('reviewsMoreBtn'), 'homepage see-more button is wired');
+assert.ok(src.includes('pdp-reviews-more'), 'product page can expand all reviews');
+const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+assert.ok(html.includes('id="reviewsMoreBtn"'), 'see-more control is on the homepage');
+
 console.log('ok: cart photo + color-from-image selection');

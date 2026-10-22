@@ -217,6 +217,8 @@ const I18N = {
     reviews_write_product: 'Avis sur ce produit',
     reviews_no_product: 'Aucun produit disponible pour un avis',
     reviews_error: 'Impossible d\'envoyer l\'avis. Réessaie.',
+    reviews_more: 'Voir plus',
+    reviews_less: 'Voir moins',
     size_guide_btn: 'Guide des tailles',
     passport: 'Passeport',
     passport_kicker: 'Passeport MENES',
@@ -338,6 +340,8 @@ const I18N = {
     reviews_write_product: 'Review this product',
     reviews_no_product: 'No products available to review',
     reviews_error: 'Could not submit your review. Try again.',
+    reviews_more: 'See more',
+    reviews_less: 'See less',
     size_guide_btn: 'Size guide',
     passport: 'Passport',
     passport_kicker: 'MENES Passport',
@@ -1420,6 +1424,25 @@ function starsHtml(rating, opts = {}) {
   return html;
 }
 
+const REVIEWS_PREVIEW = 8;
+const PDP_REVIEWS_PREVIEW = 3;
+let reviewsExpanded = false;
+let pdpReviewsExpanded = false;
+let pdpReviewsForId = '';
+
+function reviewCardHtml(r) {
+  return `
+      <article class="review-card reveal">
+        <div class="review-card-top">
+          ${starsHtml(r.rating)}
+          <span class="review-card-product">${esc(r.productName || '')}</span>
+        </div>
+        ${r.title ? `<h3>${esc(r.title)}</h3>` : ''}
+        <p>${esc(r.body || '')}</p>
+        <div class="review-card-author"><strong>${esc(r.authorName || '')}</strong></div>
+      </article>`;
+}
+
 function renderReviewsSection(sec) {
   const section = document.getElementById('reviews');
   if (!section) return;
@@ -1433,6 +1456,7 @@ function renderReviewsSection(sec) {
   const grid = document.getElementById('reviewsGrid');
   const empty = document.getElementById('reviewsEmpty');
   const writeBtn = document.getElementById('reviewsWriteBtn');
+  const moreBtn = document.getElementById('reviewsMoreBtn');
 
   if (writeBtn) writeBtn.textContent = t('reviews_write');
 
@@ -1440,6 +1464,7 @@ function renderReviewsSection(sec) {
     if (summary) summary.innerHTML = '';
     if (grid) grid.innerHTML = '';
     empty?.classList.remove('hidden');
+    if (moreBtn) moreBtn.classList.add('hidden');
     return;
   }
 
@@ -1454,18 +1479,23 @@ function renderReviewsSection(sec) {
   }
 
   const sorted = [...reviews].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const canMore = sorted.length > REVIEWS_PREVIEW;
+  const shown = reviewsExpanded || !canMore ? sorted : sorted.slice(0, REVIEWS_PREVIEW);
   if (grid) {
-    grid.innerHTML = sorted.slice(0, 12).map((r) => `
-      <article class="review-card reveal">
-        <div class="review-card-top">
-          ${starsHtml(r.rating)}
-          <span class="review-card-product">${esc(r.productName || '')}</span>
-        </div>
-        ${r.title ? `<h3>${esc(r.title)}</h3>` : ''}
-        <p>${esc(r.body || '')}</p>
-        <div class="review-card-author"><strong>${esc(r.authorName || '')}</strong></div>
-      </article>`).join('');
+    grid.innerHTML = shown.map(reviewCardHtml).join('');
     observeRevealNodes([...grid.querySelectorAll('.review-card')]);
+  }
+  if (moreBtn) {
+    if (!canMore) {
+      moreBtn.classList.add('hidden');
+    } else {
+      moreBtn.classList.remove('hidden');
+      const extra = sorted.length - REVIEWS_PREVIEW;
+      moreBtn.textContent = reviewsExpanded
+        ? t('reviews_less')
+        : `${t('reviews_more')} (${extra})`;
+      moreBtn.setAttribute('aria-expanded', reviewsExpanded ? 'true' : 'false');
+    }
   }
 }
 
@@ -1483,7 +1513,13 @@ function renderPdpReviews(productId) {
     el.querySelector('.pdp-reviews-write')?.addEventListener('click', () => openReviewModal(productId));
     return;
   }
-  const top = [...list].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 3);
+  if (pdpReviewsForId !== productId) {
+    pdpReviewsForId = productId;
+    pdpReviewsExpanded = false;
+  }
+  const sorted = [...list].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const canMore = sorted.length > PDP_REVIEWS_PREVIEW;
+  const shown = pdpReviewsExpanded || !canMore ? sorted : sorted.slice(0, PDP_REVIEWS_PREVIEW);
   el.innerHTML = `
     <div class="pdp-reviews-head">
       <div class="pdp-reviews-score">
@@ -1494,15 +1530,20 @@ function renderPdpReviews(productId) {
       <button type="button" class="pdp-reviews-write" data-review-product="${esc(productId)}">${t('reviews_write_product')}</button>
     </div>
     <div class="pdp-reviews-list">
-      ${top.map((r) => `
+      ${shown.map((r) => `
         <div class="pdp-review-item">
           ${starsHtml(r.rating)}
           ${r.title ? `<strong>${esc(r.title)}</strong>` : ''}
           <p>${esc(r.body || '')}</p>
           <div class="pdp-review-author">${esc(r.authorName || '')}</div>
         </div>`).join('')}
-    </div>`;
+    </div>
+    ${canMore ? `<button type="button" class="pdp-reviews-more" aria-expanded="${pdpReviewsExpanded ? 'true' : 'false'}">${pdpReviewsExpanded ? t('reviews_less') : `${t('reviews_more')} (${sorted.length - PDP_REVIEWS_PREVIEW})`}</button>` : ''}`;
   el.querySelector('.pdp-reviews-write')?.addEventListener('click', () => openReviewModal(productId));
+  el.querySelector('.pdp-reviews-more')?.addEventListener('click', () => {
+    pdpReviewsExpanded = !pdpReviewsExpanded;
+    renderPdpReviews(productId);
+  });
 }
 
 function setReviewStars(rating) {
@@ -1591,6 +1632,11 @@ async function submitReviewForm(e) {
 
 function setupReviewsUI() {
   document.getElementById('reviewsWriteBtn')?.addEventListener('click', () => openReviewModal());
+  document.getElementById('reviewsMoreBtn')?.addEventListener('click', () => {
+    reviewsExpanded = !reviewsExpanded;
+    renderReviewsSection((storeData?.site?.sections) || {});
+    if (reviewsExpanded) document.getElementById('reviews')?.scrollIntoView({ block: 'nearest' });
+  });
   document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
   document.getElementById('reviewModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'reviewModal') closeReviewModal();
