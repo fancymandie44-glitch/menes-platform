@@ -7,4 +7,10 @@
 /admin               /console.html        200
 /admin/              /console.html        200
 /paiement            /paiement.html       200
+/livraison           /livraison.html      200
+/livraison/          /livraison.html      200
+/retours             /retours.html        200
+/retours/            /retours.html        200
+/confidentialite     /confidentialite.html 200
+/confidentialite/    /confidentialite.html 200
 /api/*               /.netlify/functions/:splat  200

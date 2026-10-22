@@ -2,6 +2,9 @@ User-agent: *
 Allow: /$
 Allow: /index.html
 Allow: /produit/
+Allow: /livraison
+Allow: /retours
+Allow: /confidentialite
 Disallow: /console
 Disallow: /console.html
 Disallow: /admin

@@ -93,6 +93,13 @@ assert.ok(indexHtml.includes('<base href="/">'), 'product URLs need root-relativ
 assert.ok(indexHtml.includes('src="/shop.js'), 'shop.js is root-relative');
 assert.ok(!indexHtml.includes('boutiquemenes.netlify.app'), 'homepage canonical is not the Netlify subdomain');
 
+const ship = fs.readFileSync(path.join(__dirname, '../livraison.html'), 'utf8');
+assert.ok(ship.includes('contact@mymenes.com'), 'shipping page uses the public email');
+assert.ok(ship.includes('menes_vs1'), 'shipping page uses the streetwear Instagram');
+assert.ok(!ship.includes('menes_jewelry'), 'shipping page must not point to the jewelry IG');
+assert.ok(!ship.includes('menes.store'), 'shipping page must not use the old email');
+assert.ok(ship.includes('https://www.mymenes.com/livraison'), 'shipping page has a public canonical');
+
 const robots = fs.readFileSync(path.join(__dirname, '../robots.txt'), 'utf8');
 assert.ok(robots.includes('Sitemap: https://www.mymenes.com/sitemap.xml'));
 assert.ok(robots.includes('Allow: /produit/'));

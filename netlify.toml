@@ -69,6 +69,36 @@
   status = 200
 
 [[redirects]]
+  from = "/livraison"
+  to = "/livraison.html"
+  status = 200
+
+[[redirects]]
+  from = "/livraison/"
+  to = "/livraison.html"
+  status = 200
+
+[[redirects]]
+  from = "/retours"
+  to = "/retours.html"
+  status = 200
+
+[[redirects]]
+  from = "/retours/"
+  to = "/retours.html"
+  status = 200
+
+[[redirects]]
+  from = "/confidentialite"
+  to = "/confidentialite.html"
+  status = 200
+
+[[redirects]]
+  from = "/confidentialite/"
+  to = "/confidentialite.html"
+  status = 200
+
+[[redirects]]
   from = "/r/*"
   to = "/index.html"
   status = 200

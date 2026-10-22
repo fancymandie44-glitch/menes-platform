@@ -381,7 +381,7 @@ const DEFAULT_SITE_EN = {
   heroCta: 'Shop the collection',
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
-  gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
+  gallerySubtitle: 'Join the community. Tag @menes_vs1 to get featured.',
   guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
     { icon: '◆', title: '100% secure payment', text: 'Card, Crypto, Klarna, PayPal' },
@@ -1474,7 +1474,7 @@ function renderSite() {
   toggle('guarantee', sec.guarantee !== false && s.guarantee);
   if (s.guarantee) document.getElementById('guaranteeText').textContent = s.guarantee;
 
-  const igHandle = raw.instagramHandle || '@menes_jewelry';
+  const igHandle = raw.instagramHandle || '@menes_vs1';
   if (raw.instagram) {
     document.getElementById('linkInstagram').href = raw.instagram;
     document.getElementById('linkInstagram').textContent = `Instagram ${igHandle}`;
@@ -1508,7 +1508,7 @@ function renderGallery(s, sec, raw) {
   const igLink = document.getElementById('galleryIgLink');
   if (src.instagram) {
     igLink.href = src.instagram;
-    igLink.textContent = src.instagramHandle || '@menes_jewelry';
+    igLink.textContent = src.instagramHandle || '@menes_vs1';
   }
 
   const grid = document.getElementById('galleryGrid');
@@ -3654,7 +3654,7 @@ async function showCryptoPayment(order, total) {
   if (!wallets.length) {
     document.getElementById('cryptoTimer').classList.add('hidden');
     tabs.innerHTML = '';
-    const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_jewelry';
+    const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_vs1';
     panel.innerHTML = `<p class="crypto-empty">Contacte-nous sur <a href="${ig}" target="_blank" rel="noopener">Instagram</a> ou par email pour recevoir l'adresse de paiement crypto. Ta commande #${order.id} est enregistrée.</p>`;
     return;
   }
