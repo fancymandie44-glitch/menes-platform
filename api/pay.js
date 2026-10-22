@@ -1,4 +1,4 @@
-const { stripeCheckout, paypalCheckout, squareCheckout, cryptoCheckout } = require('../lib/payments');
+const { stripeCheckout, paypalCheckout, cryptoCheckout } = require('../lib/payments');
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
@@ -61,21 +61,15 @@ exports.handler = async (event) => {
     let result;
     switch (method) {
       case 'stripe':
+      case 'card':
+      case 'square':
         result = await stripeCheckout(order, false);
-        if (result.error && /expired|non configuré|invalid api key|api key/i.test(result.error)) {
-          const fallback = await squareCheckout(order);
-          if (!fallback.error) result = fallback;
-        }
         break;
       case 'klarna':
         result = await stripeCheckout(order, true);
         break;
       case 'paypal':
         result = await paypalCheckout(order);
-        break;
-      case 'square':
-      case 'card':
-        result = await squareCheckout(order);
         break;
       case 'crypto':
         result = await cryptoCheckout(order);
@@ -100,8 +94,9 @@ exports.handler = async (event) => {
       };
     }
 
-    const savedStore = await recordOrder(order, method, siteId);
-    await notifyMerchant(order, method, 'En attente de paiement', savedStore);
+    const recordedMethod = (method === 'square' || method === 'card') ? 'stripe' : method;
+    const savedStore = await recordOrder(order, recordedMethod, siteId);
+    await notifyMerchant(order, recordedMethod, 'En attente de paiement', savedStore);
 
     return {
       statusCode: 200,

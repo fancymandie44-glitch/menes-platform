@@ -1,6 +1,6 @@
 'use strict';
 
-const { stripeCheckout, paypalCheckout, squareCheckout } = require('../lib/payments');
+const { stripeCheckout, paypalCheckout } = require('../lib/payments');
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
@@ -39,8 +39,7 @@ exports.handler = async (event) => {
     }
     const order = priced.order;
 
-    let result = await squareCheckout(order);
-    if (result.error) result = await stripeCheckout(order, false);
+    let result = await stripeCheckout(order, false);
     if (result.error) result = await paypalCheckout(order);
     if (result.error || !result.checkoutUrl) {
       return {
@@ -54,15 +53,15 @@ exports.handler = async (event) => {
     const existing = store.orders.findIndex((o) => o.id === order.id);
     const entry = {
       ...order,
-      payment: 'square',
-      method: 'square',
+      payment: 'stripe',
+      method: 'stripe',
       status: 'pending',
       date: order.date || new Date().toISOString(),
     };
     if (existing >= 0) store.orders[existing] = { ...store.orders[existing], ...entry };
     else store.orders.push(entry);
     await writeSiteStore(siteId, store);
-    await notifyMerchant(order, 'Square', 'En attente de paiement', store);
+    await notifyMerchant(order, 'stripe', 'En attente de paiement', store);
 
     return {
       statusCode: 200,

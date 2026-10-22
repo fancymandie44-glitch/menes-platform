@@ -2041,7 +2041,7 @@ document.getElementById('saveAppearanceBtn')?.addEventListener('click', async ()
   storeData.site.seo = { title: g('apSeoTitle') || '', description: g('apSeoDesc') || '' };
   if (pendingFavicon) storeData.site.favicon = pendingFavicon;
   storeData.site.theme = {
-    mode: g('apMode') || 'light',
+    mode: g('apMode') || 'dark',
     accent: g('apAccent'), accentDark: g('apAccentDark'),
     bg: g('apBg'), surface: g('apSurface'), text: g('apText'),
     headingFont: g('apHeadingFont'), bodyFont: g('apBodyFont'),

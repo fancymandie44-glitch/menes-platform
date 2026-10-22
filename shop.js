@@ -130,7 +130,7 @@ const I18N = {
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
-    foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
+    foot_pci: 'Paiement sécurisé via Stripe / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
     cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
@@ -217,6 +217,8 @@ const I18N = {
     reviews_write_product: 'Avis sur ce produit',
     reviews_no_product: 'Aucun produit disponible pour un avis',
     reviews_error: 'Impossible d\'envoyer l\'avis. Réessaie.',
+    reviews_more: 'Voir plus',
+    reviews_less: 'Voir moins',
     size_guide_btn: 'Guide des tailles',
     passport: 'Passeport',
     passport_kicker: 'Passeport MENES',
@@ -251,7 +253,7 @@ const I18N = {
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
-    foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
+    foot_pci: 'Secure payment via Stripe / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
     cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
@@ -338,6 +340,8 @@ const I18N = {
     reviews_write_product: 'Review this product',
     reviews_no_product: 'No products available to review',
     reviews_error: 'Could not submit your review. Try again.',
+    reviews_more: 'See more',
+    reviews_less: 'See less',
     size_guide_btn: 'Size guide',
     passport: 'Passport',
     passport_kicker: 'MENES Passport',
@@ -377,7 +381,7 @@ const DEFAULT_SITE_EN = {
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
   gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
-  guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
+  guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
     { icon: '◆', title: '100% secure payment', text: 'Card, Crypto, Klarna, PayPal' },
     { icon: '◆', title: 'Fast shipping', text: 'Ships in 3-5 business days' },
@@ -391,7 +395,7 @@ const DEFAULT_SITE_EN = {
   ],
   faq: [
     { q: 'How do I order?', a: 'Add items to cart, enter your info, pay by card or crypto. Klarna and PayPal are also on the alternate payment page.' },
-    { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT), Klarna (4 interest-free payments) and PayPal.' },
+    { q: 'What payment methods do you accept?', a: 'Card (Stripe), crypto (BTC, ETH, USDT), Klarna (4 interest-free payments) and PayPal.' },
     { q: 'How long is shipping?', a: '3 to 5 business days in Quebec. 5 to 10 days for the rest of Canada.' },
     { q: 'Can I exchange an item?', a: 'Yes, within 14 days of delivery if the item is unused with tags.' },
   ],
@@ -976,9 +980,18 @@ function loadGoogleFont(family) {
 }
 
 const THEME_MODES = {
-  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#555555', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
-  dark: { bg: '#050505', surface: '#0f0f0f', text: '#f4f2ee', muted: '#a8a8a8', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505' },
+  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#4f4a44', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
+  dark: { bg: '#050505', surface: '#141414', text: '#f4f2ee', muted: '#d5d0c6', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.92)', btnBg: '', btnText: '#050505' },
 };
+
+function hexLum(hex) {
+  const h = String(hex || '').replace('#', '');
+  if (h.length < 6) return 0;
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
 
 const ASPECT_MAP = { '': '', square: '1 / 1', portrait45: '4 / 5', portrait34: '3 / 4', landscape: '16 / 9', wide: '3 / 2' };
 
@@ -993,15 +1006,22 @@ function applyTheme() {
   let pal;
   if (mode === 'custom') {
     pal = {
-      bg: th.bg || '#050505', surface: th.surface || '#0f0f0f', text: th.text || '#f4f2ee',
-      muted: th.muted || 'rgba(168,168,168,0.9)', border: th.border || '#2a2a2a',
-      navbg: th.surface || 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505',
+      bg: th.bg || '#050505', surface: th.surface || '#141414', text: th.text || '#f4f2ee',
+      muted: th.muted || '#d5d0c6', border: th.border || '#2a2a2a',
+      navbg: th.surface || 'rgba(5,5,5,0.92)', btnBg: '', btnText: '#050505',
     };
   } else {
     pal = { ...(THEME_MODES[mode] || THEME_MODES.dark) };
   }
-  const btnBg = th.buttonBg || pal.btnBg || (mode === 'dark' ? accent : '#0a0a0a');
-  const btnText = th.buttonText || pal.btnText || (mode === 'dark' ? '#050505' : '#fafafa');
+  const darkUi = hexLum(pal.bg) < 0.45;
+  if (darkUi && hexLum(pal.text) < 0.45) pal.text = '#f4f2ee';
+  if (darkUi && hexLum(pal.muted || '#000') < 0.5) pal.muted = '#d5d0c6';
+  if (!darkUi && hexLum(pal.text) > 0.55) pal.text = '#121212';
+  const surface2 = darkUi ? '#1c1c1c' : '#efece6';
+  const surface3 = darkUi ? '#262626' : '#e4e0d8';
+  const gray400 = darkUi ? '#c4bfb6' : '#6f6a64';
+  const btnBg = th.buttonBg || pal.btnBg || (darkUi ? accent : '#0a0a0a');
+  const btnText = th.buttonText || pal.btnText || (darkUi ? '#050505' : '#fafafa');
 
   const headingFont = FONT_OPTIONS[th.headingFont]?.stack || "'Syne', sans-serif";
   const bodyFont = FONT_OPTIONS[th.bodyFont]?.stack || "'DM Sans', sans-serif";
@@ -1018,15 +1038,24 @@ function applyTheme() {
   const annColor = th.announceColor || accent;
 
   const css = `
-:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; }
+:root {
+  --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px;
+  --bg: ${pal.bg}; --text: ${pal.text}; --muted: ${pal.muted};
+  --black: ${darkUi ? '#050505' : pal.bg}; --white: ${darkUi ? '#f4f2ee' : pal.text};
+  --surface-0: ${pal.bg}; --surface-1: ${pal.surface}; --surface-2: ${surface2}; --surface-3: ${surface3};
+  --gray-400: ${gray400}; --gray-600: ${pal.muted}; --hairline: ${pal.border};
+}
 body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero h1, .section-head h2, .nav-brand span, .product-price, .bundle-copy h2, .cart-header h3, .modal-box h3, .contact-section h2, .pdp-body h2, .product-title-btn { font-family: ${headingFont}; }
+.hero h1 { color: #f4f2ee; }
+.hero-sub { color: rgba(244,242,238,0.88); }
 .nav { background: ${pal.navbg}; border-bottom-color: ${pal.border}; }
 .nav-brand span, .nav-links a { color: ${pal.text}; }
+.trust-bar, .contact-section, .footer, .guarantee-section { background: ${pal.surface}; color: ${pal.text}; }
 .product-card, .modal-box, .cart-panel, .pdp-panel, .why-card { background: ${pal.surface}; border-color: ${pal.border}; color: ${pal.text}; }
-.product-title-btn, .cart-item, .cart-total { color: ${pal.text}; }
-.product-body p, .section-sub, .contact-sub, .pdp-desc { color: ${pal.muted}; }
-.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${mode === 'dark' ? '#161616' : '#fff'}; color: ${pal.text}; border-color: ${pal.border}; }
+.product-title-btn, .cart-item, .cart-total, .cart-header h3, .modal-box label, .faq-q { color: ${pal.text}; }
+.product-body p, .section-sub, .contact-sub, .pdp-desc, .trust-item p, .why-card p, .faq-a, .review-card p { color: ${pal.muted}; }
+.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${surface2}; color: ${pal.text}; border-color: ${pal.border}; }
 .products-grid { grid-template-columns: repeat(auto-fill, minmax(${gridMin}px, 1fr)); }
 .product-img { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
 .product-img img { object-fit: ${imgFit}; }
@@ -1034,7 +1063,7 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero-bg.has-image::after, .hero-bg.has-video::after { background: linear-gradient(180deg, rgba(5,5,5,${overlay * 0.6}) 0%, rgba(5,5,5,${Math.min(0.95, overlay + 0.25)}) 100%); }
 .announce { background: ${annBg}; color: ${annColor}; }
 .product-card button.add-btn, .btn-checkout, .cart-btn, .sticky-atc-btn { background: ${btnBg}; color: ${btnText}; border-radius: ${btnRadius}px; }
-.hero-cta { border-radius: ${btnRadius}px; }
+.hero-cta { border-radius: ${btnRadius}px; color: #050505; }
 .filter { border-radius: ${btnRadius}px; }
 `;
   let styleEl = document.getElementById('menes-theme');
@@ -1420,6 +1449,25 @@ function starsHtml(rating, opts = {}) {
   return html;
 }
 
+const REVIEWS_PREVIEW = 8;
+const PDP_REVIEWS_PREVIEW = 3;
+let reviewsExpanded = false;
+let pdpReviewsExpanded = false;
+let pdpReviewsForId = '';
+
+function reviewCardHtml(r) {
+  return `
+      <article class="review-card reveal">
+        <div class="review-card-top">
+          ${starsHtml(r.rating)}
+          <span class="review-card-product">${esc(r.productName || '')}</span>
+        </div>
+        ${r.title ? `<h3>${esc(r.title)}</h3>` : ''}
+        <p>${esc(r.body || '')}</p>
+        <div class="review-card-author"><strong>${esc(r.authorName || '')}</strong></div>
+      </article>`;
+}
+
 function renderReviewsSection(sec) {
   const section = document.getElementById('reviews');
   if (!section) return;
@@ -1433,6 +1481,7 @@ function renderReviewsSection(sec) {
   const grid = document.getElementById('reviewsGrid');
   const empty = document.getElementById('reviewsEmpty');
   const writeBtn = document.getElementById('reviewsWriteBtn');
+  const moreBtn = document.getElementById('reviewsMoreBtn');
 
   if (writeBtn) writeBtn.textContent = t('reviews_write');
 
@@ -1440,6 +1489,7 @@ function renderReviewsSection(sec) {
     if (summary) summary.innerHTML = '';
     if (grid) grid.innerHTML = '';
     empty?.classList.remove('hidden');
+    if (moreBtn) moreBtn.classList.add('hidden');
     return;
   }
 
@@ -1454,18 +1504,23 @@ function renderReviewsSection(sec) {
   }
 
   const sorted = [...reviews].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const canMore = sorted.length > REVIEWS_PREVIEW;
+  const shown = reviewsExpanded || !canMore ? sorted : sorted.slice(0, REVIEWS_PREVIEW);
   if (grid) {
-    grid.innerHTML = sorted.slice(0, 12).map((r) => `
-      <article class="review-card reveal">
-        <div class="review-card-top">
-          ${starsHtml(r.rating)}
-          <span class="review-card-product">${esc(r.productName || '')}</span>
-        </div>
-        ${r.title ? `<h3>${esc(r.title)}</h3>` : ''}
-        <p>${esc(r.body || '')}</p>
-        <div class="review-card-author"><strong>${esc(r.authorName || '')}</strong></div>
-      </article>`).join('');
+    grid.innerHTML = shown.map(reviewCardHtml).join('');
     observeRevealNodes([...grid.querySelectorAll('.review-card')]);
+  }
+  if (moreBtn) {
+    if (!canMore) {
+      moreBtn.classList.add('hidden');
+    } else {
+      moreBtn.classList.remove('hidden');
+      const extra = sorted.length - REVIEWS_PREVIEW;
+      moreBtn.textContent = reviewsExpanded
+        ? t('reviews_less')
+        : `${t('reviews_more')} (${extra})`;
+      moreBtn.setAttribute('aria-expanded', reviewsExpanded ? 'true' : 'false');
+    }
   }
 }
 
@@ -1483,7 +1538,13 @@ function renderPdpReviews(productId) {
     el.querySelector('.pdp-reviews-write')?.addEventListener('click', () => openReviewModal(productId));
     return;
   }
-  const top = [...list].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 3);
+  if (pdpReviewsForId !== productId) {
+    pdpReviewsForId = productId;
+    pdpReviewsExpanded = false;
+  }
+  const sorted = [...list].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const canMore = sorted.length > PDP_REVIEWS_PREVIEW;
+  const shown = pdpReviewsExpanded || !canMore ? sorted : sorted.slice(0, PDP_REVIEWS_PREVIEW);
   el.innerHTML = `
     <div class="pdp-reviews-head">
       <div class="pdp-reviews-score">
@@ -1494,15 +1555,20 @@ function renderPdpReviews(productId) {
       <button type="button" class="pdp-reviews-write" data-review-product="${esc(productId)}">${t('reviews_write_product')}</button>
     </div>
     <div class="pdp-reviews-list">
-      ${top.map((r) => `
+      ${shown.map((r) => `
         <div class="pdp-review-item">
           ${starsHtml(r.rating)}
           ${r.title ? `<strong>${esc(r.title)}</strong>` : ''}
           <p>${esc(r.body || '')}</p>
           <div class="pdp-review-author">${esc(r.authorName || '')}</div>
         </div>`).join('')}
-    </div>`;
+    </div>
+    ${canMore ? `<button type="button" class="pdp-reviews-more" aria-expanded="${pdpReviewsExpanded ? 'true' : 'false'}">${pdpReviewsExpanded ? t('reviews_less') : `${t('reviews_more')} (${sorted.length - PDP_REVIEWS_PREVIEW})`}</button>` : ''}`;
   el.querySelector('.pdp-reviews-write')?.addEventListener('click', () => openReviewModal(productId));
+  el.querySelector('.pdp-reviews-more')?.addEventListener('click', () => {
+    pdpReviewsExpanded = !pdpReviewsExpanded;
+    renderPdpReviews(productId);
+  });
 }
 
 function setReviewStars(rating) {
@@ -1591,6 +1657,11 @@ async function submitReviewForm(e) {
 
 function setupReviewsUI() {
   document.getElementById('reviewsWriteBtn')?.addEventListener('click', () => openReviewModal());
+  document.getElementById('reviewsMoreBtn')?.addEventListener('click', () => {
+    reviewsExpanded = !reviewsExpanded;
+    renderReviewsSection((storeData?.site?.sections) || {});
+    if (reviewsExpanded) document.getElementById('reviews')?.scrollIntoView({ block: 'nearest' });
+  });
   document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
   document.getElementById('reviewModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'reviewModal') closeReviewModal();
@@ -1872,6 +1943,7 @@ function quickAddProduct(id) {
       variantStr: 'Unique',
       size: 'Unique',
       qty: 1,
+      image: compactProductImage(imageForVariant(product, {})),
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -1997,6 +2069,84 @@ function productImages(p) {
   }
   if (p.image) return [{ url: p.image, label: '' }];
   return [];
+}
+
+function imageKey(im) {
+  const label = String(im?.label || '').trim();
+  if (label) return label.toLowerCase();
+  const path = String(im?.url || '').split('?')[0];
+  const file = path.split('/').pop() || '';
+  return file.replace(/\.[a-z0-9]+$/i, '').replace(/^kltr-/, '').toLowerCase();
+}
+
+function compactProductImage(url) {
+  const u = String(url || '');
+  if (!u || u.startsWith('data:')) return '';
+  return u;
+}
+
+function imageForVariant(product, variantMap) {
+  const imgs = productImages(product);
+  if (!imgs.length) return '';
+  const vals = Object.values(variantMap || {}).map((v) => String(v || '').trim().toLowerCase()).filter(Boolean);
+  if (vals.length) {
+    const hit = imgs.find((im) => vals.includes(imageKey(im)));
+    if (hit) return hit.url;
+  }
+  return imgs[0].url;
+}
+
+function cartLineImage(line) {
+  const product = (storeData?.products || []).find((p) => p.id === line?.id);
+  if (product) return imageForVariant(product, line.variant) || compactProductImage(line.image) || product.image || '';
+  return compactProductImage(line?.image);
+}
+
+function activateChip(root, value) {
+  const want = String(value || '').trim().toLowerCase();
+  if (!root || !want) return false;
+  let found = false;
+  root.querySelectorAll('.product-option').forEach((opt) => {
+    const chips = [...opt.querySelectorAll('.opt-chip')];
+    const match = chips.find((c) => String(c.dataset.value || '').trim().toLowerCase() === want);
+    if (!match) return;
+    chips.forEach((c) => {
+      const on = c === match;
+      c.classList.toggle('active', on);
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    found = true;
+  });
+  return found;
+}
+
+function applySelectedMedia(root, product, url) {
+  if (!root || !url) return;
+  const main = root.querySelector('.pg-main, #pdpMainImg');
+  if (main) {
+    main.src = url;
+    main.classList.remove('hidden');
+  }
+  root.querySelectorAll('.pg-thumb, #pdpThumbs button[data-url]').forEach((tb) => {
+    tb.classList.toggle('active', tb.dataset.url === url);
+  });
+  if (root.id === 'pdpPanel') {
+    const videoEl = document.getElementById('pdpVideo');
+    if (videoEl) videoEl.classList.add('hidden');
+    const sticky = document.getElementById('stickyAtcImg');
+    if (sticky) {
+      sticky.src = url;
+      sticky.classList.remove('hidden');
+    }
+  }
+}
+
+function selectVariantFromImage(root, product, im) {
+  if (!root || !im?.url) return;
+  applySelectedMedia(root, product, im.url);
+  activateChip(root, imageKey(im));
+  applyVariantStockUi(root, product);
+  if (root.id === 'pdpPanel') renderPdpUrgency(product);
 }
 
 function productOptions(p) {
@@ -2256,8 +2406,7 @@ function wireProductCard(card) {
 
   thumbs.forEach((tb) => tb.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (main) main.src = tb.dataset.url;
-    activateThumbByUrl(tb.dataset.url);
+    selectVariantFromImage(card, product, { url: tb.dataset.url, label: tb.dataset.label });
   }));
 
   card.querySelectorAll('.product-option').forEach((opt) => {
@@ -2270,9 +2419,13 @@ function wireProductCard(card) {
       });
       chip.classList.add('active');
       chip.setAttribute('aria-pressed', 'true');
-      const val = (chip.dataset.value || '').toLowerCase();
-      const match = thumbs.find((tb) => tb.dataset.label && tb.dataset.label.toLowerCase() === val);
-      if (match && main) { main.src = match.dataset.url; activateThumbByUrl(match.dataset.url); }
+      const url = imageForVariant(product, readSelectedVariant(card));
+      if (url) applySelectedMedia(card, product, url);
+      else {
+        const val = (chip.dataset.value || '').toLowerCase();
+        const match = thumbs.find((tb) => tb.dataset.label && tb.dataset.label.toLowerCase() === val);
+        if (match && main) { main.src = match.dataset.url; activateThumbByUrl(match.dataset.url); }
+      }
       applyVariantStockUi(card, product);
     }));
   });
@@ -2290,7 +2443,7 @@ function wireProductCard(card) {
     if (currentFilter === 'wishlist' && !isWishlisted(productId)) renderProducts();
   });
 
-  const openCardPdp = () => openPdp(productId);
+  const openCardPdp = () => openPdp(productId, card);
   card.querySelector('.product-img-btn')?.addEventListener('click', openCardPdp);
   card.querySelector('.product-title-btn')?.addEventListener('click', openCardPdp);
 
@@ -2302,12 +2455,13 @@ function wireProductCard(card) {
   });
 }
 
-function openPdp(id) {
+function openPdp(id, fromRoot) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
   const imgs = productImages(product);
-  const main = imgs[0]?.url || '';
+  const preset = fromRoot ? readSelectedVariant(fromRoot) : {};
+  const main = imageForVariant(product, preset) || imgs[0]?.url || '';
   const opts = productOptions(product);
   document.getElementById('pdpName').textContent = product.name;
   document.getElementById('pdpCat').textContent = [
@@ -2350,22 +2504,21 @@ function openPdp(id) {
     else { imgEl.removeAttribute('src'); imgEl.classList.add('hidden'); }
   }
   document.getElementById('pdpThumbs').innerHTML = imgs.map((im, i) => `
-    <button type="button" class="${i === 0 && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}">
-      <img src="${esc(im.url)}" alt="">
+    <button type="button" class="${im.url === main && !product.videoUrl ? 'active' : ''}" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}">
+      <img src="${esc(im.url)}" alt="${esc(im.label || product.name)}">
     </button>`).join('')
     + (product.videoUrl ? `<button type="button" class="active" data-video="${esc(product.videoUrl)}">Video</button>` : '');
+  const pdpPanel = document.getElementById('pdpPanel');
   document.getElementById('pdpThumbs').querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.getElementById('pdpThumbs').querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
       if (btn.dataset.video && videoEl) {
+        document.getElementById('pdpThumbs').querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
         videoEl.src = btn.dataset.video;
         videoEl.classList.remove('hidden');
         imgEl.classList.add('hidden');
-      } else {
-        if (videoEl) { videoEl.classList.add('hidden'); }
-        imgEl.src = btn.dataset.url;
-        imgEl.classList.remove('hidden');
+        return;
       }
+      selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
     });
   });
   document.getElementById('pdpOptions').innerHTML = opts.map((o, oi) => `
@@ -2380,13 +2533,17 @@ function openPdp(id) {
       if (chip.classList.contains('is-oos') || chip.disabled) return;
       opt.querySelectorAll('.opt-chip').forEach((c) => c.classList.remove('active'));
       chip.classList.add('active');
-      applyVariantStockUi(document.getElementById('pdpPanel'), product);
+      const url = imageForVariant(product, readSelectedVariant(pdpPanel));
+      if (url) applySelectedMedia(pdpPanel, product, url);
+      applyVariantStockUi(pdpPanel, product);
       renderPdpUrgency(product);
     }));
   });
+  Object.values(preset).forEach((value) => activateChip(pdpPanel, value));
+  if (main) applySelectedMedia(pdpPanel, product, main);
   document.getElementById('pdpAddBtn').textContent = product.preorder ? t('preorder_btn') : t('add_to_cart');
   document.getElementById('pdpSizeGuideBtn').textContent = t('size_guide');
-  applyVariantStockUi(document.getElementById('pdpPanel'), product);
+  applyVariantStockUi(pdpPanel, product);
   renderPdpUrgency(product);
   renderPdpReviews(product.id);
   renderPdpRecommendations(product);
@@ -2482,8 +2639,11 @@ window.addToCart = (id, card) => {
     return;
   }
 
-  if (existing) existing.qty = nextQty;
-  else {
+  const lineImage = compactProductImage(imageForVariant(product, variant));
+  if (existing) {
+    existing.qty = nextQty;
+    if (lineImage) existing.image = lineImage;
+  } else {
     cart.push({
       id,
       name: product.name,
@@ -2492,6 +2652,7 @@ window.addToCart = (id, card) => {
       variantStr,
       size: variantStr,
       qty: 1,
+      image: lineImage,
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2621,7 +2782,9 @@ function updateCartUI(opts = {}) {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const photo = cartLineImage(c);
       return `<div class="cart-item" data-cart-i="${i}">
+        ${photo ? `<div class="cart-item-photo"><img src="${esc(photo)}" alt="${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}"></div>` : ''}
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -2669,7 +2832,8 @@ function renderCheckoutSummary() {
       const pre = c.preorder
         ? ` <em class="sum-preorder">(${esc(t('preorder_cart'))}${c.preorderNote ? `: ${esc(c.preorderNote)}` : ''})</em>`
         : '';
-      return `<div class="sum-row"><span>${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}${pre} ×${c.qty}</span><span>${(c.price * c.qty).toFixed(2)}$</span></div>`;
+      const photo = cartLineImage(c);
+      return `<div class="sum-row sum-row-item">${photo ? `<img class="sum-thumb" src="${esc(photo)}" alt="">` : ''}<span>${esc(c.name)}${v && v !== 'Unique' ? ` · ${esc(v)}` : ''}${pre} ×${c.qty}</span><span>${(c.price * c.qty).toFixed(2)}$</span></div>`;
     }).join('')}</div>
     <div class="sum-row"><span>${t('subtotal')}</span><span>${subtotal.toFixed(2)}$</span></div>
     ${discRow}
@@ -2993,8 +3157,11 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
-    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
+    const labels = {
+      stripe: currentLang === 'en' ? 'Pay by card' : 'Payer par carte',
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
+    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || t('pay_submit');
   });
 });
 
@@ -3015,7 +3182,7 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3034,6 +3201,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
       size: c.size || c.variantStr,
       variantStr: c.variantStr || c.size,
       variant: c.variant || {},
+      image: compactProductImage(c.image || cartLineImage(c)),
       preorder: !!c.preorder,
       preorderNote: c.preorderNote || '',
     })),
@@ -3109,7 +3277,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'
