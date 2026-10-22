@@ -94,6 +94,8 @@ assert.ok(indexHtml.includes('<base href="/">'), 'product URLs need root-relativ
 assert.ok(indexHtml.includes('src="/shop.js'), 'shop.js is root-relative');
 assert.ok(!indexHtml.includes('boutiquemenes.netlify.app'), 'homepage canonical is not the Netlify subdomain');
 assert.ok(indexHtml.includes('id="lookbook"'), 'homepage has the drop lookbook');
+assert.ok(indexHtml.includes('nav_story'), 'nav uses Story, not Looks');
+assert.ok(!indexHtml.includes('nav_looks'), 'Looks is removed from the nav');
 assert.ok(fs.existsSync(path.join(__dirname, '../images/lookbook/drop-table.jpg')), 'drop table photo is in the repo');
 assert.ok(fs.existsSync(path.join(__dirname, '../images/lookbook/cyan-window.jpg')), 'sock lifestyle photos are in the repo');
 

@@ -126,7 +126,7 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_looks: 'Looks', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -180,9 +180,9 @@ const I18N = {
     vip_welcome: 'Bienvenue dans le cercle MENES!',
     gallery_empty: 'Photos clients bientôt. Tag',
     gallery_empty_ig: 'sur Instagram.',
-    lookbook_label: 'Le drop',
-    lookbook_title: 'Toutes les couleurs sur la table.',
-    lookbook_text: 'Voici un drop MENES avant la rue : chaque paire, chaque revers, alignés à Montréal. Choisis ta couleur. Porte-la fort.',
+    lookbook_label: 'L\'histoire',
+    lookbook_title: 'Ça commence sur la table.',
+    lookbook_text: 'Avant la rue, chaque couleur MENES est alignée à Montréal. Même pièce. Même drop. Après, ça sort — sur de vrais looks. C\'est toute l\'histoire.',
     lookbook_cta: 'Voir les Summer Socks',
     lookbook_worn: 'Porté dans la rue',
     email_ph: 'ton@email.com',
@@ -254,7 +254,7 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_looks: 'Looks', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -308,9 +308,9 @@ const I18N = {
     vip_welcome: 'Welcome to the MENES circle!',
     gallery_empty: 'Customer photos soon. Tag',
     gallery_empty_ig: 'on Instagram.',
-    lookbook_label: 'The drop',
-    lookbook_title: 'Every color on the table.',
-    lookbook_text: 'This is how a MENES drop looks before it hits the street: every cuff, every pair, laid out in Montreal. Pick a color. Wear it loud.',
+    lookbook_label: 'The story',
+    lookbook_title: 'It starts on the table.',
+    lookbook_text: 'Before MENES hits the street, every color is laid out in Montreal. Same room. Same drop. Then it walks out the door — on real people. That’s the whole story.',
     lookbook_cta: 'Shop Summer Socks',
     lookbook_worn: 'Worn in the street',
     email_ph: 'you@email.com',
