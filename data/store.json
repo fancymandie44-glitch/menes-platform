@@ -104,11 +104,11 @@
     },
     "faq": [
       { "q": "Comment passer commande?", "a": "Ajoute tes articles au panier, remplis tes infos et paie par carte ou crypto. Klarna et PayPal sont aussi disponibles sur la page paiement alternative." },
-      { "q": "Quels modes de paiement acceptez-vous?", "a": "Carte (Square), crypto (BTC, ETH, USDT), Klarna (4x sans frais) et PayPal." },
+      { "q": "Quels modes de paiement acceptez-vous?", "a": "Carte (Stripe), crypto (BTC, ETH, USDT), Klarna (4x sans frais) et PayPal." },
       { "q": "Combien de temps pour la livraison?", "a": "3 à 5 jours ouvrables au Québec. 5 à 10 jours pour le reste du Canada." },
       { "q": "Puis-je échanger un article?", "a": "Oui, dans les 14 jours suivant la réception, si l'article est neuf avec étiquettes." }
     ],
-    "guarantee": "Transactions chiffrées SSL 256-bit. Tes infos bancaires ne restent jamais chez nous. Square, Stripe et PayPal s'en occupent, certifiés PCI-DSS.",
+    "guarantee": "Transactions chiffrées SSL 256-bit. Tes infos bancaires ne restent jamais chez nous. Stripe et PayPal s'en occupent, certifiés PCI-DSS.",
     "crypto": [
       { "label": "Bitcoin", "symbol": "BTC", "network": "Bitcoin", "address": "" },
       { "label": "Ethereum", "symbol": "ETH", "network": "ERC-20", "address": "" },

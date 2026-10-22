@@ -187,7 +187,7 @@
       <div class="footer-trust">
         <span data-i18n="foot_ssl">SSL Secured</span>
         <span data-i18n="foot_pay">Encrypted payment</span>
-        <span data-i18n="foot_pci">Secure checkout via Square / PayPal</span>
+        <span data-i18n="foot_pci">Secure checkout via Stripe / PayPal</span>
       </div>
       <nav class="footer-legal">
         <a href="livraison.html" data-i18n="foot_shipping">Shipping</a>
@@ -317,14 +317,14 @@
 
         <p class="pay-label" data-i18n="pay_label">Payment method:</p>
         <div class="pay-methods pay-methods-main">
-          <button type="button" class="pay-btn active" data-method="square">
+          <button type="button" class="pay-btn active" data-method="stripe">
             <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Visa · MC · Amex</small>
           </button>
           <button type="button" class="pay-btn" data-method="crypto">
             <span class="pay-icon" aria-hidden="true">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
           </button>
         </div>
-        <input type="hidden" name="method" id="payMethod" value="square">
+        <input type="hidden" name="method" id="payMethod" value="stripe">
         <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Pay by card</button>
         <p class="alt-pay">
           <span data-i18n="alt_pay">Need Klarna or PayPal?</span>
@@ -480,6 +480,6 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20261022cart"></script>
+  <script src="shop.js?v=20261022pay"></script>
 </body>
 </html>

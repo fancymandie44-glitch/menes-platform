@@ -130,7 +130,7 @@ const I18N = {
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
-    foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
+    foot_pci: 'Paiement sécurisé via Stripe / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
     cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
@@ -251,7 +251,7 @@ const I18N = {
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
-    foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
+    foot_pci: 'Secure payment via Stripe / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
     cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
@@ -377,7 +377,7 @@ const DEFAULT_SITE_EN = {
   announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
   galleryTitle: 'They wear MENES',
   gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
-  guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
+  guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
     { icon: '◆', title: '100% secure payment', text: 'Card, Crypto, Klarna, PayPal' },
     { icon: '◆', title: 'Fast shipping', text: 'Ships in 3-5 business days' },
@@ -391,7 +391,7 @@ const DEFAULT_SITE_EN = {
   ],
   faq: [
     { q: 'How do I order?', a: 'Add items to cart, enter your info, pay by card or crypto. Klarna and PayPal are also on the alternate payment page.' },
-    { q: 'What payment methods do you accept?', a: 'Card (Square), crypto (BTC, ETH, USDT), Klarna (4 interest-free payments) and PayPal.' },
+    { q: 'What payment methods do you accept?', a: 'Card (Stripe), crypto (BTC, ETH, USDT), Klarna (4 interest-free payments) and PayPal.' },
     { q: 'How long is shipping?', a: '3 to 5 business days in Quebec. 5 to 10 days for the rest of Canada.' },
     { q: 'Can I exchange an item?', a: 'Yes, within 14 days of delivery if the item is unused with tags.' },
   ],
@@ -3086,8 +3086,11 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
-    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
+    const labels = {
+      stripe: currentLang === 'en' ? 'Pay by card' : 'Payer par carte',
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
+    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || t('pay_submit');
   });
 });
 
@@ -3108,7 +3111,7 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3203,7 +3206,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'
