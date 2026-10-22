@@ -44,6 +44,10 @@ function run() {
     'lib/cors.js',
     'lib/platform.js',
     'lib/passport.js',
+    'lib/copilot-config.js',
+    'api/copilot.js',
+    'api/site-health.js',
+    'console-copilot.js',
     'data/store.json',
   ];
 

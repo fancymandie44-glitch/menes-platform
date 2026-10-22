@@ -67,7 +67,9 @@ let pendingLogo = null;
 const TAB_TITLES = {
   dashboard: 'Tableau de bord', sites: 'Boutiques & marques', domains: 'Domaines',
   products: 'Produits', collections: 'Collections', orders: 'Commandes',
-  customers: 'Clients', marketing: 'Marketing', ambassadors: 'Ambassadeurs',
+  customers: 'Clients', marketing: 'Marketing & ads', ambassadors: 'Ambassadeurs',
+  suppliers: 'Fournisseurs', health: 'Site Health', approvals: 'Approvals',
+  'copilot-audit': 'Audit Copilot',
   appearance: 'Apparence & thème', design: 'Design & contenu',
   sections: 'Sections page', payments: 'Paiements', settings: 'Paramètres', publish: 'Déploiement',
 };
@@ -217,7 +219,7 @@ function switchTab(tab) {
   const renders = {
     dashboard: updateDashboard, products: renderProducts, collections: renderCollections,
     orders: renderOrders, customers: renderCustomers, marketing: renderMarketing,
-    ambassadors: renderAmbassadors,
+    ambassadors: renderAmbassadors, suppliers: () => window.MENES_COPILOT?.populateAdProducts?.(),
     sites: renderSites, domains: renderDomains, design: loadDesignForm, appearance: loadAppearanceForm,
     sections: () => { renderSectionEditors(); renderGalleryEditor(); },
   };
@@ -3190,6 +3192,16 @@ document.getElementById('importFile')?.addEventListener('change', async (e) => {
 });
 
 // Init
+window.MENES_ADMIN = {
+  headers: () => headers(),
+  apiUrl,
+  siteId: () => activeSiteId,
+  store: () => storeData,
+  toast,
+  esc,
+  saveStore,
+};
+
 initAdminTheme();
 setupMobileNav();
 (async () => {

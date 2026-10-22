@@ -6,6 +6,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions.copilot]
+  timeout = 26
+
 [[redirects]]
   from = "http://*"
   to = "https://:splat"

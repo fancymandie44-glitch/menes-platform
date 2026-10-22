@@ -28,6 +28,7 @@ const STATIC_FILES = [
   'console.html',
   'console.js',
   'console.css',
+  'console-copilot.js',
 ];
 
 const REQUIRED_FILES = [
@@ -48,6 +49,10 @@ const REQUIRED_FILES = [
   'lib/order-pricing.js',
   'lib/admin-auth.js',
   'lib/public-catalog.js',
+  'lib/copilot-config.js',
+  'lib/copilot-tools.js',
+  'api/copilot.js',
+  'api/site-health.js',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib'];
