@@ -12,8 +12,8 @@
   --gray-50: #121212;
   --gray-100: #1a1a1a;
   --gray-200: #2a2a2a;
-  --gray-400: #8a8a8a;
-  --gray-600: #a8a8a8;
+  --gray-400: #c4bfb6;
+  --gray-600: #d5d0c6;
   --gold: #c9a84c;
   --gold-dark: #e0c078;
   --green: #3d9b6e;
@@ -163,7 +163,7 @@ body {
 }
 .hero-sub {
   font-family: var(--font-body);
-  color: rgba(244,242,238,0.68);
+  color: rgba(244,242,238,0.88);
   font-size: clamp(0.98rem, 1.6vw, 1.12rem);
   font-weight: 400;
   line-height: 1.65;
@@ -650,7 +650,7 @@ body {
   font-family: var(--font-display); font-size: clamp(1.9rem, 4vw, 2.4rem);
   letter-spacing: 0.01em; margin-bottom: 8px; font-weight: 600;
 }
-.contact-sub { color: rgba(244,242,238,0.55); margin-bottom: 28px; }
+.contact-sub { color: var(--muted, var(--gray-600)); margin-bottom: 28px; }
 .contact-links { display: flex; gap: 24px; flex-wrap: wrap; }
 .contact-links a { color: var(--gold); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
 .contact-links a:hover { color: var(--white); }

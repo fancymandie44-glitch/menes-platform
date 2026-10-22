@@ -47,5 +47,7 @@ assert.ok(src.includes('reviewsMoreBtn'), 'homepage see-more button is wired');
 assert.ok(src.includes('pdp-reviews-more'), 'product page can expand all reviews');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 assert.ok(html.includes('id="reviewsMoreBtn"'), 'see-more control is on the homepage');
+assert.ok(src.includes("muted: '#d5d0c6'"), 'dark theme uses readable cream muted text');
+assert.ok(src.includes('hexLum'), 'theme rejects black-on-black text');
 
 console.log('ok: cart photo + color-from-image selection');

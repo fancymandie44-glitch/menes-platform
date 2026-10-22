@@ -980,9 +980,18 @@ function loadGoogleFont(family) {
 }
 
 const THEME_MODES = {
-  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#555555', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
-  dark: { bg: '#050505', surface: '#0f0f0f', text: '#f4f2ee', muted: '#a8a8a8', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505' },
+  light: { bg: '#f4f2ee', surface: '#ffffff', text: '#0a0a0a', muted: '#4f4a44', border: '#e0e0e0', navbg: 'rgba(244,242,238,0.95)', btnBg: '#0a0a0a', btnText: '#fafafa' },
+  dark: { bg: '#050505', surface: '#141414', text: '#f4f2ee', muted: '#d5d0c6', border: '#2a2a2a', navbg: 'rgba(5,5,5,0.92)', btnBg: '', btnText: '#050505' },
 };
+
+function hexLum(hex) {
+  const h = String(hex || '').replace('#', '');
+  if (h.length < 6) return 0;
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
 
 const ASPECT_MAP = { '': '', square: '1 / 1', portrait45: '4 / 5', portrait34: '3 / 4', landscape: '16 / 9', wide: '3 / 2' };
 
@@ -997,15 +1006,22 @@ function applyTheme() {
   let pal;
   if (mode === 'custom') {
     pal = {
-      bg: th.bg || '#050505', surface: th.surface || '#0f0f0f', text: th.text || '#f4f2ee',
-      muted: th.muted || 'rgba(168,168,168,0.9)', border: th.border || '#2a2a2a',
-      navbg: th.surface || 'rgba(5,5,5,0.88)', btnBg: '', btnText: '#050505',
+      bg: th.bg || '#050505', surface: th.surface || '#141414', text: th.text || '#f4f2ee',
+      muted: th.muted || '#d5d0c6', border: th.border || '#2a2a2a',
+      navbg: th.surface || 'rgba(5,5,5,0.92)', btnBg: '', btnText: '#050505',
     };
   } else {
     pal = { ...(THEME_MODES[mode] || THEME_MODES.dark) };
   }
-  const btnBg = th.buttonBg || pal.btnBg || (mode === 'dark' ? accent : '#0a0a0a');
-  const btnText = th.buttonText || pal.btnText || (mode === 'dark' ? '#050505' : '#fafafa');
+  const darkUi = hexLum(pal.bg) < 0.45;
+  if (darkUi && hexLum(pal.text) < 0.45) pal.text = '#f4f2ee';
+  if (darkUi && hexLum(pal.muted || '#000') < 0.5) pal.muted = '#d5d0c6';
+  if (!darkUi && hexLum(pal.text) > 0.55) pal.text = '#121212';
+  const surface2 = darkUi ? '#1c1c1c' : '#efece6';
+  const surface3 = darkUi ? '#262626' : '#e4e0d8';
+  const gray400 = darkUi ? '#c4bfb6' : '#6f6a64';
+  const btnBg = th.buttonBg || pal.btnBg || (darkUi ? accent : '#0a0a0a');
+  const btnText = th.buttonText || pal.btnText || (darkUi ? '#050505' : '#fafafa');
 
   const headingFont = FONT_OPTIONS[th.headingFont]?.stack || "'Syne', sans-serif";
   const bodyFont = FONT_OPTIONS[th.bodyFont]?.stack || "'DM Sans', sans-serif";
@@ -1022,15 +1038,24 @@ function applyTheme() {
   const annColor = th.announceColor || accent;
 
   const css = `
-:root { --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px; --black: ${pal.bg}; --white: ${pal.text}; --hairline: ${pal.border}; }
+:root {
+  --gold: ${accent}; --gold-dark: ${accentDark}; --radius: ${radius}px;
+  --bg: ${pal.bg}; --text: ${pal.text}; --muted: ${pal.muted};
+  --black: ${darkUi ? '#050505' : pal.bg}; --white: ${darkUi ? '#f4f2ee' : pal.text};
+  --surface-0: ${pal.bg}; --surface-1: ${pal.surface}; --surface-2: ${surface2}; --surface-3: ${surface3};
+  --gray-400: ${gray400}; --gray-600: ${pal.muted}; --hairline: ${pal.border};
+}
 body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero h1, .section-head h2, .nav-brand span, .product-price, .bundle-copy h2, .cart-header h3, .modal-box h3, .contact-section h2, .pdp-body h2, .product-title-btn { font-family: ${headingFont}; }
+.hero h1 { color: #f4f2ee; }
+.hero-sub { color: rgba(244,242,238,0.88); }
 .nav { background: ${pal.navbg}; border-bottom-color: ${pal.border}; }
 .nav-brand span, .nav-links a { color: ${pal.text}; }
+.trust-bar, .contact-section, .footer, .guarantee-section { background: ${pal.surface}; color: ${pal.text}; }
 .product-card, .modal-box, .cart-panel, .pdp-panel, .why-card { background: ${pal.surface}; border-color: ${pal.border}; color: ${pal.text}; }
-.product-title-btn, .cart-item, .cart-total { color: ${pal.text}; }
-.product-body p, .section-sub, .contact-sub, .pdp-desc { color: ${pal.muted}; }
-.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${mode === 'dark' ? '#161616' : '#fff'}; color: ${pal.text}; border-color: ${pal.border}; }
+.product-title-btn, .cart-item, .cart-total, .cart-header h3, .modal-box label, .faq-q { color: ${pal.text}; }
+.product-body p, .section-sub, .contact-sub, .pdp-desc, .trust-item p, .why-card p, .faq-a, .review-card p { color: ${pal.muted}; }
+.product-card select, .modal-box input, .modal-box textarea, .modal-box select { background: ${surface2}; color: ${pal.text}; border-color: ${pal.border}; }
 .products-grid { grid-template-columns: repeat(auto-fill, minmax(${gridMin}px, 1fr)); }
 .product-img { height: ${aspect ? 'auto' : `${imgH}px`}; ${aspect ? `aspect-ratio: ${aspect};` : ''} }
 .product-img img { object-fit: ${imgFit}; }
@@ -1038,7 +1063,7 @@ body { background: ${pal.bg}; color: ${pal.text}; font-family: ${bodyFont}; }
 .hero-bg.has-image::after, .hero-bg.has-video::after { background: linear-gradient(180deg, rgba(5,5,5,${overlay * 0.6}) 0%, rgba(5,5,5,${Math.min(0.95, overlay + 0.25)}) 100%); }
 .announce { background: ${annBg}; color: ${annColor}; }
 .product-card button.add-btn, .btn-checkout, .cart-btn, .sticky-atc-btn { background: ${btnBg}; color: ${btnText}; border-radius: ${btnRadius}px; }
-.hero-cta { border-radius: ${btnRadius}px; }
+.hero-cta { border-radius: ${btnRadius}px; color: #050505; }
 .filter { border-radius: ${btnRadius}px; }
 `;
   let styleEl = document.getElementById('menes-theme');
