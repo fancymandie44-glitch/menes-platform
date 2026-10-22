@@ -45,7 +45,10 @@ function run() {
     'lib/platform.js',
     'lib/passport.js',
     'lib/copilot-config.js',
+    'lib/seo.js',
     'api/copilot.js',
+    'api/seo-page.js',
+    'api/sitemap.js',
     'api/site-health.js',
     'console-copilot.js',
     'data/store.json',
@@ -62,6 +65,8 @@ function run() {
 
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
+  assert(html.includes('https://www.mymenes.com/'), 'homepage canonical must be www.mymenes.com');
+  assert(!html.includes('boutiquemenes.netlify.app'), 'dist homepage must not canonicalize to Netlify');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));

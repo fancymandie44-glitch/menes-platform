@@ -13,6 +13,7 @@ const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
 const LANG_KEY = 'menes_lang_v2';
 const API = '/api/store';
+const SITE_ORIGIN = 'https://www.mymenes.com';
 
 function getAmbassadorAttribution() {
   try {
@@ -1099,10 +1100,10 @@ function setVisitorLang(lang, opts = {}) {
     applySectionOrder();
     renderFilters();
     renderProducts();
-    applySeo();
+    applySeo(activePdpId ? storeData?.products?.find((p) => p.id === activePdpId) : null);
     updateCartUI();
     populateProvinces();
-    if (activePdpId) openPdp(activePdpId);
+    if (activePdpId) openPdp(activePdpId, null, { skipHistory: true });
   }
 }
 
@@ -1156,22 +1157,161 @@ function syncCountryLabels() {
   });
 }
 
-function applySeo() {
-  const s = storeData.site || {};
+function productSlug(product) {
+  const raw = product?.slug || product?.id || product?.name || '';
+  return String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'produit';
+}
+
+function productPath(product) {
+  return `/produit/${productSlug(product)}`;
+}
+
+function productSlugFromPath(pathname) {
+  const parts = String(pathname || '').replace(/\/+$/, '').split('/').filter(Boolean);
+  if (parts[0] === 'produit' && parts[1]) return productSlug({ id: decodeURIComponent(parts[1]) });
+  return '';
+}
+
+function findProductBySlug(products, slug) {
+  const want = productSlug({ id: slug });
+  if (!want) return null;
+  const list = Array.isArray(products) ? products : [];
+  return list.find((p) => productSlug(p) === want)
+    || list.find((p) => productSlug({ id: p.id }) === want)
+    || list.find((p) => productSlug({ id: p.name }) === want)
+    || null;
+}
+
+function absoluteAssetUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw || raw.startsWith('data:')) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('//')) return `https:${raw}`;
+  return `${SITE_ORIGIN}${raw.startsWith('/') ? raw : `/${raw}`}`;
+}
+
+function upsertMeta(selector, attrs) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement('meta');
+    Object.entries(attrs).forEach(([k, v]) => {
+      if (k !== 'content') el.setAttribute(k, v);
+    });
+    document.head.appendChild(el);
+  }
+  if (attrs.content != null) el.setAttribute('content', attrs.content);
+  return el;
+}
+
+function setCanonical(url) {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = url;
+}
+
+function setJsonLd(data) {
+  let el = document.getElementById('menes-jsonld');
+  if (!el) {
+    el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.id = 'menes-jsonld';
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+}
+
+function productJsonLd(product) {
+  const images = productImages(product).map((im) => absoluteAssetUrl(im.url)).filter(Boolean);
+  const reviews = reviewsForProduct(product.id);
+  const stats = reviewStats(reviews);
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: String(product.description || `${product.name} — MENES luxury streetwear.`).slice(0, 320),
+    sku: String(product.id || productSlug(product)),
+    brand: { '@type': 'Brand', name: storeData?.site?.name || 'MENES' },
+    url: `${SITE_ORIGIN}${productPath(product)}`,
+    image: images,
+    offers: {
+      '@type': 'Offer',
+      url: `${SITE_ORIGIN}${productPath(product)}`,
+      priceCurrency: storeData?.site?.currency || 'CAD',
+      price: Number(product.price).toFixed(2),
+      availability: product.preorder ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: storeData?.site?.name || 'MENES' },
+    },
+  };
+  if (stats.count > 0) {
+    data.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: String(stats.avg),
+      reviewCount: String(stats.count),
+      bestRating: '5',
+      worstRating: '1',
+    };
+    data.review = reviews.slice(0, 20).map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: String(r.authorName || 'Client MENES').slice(0, 80) },
+      datePublished: r.createdAt || undefined,
+      name: r.title || undefined,
+      reviewBody: String(r.body || r.title || '').slice(0, 1200),
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: String(Math.max(1, Math.min(5, Number(r.rating) || 5))),
+        bestRating: '5',
+        worstRating: '1',
+      },
+    }));
+  }
+  return data;
+}
+
+function applySeo(product) {
+  const s = storeData?.site || {};
   const seo = s.seo || {};
   const name = s.name || 'MENES';
   const enSeo = seo.en || {};
-  if (currentLang === 'en') {
-    document.title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
+  let title;
+  let description;
+  let url = `${SITE_ORIGIN}/`;
+  let image = absoluteAssetUrl(s.logo || s.heroImage || s.favicon || '/images/products/socks/black.jpg');
+  let type = 'website';
+  if (product) {
+    title = `${product.name} | ${name}`;
+    description = String(product.description || `${product.name} — ${name} luxury streetwear.`).slice(0, 320);
+    url = `${SITE_ORIGIN}${productPath(product)}`;
+    const first = productImages(product)[0]?.url;
+    if (first) image = absoluteAssetUrl(first) || image;
+    type = 'product';
+  } else if (currentLang === 'en') {
+    title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
+    description = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
   } else {
-    document.title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    if (seo.description) meta.content = seo.description;
+    title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
+    description = seo.description || 'MENES. Streetwear luxe. Vêtements premium, paiement sécurisé, livraison au Québec et au Canada.';
   }
+  document.title = title;
+  upsertMeta('meta[name="description"]', { name: 'description', content: description });
+  upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
+  upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
+  upsertMeta('meta[property="og:url"]', { property: 'og:url', content: url });
+  upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
+  upsertMeta('meta[property="og:image"]', { property: 'og:image', content: image });
+  upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: title });
+  upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
+  setCanonical(url);
+  setJsonLd(product
+    ? productJsonLd(product)
+    : [
+      { '@context': 'https://schema.org', '@type': 'Organization', name, url: SITE_ORIGIN, logo: image || undefined },
+      { '@context': 'https://schema.org', '@type': 'WebSite', name, url: SITE_ORIGIN },
+    ]);
   if (s.favicon) {
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
@@ -1233,7 +1373,7 @@ async function refreshStore(opts = {}) {
   applySectionOrder();
   renderFilters();
   renderProducts();
-  applySeo();
+  applySeo(activePdpId ? next.products?.find((p) => p.id === activePdpId) : null);
   setupReveal();
   syncPromoField();
   setupDiscoveryControls();
@@ -1676,14 +1816,36 @@ function setupReviewsUI() {
 
   const params = new URLSearchParams(location.search);
   if (params.get('review') === '1') {
-    const pid = params.get('product') || '';
+    const pid = params.get('product') || productSlugFromPath(location.pathname) || '';
     reviewPrefillProductId = pid;
     setTimeout(() => openReviewModal(pid), 500);
     const clean = new URL(location.href);
     clean.searchParams.delete('review');
+    const match = findProductBySlug(storeData?.products || [], pid) || (storeData?.products || []).find((p) => p.id === pid);
+    if (match) clean.pathname = productPath(match);
     clean.searchParams.delete('product');
     history.replaceState({}, '', clean.pathname + (clean.search || '') + clean.hash);
   }
+}
+
+function openProductFromLocation() {
+  const params = new URLSearchParams(location.search);
+  const key = productSlugFromPath(location.pathname) || params.get('product') || '';
+  if (!key) {
+    applySeo();
+    return;
+  }
+  const product = findProductBySlug(storeData?.products || [], key)
+    || (storeData?.products || []).find((p) => p.id === key);
+  if (!product) {
+    applySeo();
+    return;
+  }
+  const clean = new URL(location.href);
+  clean.pathname = productPath(product);
+  clean.searchParams.delete('product');
+  history.replaceState({ pdp: product.id }, '', clean.pathname + (clean.search || '') + clean.hash);
+  openPdp(product.id, null, { skipHistory: true });
 }
 
 function renderFilters() {
@@ -2455,7 +2617,7 @@ function wireProductCard(card) {
   });
 }
 
-function openPdp(id, fromRoot) {
+function openPdp(id, fromRoot, opts = {}) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
@@ -2552,9 +2714,21 @@ function openPdp(id, fromRoot) {
   document.getElementById('pdpPanel').setAttribute('aria-hidden', 'false');
   showStickyAtc(product, main);
   syncScrollLock();
+  applySeo(product);
+  if (!opts.skipHistory) {
+    const next = productPath(product);
+    if (location.pathname !== next) {
+      history.pushState({ pdp: product.id }, '', next);
+      pdpHistoryPushed = true;
+    } else {
+      history.replaceState({ pdp: product.id }, '', next + location.search + location.hash);
+    }
+  }
 }
 
-function closePdp() {
+let pdpHistoryPushed = false;
+
+function closePdp(opts = {}) {
   document.getElementById('pdpPanel')?.classList.add('hidden');
   document.getElementById('pdpOverlay')?.classList.add('hidden');
   document.getElementById('pdpPanel')?.setAttribute('aria-hidden', 'true');
@@ -2571,6 +2745,16 @@ function closePdp() {
   }
   activePdpId = null;
   syncScrollLock();
+  applySeo();
+  if (opts.skipHistory) return;
+  if (location.pathname.startsWith('/produit/')) {
+    if (pdpHistoryPushed && history.state?.pdp) {
+      pdpHistoryPushed = false;
+      history.back();
+      return;
+    }
+    history.replaceState({}, '', '/');
+  }
 }
 
 function showStickyAtc(product, img) {
@@ -3576,7 +3760,29 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  document.querySelector('.nav-brand')?.addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    closePdp({ skipHistory: true });
+    history.pushState({}, '', '/');
+    applySeo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  openProductFromLocation();
 }
+
+window.addEventListener('popstate', () => {
+  pdpHistoryPushed = false;
+  const slug = productSlugFromPath(location.pathname);
+  if (slug) {
+    const product = findProductBySlug(storeData?.products || [], slug);
+    if (product) openPdp(product.id, null, { skipHistory: true });
+    else applySeo();
+    return;
+  }
+  if (activePdpId) closePdp({ skipHistory: true });
+  else applySeo();
+});
 
 window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY && e.newValue) { storeData = JSON.parse(e.newValue); renderSite(); renderFilters(); renderProducts(); }

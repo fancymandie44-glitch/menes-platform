@@ -9,11 +9,24 @@
 [functions.copilot]
   timeout = 26
 
+[functions.seo-page]
+  included_files = ["index.html"]
+
 [[redirects]]
   from = "http://*"
   to = "https://:splat"
   status = 301
   force = true
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/sitemap"
+  status = 200
+
+[[redirects]]
+  from = "/produit/*"
+  to = "/.netlify/functions/seo-page"
+  status = 200
 
 [[redirects]]
   from = "/"

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /$
 Allow: /index.html
+Allow: /produit/
 Disallow: /console
 Disallow: /console.html
 Disallow: /admin
@@ -30,4 +31,4 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-Sitemap: https://boutiquemenes.netlify.app/sitemap.xml
+Sitemap: https://www.mymenes.com/sitemap.xml
