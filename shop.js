@@ -184,6 +184,7 @@ const I18N = {
     lookbook_title: 'Toutes les couleurs sur la table.',
     lookbook_text: 'Voici un drop MENES avant la rue : chaque paire, chaque revers, alignés à Montréal. Choisis ta couleur. Porte-la fort.',
     lookbook_cta: 'Voir les Summer Socks',
+    lookbook_worn: 'Porté dans la rue',
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
@@ -311,6 +312,7 @@ const I18N = {
     lookbook_title: 'Every color on the table.',
     lookbook_text: 'This is how a MENES drop looks before it hits the street: every cuff, every pair, laid out in Montreal. Pick a color. Wear it loud.',
     lookbook_cta: 'Shop Summer Socks',
+    lookbook_worn: 'Worn in the street',
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
@@ -2258,6 +2260,21 @@ function productImages(p) {
   return [];
 }
 
+function isLifestyleImage(im) {
+  const url = String(im?.url || '');
+  return /\/images\/lookbook\//.test(url) || Boolean(im?.look);
+}
+
+function productPackImages(p) {
+  const all = productImages(p);
+  const pack = all.filter((im) => !isLifestyleImage(im));
+  return pack.length ? pack : all;
+}
+
+function productLookImages(p) {
+  return productImages(p).filter(isLifestyleImage);
+}
+
 function imageKey(im) {
   const label = String(im?.label || '').trim();
   if (label) return label.toLowerCase();
@@ -2273,7 +2290,7 @@ function compactProductImage(url) {
 }
 
 function imageForVariant(product, variantMap) {
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   if (!imgs.length) return '';
   const vals = Object.values(variantMap || {}).map((v) => String(v || '').trim().toLowerCase()).filter(Boolean);
   if (vals.length) {
@@ -2519,7 +2536,7 @@ function renderProducts() {
       ? `<p class="product-stock-left">${esc(tFill('stock_left', { n: remaining }))}</p>`
       : '';
     const wishlisted = isWishlisted(p.id);
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const main = imgs[0]?.url || '';
     const opts = productOptions(p);
     const pStats = reviewStats(reviewsForProduct(p.id));
@@ -2646,7 +2663,8 @@ function openPdp(id, fromRoot, navOpts = {}) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
+  const looks = productLookImages(product);
   const preset = fromRoot ? readSelectedVariant(fromRoot) : {};
   const main = imageForVariant(product, preset) || imgs[0]?.url || '';
   const opts = productOptions(product);
@@ -2696,6 +2714,33 @@ function openPdp(id, fromRoot, navOpts = {}) {
     </button>`).join('')
     + (product.videoUrl ? `<button type="button" class="active" data-video="${esc(product.videoUrl)}">Video</button>` : '');
   const pdpPanel = document.getElementById('pdpPanel');
+  const looksEl = document.getElementById('pdpLooks');
+  if (looksEl) {
+    if (!looks.length) {
+      looksEl.innerHTML = '';
+      looksEl.classList.add('hidden');
+    } else {
+      looksEl.classList.remove('hidden');
+      looksEl.innerHTML = `
+        <p class="pdp-looks-label">${esc(t('lookbook_worn'))}</p>
+        <div class="pdp-looks-grid">
+          ${looks.map((im) => `
+            <button type="button" data-url="${esc(im.url)}" data-label="${esc(im.label || '')}">
+              <img src="${esc(im.url)}" alt="${esc(im.label || product.name)}" loading="lazy">
+            </button>`).join('')}
+        </div>`;
+      looksEl.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
+          looksEl.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+          const color = (btn.dataset.label || '').toLowerCase();
+          document.getElementById('pdpThumbs')?.querySelectorAll('button').forEach((b) => {
+            b.classList.toggle('active', (b.dataset.label || '').toLowerCase() === color);
+          });
+        });
+      });
+    }
+  }
   document.getElementById('pdpThumbs').querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.dataset.video && videoEl) {
@@ -2706,6 +2751,7 @@ function openPdp(id, fromRoot, navOpts = {}) {
         return;
       }
       selectVariantFromImage(pdpPanel, product, { url: btn.dataset.url, label: btn.dataset.label });
+      looksEl?.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
     });
   });
   document.getElementById('pdpOptions').innerHTML = opts.map((o, oi) => `
@@ -2760,6 +2806,8 @@ function closePdp(opts = {}) {
   document.getElementById('stickyAtc')?.classList.add('hidden');
   document.getElementById('pdpRecs')?.classList.add('hidden');
   document.getElementById('pdpRecsList')?.replaceChildren();
+  const looksEl = document.getElementById('pdpLooks');
+  if (looksEl) { looksEl.innerHTML = ''; looksEl.classList.add('hidden'); }
   const pdpReviews = document.getElementById('pdpReviews');
   if (pdpReviews) pdpReviews.innerHTML = '';
   const videoEl = document.getElementById('pdpVideo');
