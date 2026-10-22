@@ -59,7 +59,12 @@ exports.handler = async (event) => {
       return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
     }
 
-    const body = JSON.parse(event.body || '{}');
+    let body;
+    try {
+      body = JSON.parse(event.body || '{}');
+    } catch {
+      return json(headers, { ok: false, error: 'Invalid JSON body' }, 200);
+    }
     if (body.storeId) {
       const requested = sanitizeStoreId(body.storeId);
       if (knownSiteIds(platform).has(requested)) storeId = requested;
@@ -75,7 +80,7 @@ exports.handler = async (event) => {
         userText: String(body.message || '').slice(0, 4000),
         actor: 'admin',
       });
-      return json(headers, result, result.ok ? 200 : 503);
+      return json(headers, result, 200);
     }
 
     if (action === 'save-ad') {
@@ -132,7 +137,8 @@ exports.handler = async (event) => {
 
     return json(headers, { error: 'Unknown action' }, 400);
   } catch (err) {
-    return json(headers, { error: err.message || 'Copilot error' }, err.status || 500);
+    const message = String(err && err.message ? err.message : err || 'Copilot error');
+    return json(headers, { ok: false, error: message }, 200);
   }
 };
 

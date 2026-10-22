@@ -70,10 +70,13 @@ const copilotApi = fs.readFileSync(path.join(__dirname, '../api/copilot.js'), 'u
 assert.ok(copilotApi.includes('checkAdminAuth'), 'copilot API is admin-only');
 assert.ok(copilotApi.includes('allowRequest'), 'copilot API is rate-limited');
 assert.ok(!copilotApi.includes('sk-ant-'));
+assert.ok(copilotApi.includes('{ ok: false, error: message }, 200'), 'chat errors stay JSON 200');
 
 const ui = fs.readFileSync(path.join(__dirname, '../console-copilot.js'), 'utf8');
 assert.ok(!ui.includes('ANTHROPIC_API_KEY'), 'key must stay server-side');
 assert.ok(ui.includes('autofill-ad'));
+assert.ok(ui.includes('Copilot HTTP'), 'UI shows HTTP status instead of a blank Copilot error');
+assert.ok(ui.includes("data.ok === false"));
 
 const html = fs.readFileSync(path.join(__dirname, '../console.html'), 'utf8');
 assert.ok(html.includes('Autofill with AI'));

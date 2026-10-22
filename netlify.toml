@@ -5,6 +5,10 @@
 
 [functions]
   node_bundler = "esbuild"
+  timeout = 26
+
+[functions.copilot]
+  timeout = 26
 
 [[redirects]]
   from = "http://*"

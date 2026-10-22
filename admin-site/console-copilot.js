@@ -31,13 +31,30 @@
   }
 
   async function copilot(body) {
-    const res = await fetch(apiUrl('/api/copilot'), {
-      method: 'POST',
-      headers: headers(),
-      body: JSON.stringify({ storeId: siteId(), page: page(), ...body }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Copilot error');
+    let res;
+    try {
+      res = await fetch(apiUrl('/api/copilot'), {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ storeId: siteId(), page: page(), ...body }),
+        signal: AbortSignal.timeout(28_000),
+      });
+    } catch (err) {
+      if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+        throw new Error('Copilot timed out. Try a shorter question.');
+      }
+      throw new Error(err.message || 'Network error talking to Copilot');
+    }
+    const raw = await res.text();
+    let data = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      throw new Error(`Copilot HTTP ${res.status}: ${(raw || 'empty response').slice(0, 140)}`);
+    }
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || data.reply || `Copilot HTTP ${res.status}`);
+    }
     return data;
   }
 
