@@ -48,6 +48,10 @@ function run() {
     'lib/platform.js',
     'lib/passport.js',
     'data/store.json',
+    'images/products/socks/black.jpg',
+    'images/products/socks/green.jpg',
+    'images/products/socks/kltr-orange.jpg',
+    'images/lookbook/drop-table.jpg',
   ];
 
   for (const rel of required) {
