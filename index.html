@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.">
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20260908p">
+  <link rel="stylesheet" href="shop.css?v=20261026c">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -187,7 +187,7 @@
       <div class="footer-trust">
         <span data-i18n="foot_ssl">SSL Secured</span>
         <span data-i18n="foot_pay">Encrypted payment</span>
-        <span data-i18n="foot_pci">Secure checkout via Square / PayPal</span>
+        <span data-i18n="foot_pci">Secure checkout via Stripe</span>
       </div>
       <nav class="footer-legal">
         <a href="livraison.html" data-i18n="foot_shipping">Shipping</a>
@@ -275,16 +275,19 @@
 
   <div id="checkoutModal" class="modal hidden">
     <div class="modal-box modal-checkout">
-      <h3 data-i18n="checkout_title">Checkout</h3>
+      <div class="checkout-head">
+        <h3 data-i18n="checkout_title">Checkout</h3>
+        <button type="button" id="closeCheckout" class="modal-x" aria-label="Close">&times;</button>
+      </div>
       <p class="checkout-secure" data-i18n="checkout_secure">SSL encrypted connection · Data protected</p>
       <form id="checkoutForm">
-        <label><span data-i18n="f_name">Full name</span><input type="text" name="name" required autocomplete="name"></label>
+        <label><span data-i18n="f_name">Full name</span><input type="text" name="name" required autocomplete="name" enterkeyhint="next"></label>
         <div class="checkout-row-2">
-          <label><span data-i18n="f_email">Email</span><input type="email" name="email" required autocomplete="email"></label>
-          <label><span data-i18n="f_phone">Phone</span><input type="tel" name="phone" required autocomplete="tel"></label>
+          <label><span data-i18n="f_email">Email</span><input type="email" name="email" required autocomplete="email" inputmode="email" enterkeyhint="next"></label>
+          <label><span data-i18n="f_phone">Phone</span><input type="tel" name="phone" required autocomplete="tel" inputmode="tel" enterkeyhint="next"></label>
         </div>
         <label><span data-i18n="f_country">Country</span>
-          <select name="country" id="checkoutCountry">
+          <select name="country" id="checkoutCountry" autocomplete="country">
             <option value="CA" selected>Canada</option>
             <option value="US">United States</option>
             <option value="FR">France</option>
@@ -294,19 +297,19 @@
           </select>
         </label>
         <label class="addr-field"><span data-i18n="f_address">Address</span>
-          <input type="text" name="address" id="checkoutAddress" required autocomplete="off" placeholder="Start typing your address..." data-i18n-placeholder="addr_ph">
-          <div id="addrSuggestions" class="addr-suggestions hidden"></div>
+          <input type="text" name="address" id="checkoutAddress" required autocomplete="street-address" placeholder="Start typing your address..." data-i18n-placeholder="addr_ph" enterkeyhint="next">
+          <div id="addrSuggestions" class="addr-suggestions hidden" role="listbox"></div>
         </label>
         <div class="checkout-row-3">
-          <label><span data-i18n="f_city">City</span><input type="text" name="city" id="checkoutCity" required></label>
-          <label><span data-i18n="f_province">Province</span><select name="province" id="checkoutProvince"></select></label>
-          <label><span data-i18n="f_postal">Postal code</span><input type="text" name="postal" id="checkoutPostal" required></label>
+          <label><span data-i18n="f_city">City</span><input type="text" name="city" id="checkoutCity" required autocomplete="address-level2"></label>
+          <label><span data-i18n="f_province">Province</span><select name="province" id="checkoutProvince" autocomplete="address-level1"></select></label>
+          <label><span data-i18n="f_postal">Postal code</span><input type="text" name="postal" id="checkoutPostal" required autocomplete="postal-code" autocapitalize="characters" maxlength="10" enterkeyhint="next"></label>
         </div>
 
         <div class="promo-row">
           <label class="promo-label"><span data-i18n="promo_label">Promo code</span>
             <div class="promo-input-row">
-              <input type="text" id="promoCodeInput" name="promo" autocomplete="off" placeholder="Ambassador code" maxlength="32" data-i18n-placeholder="promo_ph">
+              <input type="text" id="promoCodeInput" name="promo" autocomplete="off" placeholder="Ambassador code" maxlength="32" data-i18n-placeholder="promo_ph" autocapitalize="characters" enterkeyhint="done">
               <button type="button" id="applyPromoBtn" class="btn-outline-sm" data-i18n="promo_apply">Apply</button>
             </div>
           </label>
@@ -315,23 +318,25 @@
 
         <div class="checkout-summary" id="checkoutSummary"></div>
 
-        <p class="pay-label" data-i18n="pay_label">Payment method:</p>
-        <div class="pay-methods pay-methods-main">
-          <button type="button" class="pay-btn active" data-method="square">
-            <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Visa · MC · Amex</small>
-          </button>
-          <button type="button" class="pay-btn" data-method="crypto">
-            <span class="pay-icon" aria-hidden="true">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
-          </button>
+        <div class="checkout-pay-dock">
+          <p class="pay-label" data-i18n="pay_label">Payment method:</p>
+          <div class="pay-methods pay-methods-main">
+            <button type="button" class="pay-btn active" data-method="stripe">
+              <span class="pay-icon" aria-hidden="true">◇</span><span data-i18n="pay_card">Card</span><small>Visa · MC · Amex</small>
+            </button>
+            <button type="button" class="pay-btn" data-method="crypto">
+              <span class="pay-icon" aria-hidden="true">₿</span><span data-i18n="pay_crypto">Crypto</span><small>BTC · ETH · USDT</small>
+            </button>
+          </div>
+          <input type="hidden" name="method" id="payMethod" value="stripe">
+          <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Pay by card</button>
+          <p class="alt-pay">
+            <span data-i18n="alt_pay">Need Klarna or PayPal?</span>
+            <button type="button" id="altPayBtn" class="link-btn" data-i18n="alt_pay_btn">Continue with Klarna / PayPal →</button>
+          </p>
+          <button type="button" id="cancelCheckout" data-i18n="cancel">Cancel</button>
+          <p class="checkout-note" id="checkoutNote"></p>
         </div>
-        <input type="hidden" name="method" id="payMethod" value="square">
-        <button type="submit" class="btn-checkout" id="paySubmitBtn" data-i18n="pay_submit">Pay by card</button>
-        <p class="alt-pay">
-          <span data-i18n="alt_pay">Need Klarna or PayPal?</span>
-          <button type="button" id="altPayBtn" class="link-btn" data-i18n="alt_pay_btn">Continue with Klarna / PayPal →</button>
-        </p>
-        <button type="button" id="cancelCheckout" data-i18n="cancel">Cancel</button>
-        <p class="checkout-note" id="checkoutNote"></p>
       </form>
     </div>
   </div>
@@ -480,6 +485,6 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20260908p"></script>
+  <script src="shop.js?v=20261026c"></script>
 </body>
 </html>

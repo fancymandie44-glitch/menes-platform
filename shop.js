@@ -130,7 +130,7 @@ const I18N = {
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
-    foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
+    foot_pci: 'Paiement sécurisé via Stripe', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
     cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
@@ -251,7 +251,7 @@ const I18N = {
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
-    foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
+    foot_pci: 'Secure payment via Stripe', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
     cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
@@ -695,6 +695,17 @@ function syncScrollLock() {
   if (isOverlayOpen()) lockPageScroll();
   else unlockPageScroll();
 }
+
+function setupOverlayGestures() {
+  const blockPinch = (e) => {
+    if (e.touches && e.touches.length > 1 && isOverlayOpen()) e.preventDefault();
+  };
+  document.addEventListener('touchmove', blockPinch, { passive: false });
+  document.addEventListener('gesturestart', (e) => {
+    if (isOverlayOpen()) e.preventDefault();
+  });
+}
+setupOverlayGestures();
 
 function setupVipOverlay() {
   if (!shouldShowVipOverlay()) return;
@@ -2492,6 +2503,7 @@ window.addToCart = (id, card) => {
       variantStr,
       size: variantStr,
       qty: 1,
+      image: product.image || product.images?.[0]?.url || '',
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2621,7 +2633,9 @@ function updateCartUI(opts = {}) {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const img = c.image || '';
       return `<div class="cart-item" data-cart-i="${i}">
+        ${img ? `<img class="cart-item-thumb" src="${esc(img)}" alt="" width="64" height="80">` : ''}
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -2683,7 +2697,7 @@ function getCheckoutCustomer(form) {
   const province = form.get('province') || '';
   const address = form.get('address') || '';
   const city = form.get('city') || '';
-  const postal = form.get('postal') || '';
+  const postal = formatShopPostal(form.get('postal') || '', country);
   const parts = [address, city, `${province} ${postal}`.trim(), country].filter(Boolean);
   const customer = {
     name: form.get('name'),
@@ -2824,7 +2838,7 @@ function saveCheckoutDraft(customer) {
   }));
 }
 
-/* ---------- Address autocomplete (OpenStreetMap / Photon, gratuit) ---------- */
+/* ---------- Address autocomplete (ArcGIS / BAN via /api/address) ---------- */
 const PHOTON_STATE_TO_CODE = {
   quebec: 'QC', québec: 'QC', ontario: 'ON', 'british columbia': 'BC', 'colombie-britannique': 'BC',
   alberta: 'AB', manitoba: 'MB', saskatchewan: 'SK', 'new brunswick': 'NB', 'nouveau-brunswick': 'NB',
@@ -2832,35 +2846,79 @@ const PHOTON_STATE_TO_CODE = {
   'northwest territories': 'NT', yukon: 'YT', nunavut: 'NU',
 };
 
+function formatShopPostal(raw, country) {
+  const cc = String(country || document.getElementById('checkoutCountry')?.value || 'CA').toUpperCase();
+  if (cc === 'CA') {
+    const compact = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/.test(compact)) {
+      return `${compact.slice(0, 3)} ${compact.slice(3)}`;
+    }
+    return String(raw || '').trim().toUpperCase();
+  }
+  return String(raw || '').trim();
+}
+
 let addrTimer = null;
+let addrSuggestions = [];
 function setupAddressAutocomplete() {
   const input = document.getElementById('checkoutAddress');
   const box = document.getElementById('addrSuggestions');
   if (!input || !box) return;
 
+  const renderSugs = (list) => {
+    addrSuggestions = list;
+    if (!list.length) { box.classList.add('hidden'); return; }
+    box.innerHTML = list.map((s, i) => {
+      const sub = [s.city, s.province, s.postal, s.country].filter(Boolean).join(', ');
+      return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(s.line)}</strong><small>${esc(sub)}</small></button>`;
+    }).join('');
+    box.classList.remove('hidden');
+    box.querySelectorAll('.addr-sug').forEach((btn) => btn.addEventListener('click', () => {
+      fillAddress(list[+btn.dataset.i]);
+      box.classList.add('hidden');
+    }));
+  };
+
   input.addEventListener('input', () => {
     const q = input.value.trim();
     clearTimeout(addrTimer);
-    if (q.length < 4) { box.classList.add('hidden'); return; }
+    if (q.length < 3) { box.classList.add('hidden'); return; }
     addrTimer = setTimeout(async () => {
+      const country = document.getElementById('checkoutCountry')?.value || 'CA';
+      try {
+        const res = await fetch(shopApi(`/api/address?q=${encodeURIComponent(q)}&country=${encodeURIComponent(country)}`), {
+          headers: shopHeaders(),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (Array.isArray(data.suggestions) && data.suggestions.length) {
+          renderSugs(data.suggestions);
+          return;
+        }
+      } catch { /* Photon fallback */ }
       try {
         const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`);
         const data = await res.json();
         const feats = (data.features || []).filter((f) => f.properties?.name || f.properties?.street);
-        if (!feats.length) { box.classList.add('hidden'); return; }
-        box.innerHTML = feats.map((f, i) => {
-          const p = f.properties;
-          const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
-          const sub = [p.city, p.state, p.country].filter(Boolean).join(', ');
-          return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(line || p.name)}</strong><small>${esc(sub)}</small></button>`;
-        }).join('');
-        box.classList.remove('hidden');
-        box.querySelectorAll('.addr-sug').forEach((btn) => btn.addEventListener('click', () => {
-          fillAddress(feats[+btn.dataset.i].properties);
-          box.classList.add('hidden');
+        renderSugs(feats.map((f) => {
+          const p = f.properties || {};
+          return {
+            line: [p.housenumber, p.street || p.name].filter(Boolean).join(' ') || p.name,
+            city: p.city || p.town || p.village || '',
+            province: PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()] || '',
+            postal: p.postcode || '',
+            country: (p.countrycode || '').toUpperCase(),
+          };
         }));
       } catch { box.classList.add('hidden'); }
-    }, 350);
+    }, 280);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && addrSuggestions.length && !box.classList.contains('hidden')) {
+      e.preventDefault();
+      fillAddress(addrSuggestions[0]);
+      box.classList.add('hidden');
+    }
   });
 
   document.addEventListener('click', (e) => {
@@ -2869,18 +2927,21 @@ function setupAddressAutocomplete() {
 }
 
 function fillAddress(p) {
-  const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
+  if (!p) return;
+  const line = p.line || [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
   document.getElementById('checkoutAddress').value = line || p.name || '';
   document.getElementById('checkoutCity').value = p.city || p.town || p.village || '';
-  const cc = (p.countrycode || '').toUpperCase();
+  const cc = String(p.country || p.countrycode || '').toUpperCase();
   const countrySel = document.getElementById('checkoutCountry');
   if (cc && [...countrySel.options].some((o) => o.value === cc)) countrySel.value = cc;
-  else if (cc) countrySel.value = 'OTHER';
+  else if (cc && cc !== 'CA') countrySel.value = 'OTHER';
   populateProvinces();
   const provSel = document.getElementById('checkoutProvince');
-  const code = PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()];
+  const code = p.province || PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()];
   if (code && [...provSel.options].some((o) => o.value === code)) provSel.value = code;
-  if (p.postcode) document.getElementById('checkoutPostal').value = p.postcode;
+  const postalEl = document.getElementById('checkoutPostal');
+  const postal = formatShopPostal(p.postal || p.postcode || '', countrySel.value);
+  if (postal) postalEl.value = postal;
   renderCheckoutSummary();
 }
 
@@ -2993,9 +3054,22 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
-    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
+    const method = btn.dataset.method;
+    const labels = {
+      stripe: t('pay_submit'),
+      card: t('pay_submit'),
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
+    document.getElementById('paySubmitBtn').textContent = labels[method] || t('pay_submit');
   });
+});
+
+document.getElementById('closeCheckout')?.addEventListener('click', () => {
+  document.getElementById('checkoutModal').classList.add('hidden');
+  syncScrollLock();
+});
+document.getElementById('checkoutPostal')?.addEventListener('blur', (e) => {
+  e.target.value = formatShopPostal(e.target.value);
 });
 
 document.getElementById('altPayBtn').addEventListener('click', () => {
@@ -3015,7 +3089,9 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const typedPromo = String(form.get('promo') || document.getElementById('promoCodeInput')?.value || '').trim();
+  if (typedPromo) applyPromoCode(typedPromo, { silent: true });
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3109,7 +3185,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'

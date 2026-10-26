@@ -48,7 +48,8 @@ function buildOrder(draft) {
     discount,
     tax: draft.tax || { amount: 0, label: '' },
     total: draft.total,
-    promoCode: discount.code || '',
+    promoCode: discount.code || draft.promoCode || '',
+    discountCode: discount.code || draft.promoCode || '',
     status: 'pending',
     date: new Date().toISOString(),
   };
