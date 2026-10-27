@@ -38,13 +38,20 @@ function run() {
     'api/media.js',
     'api/health.js',
     'api/pay.js',
+    'api/address.js',
     'api/confirm-order.js',
+    'lib/address.js',
+    'lib/payments.js',
     'lib/public-catalog.js',
     'lib/order-pricing.js',
     'lib/cors.js',
     'lib/platform.js',
     'lib/passport.js',
     'data/store.json',
+    'images/products/socks/black.jpg',
+    'images/products/socks/green.jpg',
+    'images/products/socks/kltr-orange.jpg',
+    'images/lookbook/drop-table.jpg',
   ];
 
   for (const rel of required) {
@@ -56,6 +63,14 @@ function run() {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
+  assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
+  assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
+  assert(html.includes('id="lookbookStory"'), 'story copy mount must exist');
+  assert(!html.includes('lookbook-strip'), 'street strip must not duplicate gallery photos');
+  assert(html.includes('data-i18n="nav_story"'), 'nav must include Story / L\'histoire');
+  const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
+  assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
+  assert(shopJs.includes('function productPackImages'), 'grid must prefer pack shots over lookbook dupes');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
   assert(ALLOWED_ORIGINS.includes('https://mymenes.com'), 'CORS missing https://mymenes.com');

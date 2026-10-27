@@ -1548,6 +1548,7 @@ document.getElementById('siteForm').addEventListener('submit', async (e) => {
 const SECTION_ORDER_META = [
   ['trustBar', 'Confiance'],
   ['products', 'Boutique'],
+  ['lookbook', 'L\'histoire'],
   ['gallery', 'Galerie'],
   ['why', 'Pourquoi'],
   ['reviews', 'Avis'],
@@ -1603,7 +1604,7 @@ function renderSectionEditors() {
   const s = storeData.site || {};
   const sec = s.sections || {};
   document.getElementById('sectionToggles').innerHTML = [
-    ['announcement','Annonce'],['trustBar','Confiance'],['gallery','Galerie'],
+    ['announcement','Annonce'],['trustBar','Confiance'],['lookbook','L\'histoire'],['gallery','Galerie'],
     ['why','Pourquoi'],['reviews','Avis'],['emailCapture','Liste VIP'],['faq','FAQ'],['guarantee','Sécurité'],
   ].map(([k,l]) => `<label class="toggle-item"><input type="checkbox" data-sec="${k}" ${sec[k]!==false?'checked':''}> ${l}</label>`).join('');
   // Force Signature/Bundle off (grillz mix retired)

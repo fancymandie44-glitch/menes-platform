@@ -43,14 +43,19 @@ const REQUIRED_FILES = [
   'api/passport.js',
   'api/health.js',
   'api/create-checkout.js',
+  'api/address.js',
   'lib/platform.js',
+  'lib/address.js',
+  'lib/payments.js',
   'lib/cors.js',
   'lib/order-pricing.js',
   'lib/admin-auth.js',
   'lib/public-catalog.js',
+  'images/products/socks/black.jpg',
+  'images/products/socks/kltr-orange.jpg',
 ];
 
-const STATIC_DIRS = ['data', 'api', 'lib'];
+const STATIC_DIRS = ['data', 'api', 'lib', 'images'];
 
 function copyFile(rel) {
   const src = path.join(ROOT, rel);

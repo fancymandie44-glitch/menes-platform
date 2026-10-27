@@ -125,12 +125,13 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    lookbook_label: 'L\'histoire',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
     contact_sub: 'Une question? On répond sous 24h.', foot_ssl: 'SSL Sécurisé', foot_pay: 'Paiement chiffré',
-    foot_pci: 'Paiement sécurisé via Square / PayPal', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
+    foot_pci: 'Paiement sécurisé via Stripe', foot_shipping: 'Livraison', foot_returns: 'Retours et échanges', foot_privacy: 'Confidentialité',
     foot_rights: 'Tous droits réservés', cart_title: 'Panier', cart_secure: 'Paiement 100% sécurisé',
     cart_total: 'Total :', cart_checkout: 'Commander', cart_empty: 'Panier vide',
     cart_qty_inc: 'Augmenter', cart_qty_dec: 'Diminuer', cart_remove: 'Retirer',
@@ -246,12 +247,13 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    lookbook_label: 'The story',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
     contact_sub: 'Got a question? We reply within 24h.', foot_ssl: 'SSL Secured', foot_pay: 'Encrypted payment',
-    foot_pci: 'Secure payment via Square / PayPal', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
+    foot_pci: 'Secure payment via Stripe', foot_shipping: 'Shipping', foot_returns: 'Returns and exchanges', foot_privacy: 'Privacy',
     foot_rights: 'All rights reserved', cart_title: 'Cart', cart_secure: '100% secure checkout',
     cart_total: 'Total:', cart_checkout: 'Checkout', cart_empty: 'Your cart is empty',
     cart_qty_inc: 'Increase', cart_qty_dec: 'Decrease', cart_remove: 'Remove',
@@ -367,6 +369,47 @@ const I18N = {
     country_other: 'Other',
   },
 };
+
+const MENES_VALUES = [
+  'Brotherhood', 'Proactive', 'Grind', 'Motivated', 'Helpful', 'Disciplined', 'Strategic',
+  'United', 'Resilient', 'Ambitious', 'Resourceful', 'Courageous', 'Visionary',
+  'Accountable', 'Loyal', 'Persistent', 'Adaptable', 'Independent', 'Purposeful',
+  'Respectful', 'Legacy-minded',
+];
+
+const WHY_STORY_EN = {
+  lead: 'Menes. The first pharaoh of Egypt. The one who united Upper and Lower Egypt: two worlds divided, brought together by the vision, courage, and determination of one man.',
+  punch: 'MENES isn’t a tribute. It’s a mirror.',
+  paragraphs: [
+    'I come from the most hated neighborhood in Montreal. I never denied it.',
+    'And yet, people from everywhere, even those who don’t love my neighborhood, come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
+    'That’s what it means to be a bridge instead of a wall.',
+    'MENES KULTUR is that energy, worn. Every piece carries a value we live, not just wear:',
+  ],
+  valuesLabel: 'Twenty-one words. One mentality.',
+  close: [
+    'MENES is a global vision lived through exclusivity. Those who wear MENES aren’t just wearing a piece. They feel the change. They wear success. They wear the values they’re becoming.',
+    'MENES is for those who build, who unite, who leave behind something bigger than themselves.',
+  ],
+};
+
+const WHY_STORY_FR = {
+  lead: 'Menes. Le premier pharaon d’Égypte. Celui qui a uni la Haute et la Basse-Égypte : deux mondes divisés, réunis par la vision, le courage et la détermination d’un seul homme.',
+  punch: 'MENES n’est pas un hommage. C’est un miroir.',
+  paragraphs: [
+    'Je viens du quartier le plus haï de Montréal. Je ne l’ai jamais nié.',
+    'Et pourtant, des gens de partout, même ceux qui n’aiment pas mon quartier, viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
+    'C’est ça, être un pont plutôt qu’un mur.',
+    'MENES KULTUR, c’est cette énergie, portée. Chaque pièce porte une valeur qu’on vit, pas juste qu’on porte :',
+  ],
+  valuesLabel: 'Vingt-et-un mots. Une mentalité.',
+  close: [
+    'MENES est une vision globale, vécue dans l’exclusivité. Ceux qui portent MENES ne portent pas juste une pièce. Ils sentent le changement. Ils portent le succès. Ils portent les valeurs qu’ils deviennent.',
+    'MENES est pour ceux qui construisent, qui unissent, qui laissent derrière eux quelque chose de plus grand qu’eux.',
+  ],
+};
+
+const STORY_PHOTO = 'images/lookbook/drop-table.jpg';
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -695,6 +738,17 @@ function syncScrollLock() {
   if (isOverlayOpen()) lockPageScroll();
   else unlockPageScroll();
 }
+
+function setupOverlayGestures() {
+  const blockPinch = (e) => {
+    if (e.touches && e.touches.length > 1 && isOverlayOpen()) e.preventDefault();
+  };
+  document.addEventListener('touchmove', blockPinch, { passive: false });
+  document.addEventListener('gesturestart', (e) => {
+    if (isOverlayOpen()) e.preventDefault();
+  });
+}
+setupOverlayGestures();
 
 function setupVipOverlay() {
   if (!shouldShowVipOverlay()) return;
@@ -1210,12 +1264,16 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
-    ? storeData.site.sectionOrder
-    : DEFAULT_SECTION_ORDER;
+    ? [...storeData.site.sectionOrder]
+    : [...DEFAULT_SECTION_ORDER];
+  if (!order.includes('lookbook')) {
+    const i = order.indexOf('products');
+    order.splice(i >= 0 ? i + 1 : 0, 0, 'lookbook');
+  }
   const hero = document.getElementById('heroSection');
   if (!hero) return;
   let ref = hero;
@@ -1277,6 +1335,7 @@ function renderSite() {
     `).join('')}</div>`;
   }
 
+  renderLookbook(sec);
   renderBundle(s, sec);
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
@@ -1322,6 +1381,27 @@ function renderSite() {
   }
 }
 
+function renderLookbook(sec) {
+  const show = sec.lookbook !== false;
+  toggle('lookbook', show);
+  const title = document.getElementById('lookbookTitle');
+  const box = document.getElementById('lookbookStory');
+  if (title) title.textContent = t('nav_story');
+  if (!box) return;
+  const story = currentLang === 'fr' ? WHY_STORY_FR : WHY_STORY_EN;
+  const values = MENES_VALUES.map((v) => `<li>${esc(v)}</li>`).join('');
+  const paras = (story.paragraphs || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  const close = (story.close || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  box.innerHTML = `
+    <p class="why-lead">${esc(story.lead || '')}</p>
+    <p class="why-punch">${esc(story.punch || '')}</p>
+    <div class="why-body">${paras}</div>
+    <ul class="why-values" aria-label="${esc(story.valuesLabel || 'MENES')}">${values}</ul>
+    <p class="why-values-label">${esc(story.valuesLabel || '')}</p>
+    <div class="why-close">${close}</div>
+  `;
+}
+
 function renderBundle(/* s, sec */) {
   // Signature / grillz mix section retired
   toggle('bundle', false);
@@ -1329,7 +1409,15 @@ function renderBundle(/* s, sec */) {
 
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
-  const items = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
+  const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
+  const seen = new Set(storyKeys);
+  const items = (src.gallery || []).filter((g) => {
+    if (!(g.image || g.postUrl || g.handle)) return false;
+    const key = imageKey(g.image);
+    if (key && seen.has(key)) return false;
+    if (key) seen.add(key);
+    return true;
+  });
   const allItems = src.gallery || [];
   toggle('gallery', sec.gallery !== false);
   if (sec.gallery === false) return;
@@ -1836,7 +1924,7 @@ function showUpsellModal(excludeId) {
   pendingUpsellId = product.id;
   sessionStorage.setItem(UPSELL_SESSION, '1');
   const box = document.getElementById('upsellProduct');
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   const thumb = imgs[0]?.url || '';
   if (box) {
     box.innerHTML = `
@@ -1920,7 +2008,7 @@ function renderCartUpsells() {
   const title = wrap.querySelector('.cart-upsells-title');
   if (title) title.textContent = t('upsell_cart_title');
   list.innerHTML = recs.map((p) => {
-    const thumb = productImages(p)[0]?.url || '';
+    const thumb = productPackImages(p)[0]?.url || '';
     return `<div class="cart-upsell-row">
       <button type="button" class="cart-upsell-info" data-open="${esc(p.id)}">
         <span class="cart-upsell-thumb">${thumb ? `<img src="${esc(thumb)}" alt="">` : '◆'}</span>
@@ -1956,7 +2044,7 @@ function renderPdpRecommendations(product) {
     };
   }
   list.innerHTML = recs.map((p) => {
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const thumb = imgs[0]?.url || '';
     const cat = CATEGORY_LABELS_GET(p.category) || p.category || '';
     return `
@@ -1997,6 +2085,24 @@ function productImages(p) {
   }
   if (p.image) return [{ url: p.image, label: '' }];
   return [];
+}
+
+function imageKey(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('data:')) return raw.slice(0, 96);
+  const path = raw.split('?')[0].replace(/^https?:\/\/[^/]+/i, '');
+  const base = path.split('/').pop() || path;
+  return base.toLowerCase();
+}
+
+function isLookbookUrl(url) {
+  return /\/images\/lookbook\//i.test(String(url || ''));
+}
+
+function productPackImages(p) {
+  const imgs = productImages(p).filter((im) => !isLookbookUrl(im.url));
+  return imgs.length ? imgs : productImages(p).slice(0, 1);
 }
 
 function productOptions(p) {
@@ -2182,7 +2288,7 @@ function renderProducts() {
       ? `<p class="product-stock-left">${esc(tFill('stock_left', { n: remaining }))}</p>`
       : '';
     const wishlisted = isWishlisted(p.id);
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const main = imgs[0]?.url || '';
     const opts = productOptions(p);
     const pStats = reviewStats(reviewsForProduct(p.id));
@@ -2306,7 +2412,7 @@ function openPdp(id) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   const main = imgs[0]?.url || '';
   const opts = productOptions(product);
   document.getElementById('pdpName').textContent = product.name;
@@ -2492,6 +2598,7 @@ window.addToCart = (id, card) => {
       variantStr,
       size: variantStr,
       qty: 1,
+      image: product.image || product.images?.[0]?.url || '',
       preorder: !!product.preorder,
       preorderNote: product.preorder ? (product.preorderNote || '') : '',
     });
@@ -2621,7 +2728,9 @@ function updateCartUI(opts = {}) {
     box.innerHTML = cart.map((c, i) => {
       const v = c.variantStr || c.size;
       const line = (c.price * c.qty).toFixed(2);
+      const img = c.image || '';
       return `<div class="cart-item" data-cart-i="${i}">
+        ${img ? `<img class="cart-item-thumb" src="${esc(img)}" alt="" width="64" height="80">` : ''}
         <div class="cart-item-info">
           <strong class="cart-item-name">${esc(c.name)}</strong>
           ${v && v !== 'Unique' ? `<span class="cart-item-variant">${esc(v)}</span>` : ''}
@@ -2683,7 +2792,7 @@ function getCheckoutCustomer(form) {
   const province = form.get('province') || '';
   const address = form.get('address') || '';
   const city = form.get('city') || '';
-  const postal = form.get('postal') || '';
+  const postal = formatShopPostal(form.get('postal') || '', country);
   const parts = [address, city, `${province} ${postal}`.trim(), country].filter(Boolean);
   const customer = {
     name: form.get('name'),
@@ -2824,7 +2933,7 @@ function saveCheckoutDraft(customer) {
   }));
 }
 
-/* ---------- Address autocomplete (OpenStreetMap / Photon, gratuit) ---------- */
+/* ---------- Address autocomplete (ArcGIS / BAN via /api/address) ---------- */
 const PHOTON_STATE_TO_CODE = {
   quebec: 'QC', québec: 'QC', ontario: 'ON', 'british columbia': 'BC', 'colombie-britannique': 'BC',
   alberta: 'AB', manitoba: 'MB', saskatchewan: 'SK', 'new brunswick': 'NB', 'nouveau-brunswick': 'NB',
@@ -2832,35 +2941,79 @@ const PHOTON_STATE_TO_CODE = {
   'northwest territories': 'NT', yukon: 'YT', nunavut: 'NU',
 };
 
+function formatShopPostal(raw, country) {
+  const cc = String(country || document.getElementById('checkoutCountry')?.value || 'CA').toUpperCase();
+  if (cc === 'CA') {
+    const compact = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/.test(compact)) {
+      return `${compact.slice(0, 3)} ${compact.slice(3)}`;
+    }
+    return String(raw || '').trim().toUpperCase();
+  }
+  return String(raw || '').trim();
+}
+
 let addrTimer = null;
+let addrSuggestions = [];
 function setupAddressAutocomplete() {
   const input = document.getElementById('checkoutAddress');
   const box = document.getElementById('addrSuggestions');
   if (!input || !box) return;
 
+  const renderSugs = (list) => {
+    addrSuggestions = list;
+    if (!list.length) { box.classList.add('hidden'); return; }
+    box.innerHTML = list.map((s, i) => {
+      const sub = [s.city, s.province, s.postal, s.country].filter(Boolean).join(', ');
+      return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(s.line)}</strong><small>${esc(sub)}</small></button>`;
+    }).join('');
+    box.classList.remove('hidden');
+    box.querySelectorAll('.addr-sug').forEach((btn) => btn.addEventListener('click', () => {
+      fillAddress(list[+btn.dataset.i]);
+      box.classList.add('hidden');
+    }));
+  };
+
   input.addEventListener('input', () => {
     const q = input.value.trim();
     clearTimeout(addrTimer);
-    if (q.length < 4) { box.classList.add('hidden'); return; }
+    if (q.length < 3) { box.classList.add('hidden'); return; }
     addrTimer = setTimeout(async () => {
+      const country = document.getElementById('checkoutCountry')?.value || 'CA';
+      try {
+        const res = await fetch(shopApi(`/api/address?q=${encodeURIComponent(q)}&country=${encodeURIComponent(country)}`), {
+          headers: shopHeaders(),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (Array.isArray(data.suggestions) && data.suggestions.length) {
+          renderSugs(data.suggestions);
+          return;
+        }
+      } catch { /* Photon fallback */ }
       try {
         const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`);
         const data = await res.json();
         const feats = (data.features || []).filter((f) => f.properties?.name || f.properties?.street);
-        if (!feats.length) { box.classList.add('hidden'); return; }
-        box.innerHTML = feats.map((f, i) => {
-          const p = f.properties;
-          const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
-          const sub = [p.city, p.state, p.country].filter(Boolean).join(', ');
-          return `<button type="button" class="addr-sug" data-i="${i}"><strong>${esc(line || p.name)}</strong><small>${esc(sub)}</small></button>`;
-        }).join('');
-        box.classList.remove('hidden');
-        box.querySelectorAll('.addr-sug').forEach((btn) => btn.addEventListener('click', () => {
-          fillAddress(feats[+btn.dataset.i].properties);
-          box.classList.add('hidden');
+        renderSugs(feats.map((f) => {
+          const p = f.properties || {};
+          return {
+            line: [p.housenumber, p.street || p.name].filter(Boolean).join(' ') || p.name,
+            city: p.city || p.town || p.village || '',
+            province: PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()] || '',
+            postal: p.postcode || '',
+            country: (p.countrycode || '').toUpperCase(),
+          };
         }));
       } catch { box.classList.add('hidden'); }
-    }, 350);
+    }, 280);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && addrSuggestions.length && !box.classList.contains('hidden')) {
+      e.preventDefault();
+      fillAddress(addrSuggestions[0]);
+      box.classList.add('hidden');
+    }
   });
 
   document.addEventListener('click', (e) => {
@@ -2869,18 +3022,21 @@ function setupAddressAutocomplete() {
 }
 
 function fillAddress(p) {
-  const line = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
+  if (!p) return;
+  const line = p.line || [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
   document.getElementById('checkoutAddress').value = line || p.name || '';
   document.getElementById('checkoutCity').value = p.city || p.town || p.village || '';
-  const cc = (p.countrycode || '').toUpperCase();
+  const cc = String(p.country || p.countrycode || '').toUpperCase();
   const countrySel = document.getElementById('checkoutCountry');
   if (cc && [...countrySel.options].some((o) => o.value === cc)) countrySel.value = cc;
-  else if (cc) countrySel.value = 'OTHER';
+  else if (cc && cc !== 'CA') countrySel.value = 'OTHER';
   populateProvinces();
   const provSel = document.getElementById('checkoutProvince');
-  const code = PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()];
+  const code = p.province || PHOTON_STATE_TO_CODE[(p.state || '').toLowerCase()];
   if (code && [...provSel.options].some((o) => o.value === code)) provSel.value = code;
-  if (p.postcode) document.getElementById('checkoutPostal').value = p.postcode;
+  const postalEl = document.getElementById('checkoutPostal');
+  const postal = formatShopPostal(p.postal || p.postcode || '', countrySel.value);
+  if (postal) postalEl.value = postal;
   renderCheckoutSummary();
 }
 
@@ -2993,9 +3149,22 @@ document.querySelectorAll('.pay-btn').forEach((btn) => {
     document.querySelectorAll('.pay-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('payMethod').value = btn.dataset.method;
-    const labels = { stripe: 'Payer par carte (Stripe)', crypto: 'Payer en crypto' };
-    document.getElementById('paySubmitBtn').textContent = labels[btn.dataset.method] || 'Payer';
+    const method = btn.dataset.method;
+    const labels = {
+      stripe: t('pay_submit'),
+      card: t('pay_submit'),
+      crypto: currentLang === 'en' ? 'Pay with crypto' : 'Payer en crypto',
+    };
+    document.getElementById('paySubmitBtn').textContent = labels[method] || t('pay_submit');
   });
+});
+
+document.getElementById('closeCheckout')?.addEventListener('click', () => {
+  document.getElementById('checkoutModal').classList.add('hidden');
+  syncScrollLock();
+});
+document.getElementById('checkoutPostal')?.addEventListener('blur', (e) => {
+  e.target.value = formatShopPostal(e.target.value);
 });
 
 document.getElementById('altPayBtn').addEventListener('click', () => {
@@ -3015,7 +3184,9 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  const method = form.get('method') || 'square';
+  const typedPromo = String(form.get('promo') || document.getElementById('promoCodeInput')?.value || '').trim();
+  if (typedPromo) applyPromoCode(typedPromo, { silent: true });
+  const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
     return;
@@ -3109,7 +3280,7 @@ function notifyOrder() { /* merchant notify is server-side only */ }
 
 async function confirmPaidOrderFromUrl(params) {
   const orderId = params.get('order') || '';
-  const method = params.get('method') || 'square';
+  const method = params.get('method') || 'stripe';
   if (!orderId) {
     showSuccess({
       msg: currentLang === 'en'

@@ -58,11 +58,14 @@ exports.handler = async (event) => {
     }
     const order = priced.order;
 
+    const requested = String(method || '').toLowerCase();
     let result;
-    switch (method) {
+    switch (requested) {
       case 'stripe':
+      case 'card':
+      case 'square':
         result = await stripeCheckout(order, false);
-        if (result.error && /expired|non configuré|invalid api key|api key/i.test(result.error)) {
+        if (result.error) {
           const fallback = await squareCheckout(order);
           if (!fallback.error) result = fallback;
         }
@@ -72,10 +75,6 @@ exports.handler = async (event) => {
         break;
       case 'paypal':
         result = await paypalCheckout(order);
-        break;
-      case 'square':
-      case 'card':
-        result = await squareCheckout(order);
         break;
       case 'crypto':
         result = await cryptoCheckout(order);
@@ -100,13 +99,14 @@ exports.handler = async (event) => {
       };
     }
 
-    const savedStore = await recordOrder(order, method, siteId);
-    await notifyMerchant(order, method, 'En attente de paiement', savedStore);
+    const provider = result.provider || requested;
+    const savedStore = await recordOrder(order, provider, siteId);
+    await notifyMerchant(order, provider, 'En attente de paiement', savedStore);
 
     return {
       statusCode: 200,
       headers: cors,
-      body: JSON.stringify({ checkoutUrl: result.checkoutUrl, orderId: order.id, total: order.total }),
+      body: JSON.stringify({ checkoutUrl: result.checkoutUrl, orderId: order.id, total: order.total, method: provider }),
     };
   } catch (err) {
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Erreur serveur paiement' }) };
