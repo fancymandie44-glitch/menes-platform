@@ -371,75 +371,67 @@ body {
 .bundle-copy p { color: rgba(244,242,238,0.68); margin-bottom: 24px; max-width: 480px; }
 .bundle-tags { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.5rem); letter-spacing: 0.04em; color: var(--gold); }
 
-.lookbook-section {
-  padding: 0 0 72px;
+.story-section {
+  padding: 72px 0;
   background: #050505;
   border-top: 1px solid var(--hairline);
 }
-.lookbook-frame {
-  position: relative;
-  min-height: min(78vh, 820px);
-  overflow: hidden;
-  background: #111;
-}
-.lookbook-frame > img {
-  width: 100%;
-  height: 100%;
-  min-height: min(78vh, 820px);
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
-  filter: saturate(1.05) contrast(1.04);
-}
-.lookbook-panel {
-  position: absolute;
-  left: 24px;
-  bottom: 28px;
-  max-width: min(520px, calc(100% - 48px));
-  padding: 28px 28px 24px;
-  background: linear-gradient(180deg, rgba(8,8,8,0.55), rgba(5,5,5,0.88));
-  border: 1px solid rgba(201,168,76,0.35);
-  backdrop-filter: blur(10px);
-}
-.lookbook-panel h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.7rem, 4vw, 2.6rem);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  margin: 8px 0 12px;
-  color: #f4f2ee;
-}
-.lookbook-panel p {
-  color: #d5d0c6;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-.lookbook-strip {
+.story-inner {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  padding: 8px 16px 0;
+  grid-template-columns: minmax(280px, 1.05fr) minmax(280px, 1fr);
+  gap: 40px;
+  align-items: start;
 }
-.lookbook-strip a {
-  display: block;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
+.story-photo {
+  margin: 0;
   border: 1px solid var(--hairline);
   background: var(--surface-2);
+  overflow: hidden;
 }
-.lookbook-strip img {
+.story-photo img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  display: block;
   object-fit: cover;
-  transition: transform 0.4s var(--ease);
+  object-position: center 35%;
 }
-.lookbook-strip a:hover img { transform: scale(1.06); }
+.story-copy .section-label { color: var(--gold); }
+.story-copy h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.03em;
+  margin: 8px 0 22px;
+  color: #f4f2ee;
+}
+.why-lead {
+  font-family: var(--font-display); font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 600; color: var(--white); line-height: 1.45; margin-bottom: 22px;
+}
+.why-punch {
+  font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.85rem);
+  color: var(--gold); font-weight: 700; line-height: 1.3; margin-bottom: 28px;
+}
+.why-body p, .why-close p {
+  color: var(--gray-600); font-size: 1.02rem; line-height: 1.75; margin-bottom: 16px;
+}
+.why-values {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 8px 0 14px; padding: 0;
+}
+.why-values li {
+  border: 1px solid rgba(201,168,76,0.45); color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 8px 10px; border-radius: var(--radius);
+}
+.why-values-label {
+  color: var(--white); font-family: var(--font-display); font-weight: 600;
+  margin: 4px 0 22px; letter-spacing: 0.02em;
+}
+.why-close { margin-top: 8px; }
+.why-close p { color: var(--white); }
 @media (max-width: 800px) {
-  .lookbook-frame { min-height: 62vh; }
-  .lookbook-frame > img { min-height: 62vh; }
-  .lookbook-panel { left: 12px; right: 12px; bottom: 12px; max-width: none; padding: 20px; }
-  .lookbook-strip { grid-template-columns: repeat(3, 1fr); }
+  .story-inner { grid-template-columns: 1fr; gap: 24px; }
 }
 
 .gallery-section { padding: 80px 0; background: var(--black); }

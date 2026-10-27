@@ -127,9 +127,6 @@ const I18N = {
   fr: {
     nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     lookbook_label: 'L\'histoire',
-    lookbook_title: 'Ça commence sur la table.',
-    lookbook_text: 'Avant la rue, chaque couleur MENES est alignée à Montréal. Même pièce. Même drop. Après, ça sort — sur de vrais looks. C\'est toute l\'histoire.',
-    lookbook_cta: 'Voir les Summer Socks',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -252,9 +249,6 @@ const I18N = {
   en: {
     nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
     lookbook_label: 'The story',
-    lookbook_title: 'It starts on the table.',
-    lookbook_text: 'Before MENES hits the street, every color is laid out in Montreal. Same room. Same drop. Then it walks out the door — on real people. That’s the whole story.',
-    lookbook_cta: 'Shop Summer Socks',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -375,6 +369,47 @@ const I18N = {
     country_other: 'Other',
   },
 };
+
+const MENES_VALUES = [
+  'Brotherhood', 'Proactive', 'Grind', 'Motivated', 'Helpful', 'Disciplined', 'Strategic',
+  'United', 'Resilient', 'Ambitious', 'Resourceful', 'Courageous', 'Visionary',
+  'Accountable', 'Loyal', 'Persistent', 'Adaptable', 'Independent', 'Purposeful',
+  'Respectful', 'Legacy-minded',
+];
+
+const WHY_STORY_EN = {
+  lead: 'Menes. The first pharaoh of Egypt. The one who united Upper and Lower Egypt: two worlds divided, brought together by the vision, courage, and determination of one man.',
+  punch: 'MENES isn’t a tribute. It’s a mirror.',
+  paragraphs: [
+    'I come from the most hated neighborhood in Montreal. I never denied it.',
+    'And yet, people from everywhere, even those who don’t love my neighborhood, come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
+    'That’s what it means to be a bridge instead of a wall.',
+    'MENES KULTUR is that energy, worn. Every piece carries a value we live, not just wear:',
+  ],
+  valuesLabel: 'Twenty-one words. One mentality.',
+  close: [
+    'MENES is a global vision lived through exclusivity. Those who wear MENES aren’t just wearing a piece. They feel the change. They wear success. They wear the values they’re becoming.',
+    'MENES is for those who build, who unite, who leave behind something bigger than themselves.',
+  ],
+};
+
+const WHY_STORY_FR = {
+  lead: 'Menes. Le premier pharaon d’Égypte. Celui qui a uni la Haute et la Basse-Égypte : deux mondes divisés, réunis par la vision, le courage et la détermination d’un seul homme.',
+  punch: 'MENES n’est pas un hommage. C’est un miroir.',
+  paragraphs: [
+    'Je viens du quartier le plus haï de Montréal. Je ne l’ai jamais nié.',
+    'Et pourtant, des gens de partout, même ceux qui n’aiment pas mon quartier, viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
+    'C’est ça, être un pont plutôt qu’un mur.',
+    'MENES KULTUR, c’est cette énergie, portée. Chaque pièce porte une valeur qu’on vit, pas juste qu’on porte :',
+  ],
+  valuesLabel: 'Vingt-et-un mots. Une mentalité.',
+  close: [
+    'MENES est une vision globale, vécue dans l’exclusivité. Ceux qui portent MENES ne portent pas juste une pièce. Ils sentent le changement. Ils portent le succès. Ils portent les valeurs qu’ils deviennent.',
+    'MENES est pour ceux qui construisent, qui unissent, qui laissent derrière eux quelque chose de plus grand qu’eux.',
+  ],
+};
+
+const STORY_PHOTO = 'images/lookbook/drop-table.jpg';
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -1350,11 +1385,21 @@ function renderLookbook(sec) {
   const show = sec.lookbook !== false;
   toggle('lookbook', show);
   const title = document.getElementById('lookbookTitle');
-  const text = document.getElementById('lookbookText');
-  const cta = document.getElementById('lookbookCta');
-  if (title) title.textContent = t('lookbook_title');
-  if (text) text.textContent = t('lookbook_text');
-  if (cta) cta.textContent = t('lookbook_cta');
+  const box = document.getElementById('lookbookStory');
+  if (title) title.textContent = t('nav_story');
+  if (!box) return;
+  const story = currentLang === 'fr' ? WHY_STORY_FR : WHY_STORY_EN;
+  const values = MENES_VALUES.map((v) => `<li>${esc(v)}</li>`).join('');
+  const paras = (story.paragraphs || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  const close = (story.close || []).map((p) => `<p>${esc(p)}</p>`).join('');
+  box.innerHTML = `
+    <p class="why-lead">${esc(story.lead || '')}</p>
+    <p class="why-punch">${esc(story.punch || '')}</p>
+    <div class="why-body">${paras}</div>
+    <ul class="why-values" aria-label="${esc(story.valuesLabel || 'MENES')}">${values}</ul>
+    <p class="why-values-label">${esc(story.valuesLabel || '')}</p>
+    <div class="why-close">${close}</div>
+  `;
 }
 
 function renderBundle(/* s, sec */) {
@@ -1364,7 +1409,15 @@ function renderBundle(/* s, sec */) {
 
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
-  const items = (src.gallery || []).filter((g) => g.image || g.postUrl || g.handle);
+  const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
+  const seen = new Set(storyKeys);
+  const items = (src.gallery || []).filter((g) => {
+    if (!(g.image || g.postUrl || g.handle)) return false;
+    const key = imageKey(g.image);
+    if (key && seen.has(key)) return false;
+    if (key) seen.add(key);
+    return true;
+  });
   const allItems = src.gallery || [];
   toggle('gallery', sec.gallery !== false);
   if (sec.gallery === false) return;
@@ -1871,7 +1924,7 @@ function showUpsellModal(excludeId) {
   pendingUpsellId = product.id;
   sessionStorage.setItem(UPSELL_SESSION, '1');
   const box = document.getElementById('upsellProduct');
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   const thumb = imgs[0]?.url || '';
   if (box) {
     box.innerHTML = `
@@ -1955,7 +2008,7 @@ function renderCartUpsells() {
   const title = wrap.querySelector('.cart-upsells-title');
   if (title) title.textContent = t('upsell_cart_title');
   list.innerHTML = recs.map((p) => {
-    const thumb = productImages(p)[0]?.url || '';
+    const thumb = productPackImages(p)[0]?.url || '';
     return `<div class="cart-upsell-row">
       <button type="button" class="cart-upsell-info" data-open="${esc(p.id)}">
         <span class="cart-upsell-thumb">${thumb ? `<img src="${esc(thumb)}" alt="">` : '◆'}</span>
@@ -1991,7 +2044,7 @@ function renderPdpRecommendations(product) {
     };
   }
   list.innerHTML = recs.map((p) => {
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const thumb = imgs[0]?.url || '';
     const cat = CATEGORY_LABELS_GET(p.category) || p.category || '';
     return `
@@ -2032,6 +2085,24 @@ function productImages(p) {
   }
   if (p.image) return [{ url: p.image, label: '' }];
   return [];
+}
+
+function imageKey(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('data:')) return raw.slice(0, 96);
+  const path = raw.split('?')[0].replace(/^https?:\/\/[^/]+/i, '');
+  const base = path.split('/').pop() || path;
+  return base.toLowerCase();
+}
+
+function isLookbookUrl(url) {
+  return /\/images\/lookbook\//i.test(String(url || ''));
+}
+
+function productPackImages(p) {
+  const imgs = productImages(p).filter((im) => !isLookbookUrl(im.url));
+  return imgs.length ? imgs : productImages(p).slice(0, 1);
 }
 
 function productOptions(p) {
@@ -2217,7 +2288,7 @@ function renderProducts() {
       ? `<p class="product-stock-left">${esc(tFill('stock_left', { n: remaining }))}</p>`
       : '';
     const wishlisted = isWishlisted(p.id);
-    const imgs = productImages(p);
+    const imgs = productPackImages(p);
     const main = imgs[0]?.url || '';
     const opts = productOptions(p);
     const pStats = reviewStats(reviewsForProduct(p.id));
@@ -2341,7 +2412,7 @@ function openPdp(id) {
   const product = storeData.products.find((p) => p.id === id);
   if (!product) return;
   activePdpId = id;
-  const imgs = productImages(product);
+  const imgs = productPackImages(product);
   const main = imgs[0]?.url || '';
   const opts = productOptions(product);
   document.getElementById('pdpName').textContent = product.name;
