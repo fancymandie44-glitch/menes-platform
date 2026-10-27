@@ -125,7 +125,11 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    lookbook_label: 'L\'histoire',
+    lookbook_title: 'Ça commence sur la table.',
+    lookbook_text: 'Avant la rue, chaque couleur MENES est alignée à Montréal. Même pièce. Même drop. Après, ça sort — sur de vrais looks. C\'est toute l\'histoire.',
+    lookbook_cta: 'Voir les Summer Socks',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
     label_signature: 'Signature MENES', label_faq: 'FAQ', why_title: 'Pourquoi MENES',
@@ -246,7 +250,11 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    lookbook_label: 'The story',
+    lookbook_title: 'It starts on the table.',
+    lookbook_text: 'Before MENES hits the street, every color is laid out in Montreal. Same room. Same drop. Then it walks out the door — on real people. That’s the whole story.',
+    lookbook_cta: 'Shop Summer Socks',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
     label_signature: 'MENES Signature', label_faq: 'FAQ', why_title: 'Why MENES',
@@ -1221,12 +1229,16 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
-    ? storeData.site.sectionOrder
-    : DEFAULT_SECTION_ORDER;
+    ? [...storeData.site.sectionOrder]
+    : [...DEFAULT_SECTION_ORDER];
+  if (!order.includes('lookbook')) {
+    const i = order.indexOf('products');
+    order.splice(i >= 0 ? i + 1 : 0, 0, 'lookbook');
+  }
   const hero = document.getElementById('heroSection');
   if (!hero) return;
   let ref = hero;
@@ -1288,6 +1300,7 @@ function renderSite() {
     `).join('')}</div>`;
   }
 
+  renderLookbook(sec);
   renderBundle(s, sec);
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
@@ -1331,6 +1344,17 @@ function renderSite() {
     ph.textContent = raw.phone;
     ph.classList.remove('hidden');
   }
+}
+
+function renderLookbook(sec) {
+  const show = sec.lookbook !== false;
+  toggle('lookbook', show);
+  const title = document.getElementById('lookbookTitle');
+  const text = document.getElementById('lookbookText');
+  const cta = document.getElementById('lookbookCta');
+  if (title) title.textContent = t('lookbook_title');
+  if (text) text.textContent = t('lookbook_text');
+  if (cta) cta.textContent = t('lookbook_cta');
 }
 
 function renderBundle(/* s, sec */) {

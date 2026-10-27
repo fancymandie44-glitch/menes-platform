@@ -371,6 +371,77 @@ body {
 .bundle-copy p { color: rgba(244,242,238,0.68); margin-bottom: 24px; max-width: 480px; }
 .bundle-tags { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.5rem); letter-spacing: 0.04em; color: var(--gold); }
 
+.lookbook-section {
+  padding: 0 0 72px;
+  background: #050505;
+  border-top: 1px solid var(--hairline);
+}
+.lookbook-frame {
+  position: relative;
+  min-height: min(78vh, 820px);
+  overflow: hidden;
+  background: #111;
+}
+.lookbook-frame > img {
+  width: 100%;
+  height: 100%;
+  min-height: min(78vh, 820px);
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  filter: saturate(1.05) contrast(1.04);
+}
+.lookbook-panel {
+  position: absolute;
+  left: 24px;
+  bottom: 28px;
+  max-width: min(520px, calc(100% - 48px));
+  padding: 28px 28px 24px;
+  background: linear-gradient(180deg, rgba(8,8,8,0.55), rgba(5,5,5,0.88));
+  border: 1px solid rgba(201,168,76,0.35);
+  backdrop-filter: blur(10px);
+}
+.lookbook-panel h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 8px 0 12px;
+  color: #f4f2ee;
+}
+.lookbook-panel p {
+  color: #d5d0c6;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.lookbook-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+.lookbook-strip a {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+.lookbook-strip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s var(--ease);
+}
+.lookbook-strip a:hover img { transform: scale(1.06); }
+@media (max-width: 800px) {
+  .lookbook-frame { min-height: 62vh; }
+  .lookbook-frame > img { min-height: 62vh; }
+  .lookbook-panel { left: 12px; right: 12px; bottom: 12px; max-width: none; padding: 20px; }
+  .lookbook-strip { grid-template-columns: repeat(3, 1fr); }
+}
+
 .gallery-section { padding: 80px 0; background: var(--black); }
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
 .gallery-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: var(--surface-2); border: 1px solid var(--hairline); display: block; color: inherit; text-decoration: none; }

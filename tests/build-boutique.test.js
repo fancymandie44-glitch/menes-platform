@@ -63,6 +63,9 @@ function run() {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
+  assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
+  assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
+  assert(html.includes('data-i18n="nav_story"'), 'nav must include Story / L\'histoire');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
   assert(ALLOWED_ORIGINS.includes('https://mymenes.com'), 'CORS missing https://mymenes.com');
