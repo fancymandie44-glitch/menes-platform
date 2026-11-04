@@ -10,8 +10,12 @@ assert.ok(bundles.BUNDLES.length === 3, 'three bundles');
 assert.strictEqual(bundles.bySlug('kultur-steps').kind, 'combo');
 assert.strictEqual(bundles.bySlug('holiday-exclusive').kind, 'builder');
 assert.strictEqual(bundles.bySlug('bundle-moyen').published, false);
-assert.ok(bundles.isBrowsable(bundles.bySlug('kultur-steps')), 'kultur is browsable without price');
-assert.ok(!bundles.isReady(bundles.bySlug('kultur-steps')), 'price placeholder keeps pack unsellable');
+assert.ok(bundles.isBrowsable(bundles.bySlug('kultur-steps')));
+assert.ok(bundles.isReady(bundles.bySlug('kultur-steps')), 'kultur must be sellable at 34.99');
+assert.strictEqual(bundles.bySlug('kultur-steps').price, 34.99);
+assert.ok(bundles.isReady(bundles.bySlug('holiday-exclusive')), 'holiday must be sellable at 329.99');
+assert.strictEqual(bundles.bySlug('holiday-exclusive').price, 329.99);
+assert.ok(!bundles.isReady(bundles.bySlug('bundle-moyen')));
 assert.ok(bundles.visibleOnGrid(bundles.bySlug('bundle-moyen')), 'unpublished still occupies the grid');
 
 const holiday = bundles.bySlug('holiday-exclusive');
@@ -26,14 +30,13 @@ const store = {
 };
 const customer = { name: 'A', email: 'a@b.com', phone: '5141112222', address: '1 rue' };
 
-const missingPrice = buildTrustedOrder(store, {
+const kultur = buildTrustedOrder(store, {
   customer,
-  items: [{ id: 'bundle-kultur-steps', qty: 1, variant: { combo: 'noir-jaune' } }],
+  items: [{ id: 'bundle-kultur-steps', qty: 1, price: 1, variant: { combo: 'noir-jaune' } }],
 });
-assert.ok(missingPrice.error, 'unpriced bundle must fail checkout');
+assert.ok(!kultur.error, kultur.error);
+assert.strictEqual(kultur.order.items[0].price, 34.99, 'server ignores client kultur price');
 
-const orig = holiday.price;
-holiday.price = 199;
 const ok = buildTrustedOrder(store, {
   customer,
   items: [{
@@ -44,9 +47,13 @@ const ok = buildTrustedOrder(store, {
   }],
 });
 assert.ok(!ok.error, ok.error);
-assert.strictEqual(ok.order.items[0].price, 199, 'server ignores client bundle price');
+assert.strictEqual(ok.order.items[0].price, 329.99, 'server ignores client holiday price');
 assert.match(ok.order.items[0].size, /Noir/);
-holiday.price = orig;
+
+assert.ok(buildTrustedOrder(store, {
+  customer,
+  items: [{ id: 'bundle-moyen', qty: 1 }],
+}).error, 'unpublished middle bundle must not sell');
 
 assert.strictEqual(findDiscount(store, 'MENESFAM'), null, 'empty percent must not invent a discount');
 bundles.CLIENT_DISCOUNT.percent = 10;
