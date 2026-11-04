@@ -25,7 +25,13 @@ function run() {
   const required = [
     'index.html',
     'shop.js',
+    'shop-bundles.js',
     'shop.css',
+    'data/bundles.js',
+    'images/bundles/holiday-exclusive.jpg',
+    'bundle/kultur-steps/index.html',
+    'bundle/holiday-exclusive/index.html',
+    'sitemap.xml',
     'config.js',
     'paiement.html',
     'paiement.js',
@@ -55,6 +61,10 @@ function run() {
 
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
+  assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
+  const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
+  assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
+  assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
