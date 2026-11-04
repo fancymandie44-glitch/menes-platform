@@ -244,6 +244,8 @@ const I18N = {
     country_be: 'Belgique',
     country_ch: 'Suisse',
     country_other: 'Autre',
+    nav_bundles: 'Bundles',
+    bundles_kicker: 'Packs MENES',
   },
   en: {
     nav_shop: 'Shop', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
@@ -365,6 +367,8 @@ const I18N = {
     country_be: 'Belgium',
     country_ch: 'Switzerland',
     country_other: 'Other',
+    nav_bundles: 'Bundles',
+    bundles_kicker: 'MENES packs',
   },
 };
 
@@ -670,7 +674,7 @@ async function submitVipEmail(email, btn, source = 'vip') {
 }
 
 function isOverlayOpen() {
-  return ['cartPanel', 'pdpPanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal', 'passportPanel']
+  return ['cartPanel', 'pdpPanel', 'bundlePanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal', 'passportPanel']
     .some((id) => !document.getElementById(id)?.classList.contains('hidden'));
 }
 
@@ -802,6 +806,8 @@ function applyPassport(passport) {
     : rememberedPassportEmail();
   rememberPassportIdentity(email, passport.token);
   renderPassportCard(passport);
+  if (typeof maybeApplyMemberPromo === 'function') maybeApplyMemberPromo();
+  if (typeof renderShopBundles === 'function') renderShopBundles();
   const teaser = document.getElementById('successPassport');
   if (teaser && passport.code) {
     teaser.classList.remove('hidden');
@@ -876,6 +882,8 @@ function findDiscount(code) {
   const c = (code || '').trim().toUpperCase();
   if (!c) return null;
   if (RETIRED_PUBLIC_CODES.has(c)) return null;
+  const member = window.MENES_BUNDLES?.clientDiscountRule?.(c);
+  if (member) return member;
   return (storeData?.discounts || []).find((d) => d && d.active !== false && String(d.code || '').toUpperCase() === c) || null;
 }
 
@@ -1074,6 +1082,8 @@ function setVisitorLang(lang, opts = {}) {
     updateCartUI();
     populateProvinces();
     if (activePdpId) openPdp(activePdpId);
+    if (typeof refreshBundleUi === 'function') refreshBundleUi();
+    else if (typeof renderShopBundles === 'function') renderShopBundles();
   }
 }
 
@@ -1210,7 +1220,7 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'shopBundles', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
@@ -1278,6 +1288,7 @@ function renderSite() {
   }
 
   renderBundle(s, sec);
+  if (typeof renderShopBundles === 'function') renderShopBundles();
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
@@ -3408,6 +3419,7 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  if (typeof initShopBundles === 'function') initShopBundles();
 }
 
 window.addEventListener('storage', (e) => {
