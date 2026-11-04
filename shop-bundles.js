@@ -36,7 +36,8 @@
   function money(n) {
     const v = Number(n);
     if (!Number.isFinite(v)) return '';
-    return `${v.toFixed(2).replace(/\.00$/, '')}$`;
+    const s = v.toFixed(2);
+    return lang() === 'fr' ? `${s.replace('.', ',')}$` : `${s}$`;
   }
 
   function priceHtml(bundle, opts = {}) {
