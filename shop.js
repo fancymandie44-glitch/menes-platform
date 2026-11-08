@@ -644,13 +644,19 @@ function renderPdpUrgency(product) {
   const panel = document.getElementById('pdpPanel');
   const variant = readSelectedVariant(panel);
   const left = availableStockFor(product, variant);
+  const colorName = colorOptionName(product);
+  const colorVal = colorName ? variant[colorName] : '';
+  const colorLeft = colorVal ? listedStockForOption(product, colorName, colorVal) : left;
   const bits = [];
-  if (Number.isFinite(left) && isLowStock(left)) {
-    bits.push(tFill('stock_left', { n: left }));
-    el.classList.add('is-low');
-  } else if (Number.isFinite(left) && left <= 0) {
+  if (Number.isFinite(left) && left <= 0) {
     bits.push(t('sold_out_variant'));
     el.classList.remove('is-low');
+  } else if (Number.isFinite(colorLeft) && isLowStock(colorLeft)) {
+    bits.push(tFill('stock_left', { n: colorLeft }));
+    el.classList.add('is-low');
+  } else if (!colorName && Number.isFinite(left) && isLowStock(left)) {
+    bits.push(tFill('stock_left', { n: left }));
+    el.classList.add('is-low');
   } else {
     el.classList.remove('is-low');
   }
@@ -2284,6 +2290,14 @@ function stockForOptionValue(product, optionName, value, partialVariant = {}) {
   return sum;
 }
 
+function colorOptionName(product) {
+  return productOptions(product).find((o) => /^(color|couleur)$/i.test(String(o.name || '')))?.name || '';
+}
+
+function listedStockForOption(product, optionName, value) {
+  return stockForOptionValue(product, optionName, value, {});
+}
+
 function applyVariantStockUi(root, product) {
   if (!root || !product) return;
   const partial = readSelectedVariant(root);
@@ -2294,6 +2308,7 @@ function applyVariantStockUi(root, product) {
     wrap.querySelectorAll('.opt-chip').forEach((chip) => {
       const val = chip.dataset.value;
       const left = stockForOptionValue(product, o.name, val, partial);
+      const listed = listedStockForOption(product, o.name, val);
       const oos = left <= 0;
       chip.classList.toggle('is-oos', oos);
       chip.disabled = oos;
@@ -2308,16 +2323,16 @@ function applyVariantStockUi(root, product) {
           chip.appendChild(tag);
         }
       } else {
-        chip.title = isLowStock(left) ? tFill('stock_left', { n: left }) : '';
+        chip.title = isLowStock(listed) ? tFill('stock_left', { n: listed }) : '';
         chip.querySelector('.oos-tag')?.remove();
         let count = chip.querySelector('.left-n');
-        if (isLowStock(left)) {
+        if (isLowStock(listed)) {
           if (!count) {
             count = document.createElement('span');
             count.className = 'left-n';
             chip.appendChild(count);
           }
-          count.textContent = String(left);
+          count.textContent = String(listed);
         } else {
           count?.remove();
         }

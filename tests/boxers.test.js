@@ -28,7 +28,11 @@ assert(BOXER.options[0].name === 'Color' && BOXER.options[0].values.join(',') ==
 assert(BOXER.options[1].name === 'Size' && BOXER.options[1].values.join(',') === 'S,M,L,XL', 'sizes after color');
 assert(BOXER.price === PRICE && PRICE > 0, 'price');
 assert(BOXER.variants.length === COLORS.length * SIZES.length, '8 color/size variants');
-assert(BOXER.variants.every((v) => v.stock === UNITS_PER_VARIANT), '5 of each');
+assert(BOXER.variants.every((v) => v.stock === UNITS_PER_VARIANT), '5 of each size/color');
+const greyUnits = BOXER.variants.filter((v) => v.options.Color === 'Grey').reduce((s, v) => s + v.stock, 0);
+const redUnits = BOXER.variants.filter((v) => v.options.Color === 'Red').reduce((s, v) => s + v.stock, 0);
+assert(greyUnits === 20, 'Grey is 5 x 4 sizes, not 5 total');
+assert(redUnits === 20, 'Red is 5 x 4 sizes, not 5 total');
 assert(BOXER.variants.some((v) => v.key === 'Color=Red|Size=S'), 'variant key order');
 assert(BOXER.images[0].label === 'Red' && BOXER.images[1].label === 'Grey', 'pack shots labeled for color chips');
 
