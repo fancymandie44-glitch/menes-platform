@@ -29,23 +29,11 @@ exports.handler = async (event) => {
     const result = ensurePassportFromEmail(store, email, {
       source: body.source || 'vip',
       locale: body.locale,
-      tags: Array.isArray(body.tags) ? body.tags : ['vip', 'passport'],
+      tags: Array.isArray(body.tags) ? body.tags : ['vip', 'passport', 'nouveautes'],
     });
+    const { deliverNewPassportEmails } = require('../lib/passport-email');
+    await deliverNewPassportEmails(store, result, body.locale);
     await writeSiteStore(siteId, store);
-
-    try {
-      const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
-      if (resendConfigured() && (result.created || result.subscriberCreated)) {
-        await notifySimple({
-          store,
-          subject: `Inscription VIP MENES · ${email}`,
-          html: brandShell({
-            title: 'Nouvelle inscription VIP',
-            bodyHtml: `<p style="color:#9a958c">${escHtml(email)} · source ${escHtml(body.source || 'vip')} · ${(store.subscribers || []).filter((s) => s.active !== false).length} abonnés</p>`,
-          }),
-        });
-      }
-    } catch {}
 
     return {
       statusCode: 200,

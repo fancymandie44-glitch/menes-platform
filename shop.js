@@ -831,6 +831,24 @@ function isVipMember() {
   return localStorage.getItem(VIP_KEY) === '1';
 }
 
+function consumePassportMagicLink() {
+  const params = new URLSearchParams(location.search);
+  const open = params.get('pass') === '1' || params.get('passport') === '1';
+  const email = String(params.get('e') || params.get('email') || '').trim().toLowerCase();
+  const token = String(params.get('t') || params.get('token') || '');
+  if (!open || !email) return false;
+  rememberPassportIdentity(email, token);
+  params.delete('pass');
+  params.delete('passport');
+  params.delete('e');
+  params.delete('email');
+  params.delete('t');
+  params.delete('token');
+  const qs = params.toString();
+  history.replaceState({}, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash || ''}`);
+  return true;
+}
+
 function rememberedPassportEmail() {
   try { return String(localStorage.getItem(PASSPORT_EMAIL_KEY) || '').trim().toLowerCase(); }
   catch { return ''; }
@@ -3624,6 +3642,7 @@ async function init() {
       if (btn) { btn.disabled = false; btn.textContent = old || t('passport_open'); }
     }
   });
+  const fromEmail = consumePassportMagicLink();
   if (rememberedPassportEmail()) document.getElementById('passportNavBtn')?.classList.add('has-pass');
   const params = new URLSearchParams(location.search);
   if (params.get('paid') === '1') {
@@ -3632,6 +3651,9 @@ async function init() {
     const paidParams = new URLSearchParams(location.search);
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
+  }
+  if (fromEmail) {
+    try { await openPassportPanel(); } catch {}
   }
   setupVipOverlay();
   if (typeof initShopBundles === 'function') initShopBundles();

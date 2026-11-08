@@ -77,6 +77,7 @@ function run() {
   assert(claimed.passport.orderCount === 0, 'walk-in passport has no orders yet');
   assert(walkIn.subscribers.length === 1, 'walk-in email joins the list');
   assert(walkIn.subscribers[0].consent === true, 'walk-in consents to email');
+  assert(walkIn.subscribers[0].tags.includes('nouveautes'), 'walk-in is on the new-drop list');
   const claimedAgain = ensurePassportFromEmail(walkIn, 'NEW@mymenes.com', { source: 'entry' });
   assert(claimedAgain && !claimedAgain.created, 'same email reuses the walk-in passport');
   assert(walkIn.passports.length === 1, 'no duplicate walk-in passports');
@@ -102,6 +103,28 @@ function run() {
 
   assert(isPaidOrder({ status: 'shipped' }), 'shipped counts as paid');
   assert(!isPaidOrder({ status: 'awaiting_payment' }), 'awaiting is not paid');
+
+  const { buildPassportWelcomeHtml, passportOpenUrl, buildCustomerReceiptHtml } = require('../lib/notify');
+  const link = passportOpenUrl('a@b.com', 'secret-token');
+  assert(link.includes('pass=1'), 'passport email link opens the shop');
+  assert(link.includes('e=a%40b.com') || link.includes('e=a@b.com'), 'passport email link carries email');
+  const welcome = buildPassportWelcomeHtml({ id: 'ff1122aabbcc', email: 'a@b.com', token: 'secret-token' }, 'en');
+  assert(welcome.includes('Open my passport'), 'welcome email has passport CTA');
+  assert(welcome.includes('secret-token'), 'welcome email has magic token');
+  const receipt = buildCustomerReceiptHtml(
+    { id: 'ORD9', customer: { email: 'a@b.com', name: 'A' }, items: [], total: 10 },
+    'card',
+    { code: 'MENES-AABBCC', token: 'secret-token' },
+  );
+  assert(receipt.includes('Ouvrir mon passeport'), 'order receipt links the passport');
+
+  const { segmentEmails } = require('../api/campaigns');
+  const audience = segmentEmails({
+    subscribers: [],
+    passports: [{ email: 'pass@mymenes.com' }],
+    orders: [],
+  }, 'subscribers');
+  assert(audience.includes('pass@mymenes.com'), 'drop campaigns include passport emails');
 
   console.log('ok: passport auto-create from paid email and walk-in claim');
 }

@@ -1288,12 +1288,12 @@ async function refreshMktResendStatus() {
       setMktSendEnabled(false);
       return;
     }
-    if (data.resendConfigured) {
-      el.textContent = 'Resend OK';
+    if (data.emailConfigured || data.resendConfigured) {
+      el.textContent = data.resendConfigured ? 'Email OK (Resend)' : 'Email OK';
       el.className = 'mkt-status ok';
       setMktSendEnabled(true);
     } else {
-      el.textContent = 'Resend non configuré';
+      el.textContent = 'Email non configuré';
       el.className = 'mkt-status warn';
       setMktSendEnabled(false);
     }

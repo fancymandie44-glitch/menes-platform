@@ -44,22 +44,9 @@ exports.handler = async (event) => {
     if (!result?.passport) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email invalide' }) };
     }
+    const { deliverNewPassportEmails } = require('../lib/passport-email');
+    await deliverNewPassportEmails(store, result, body.locale || params.locale);
     await writeSiteStore(siteId, store);
-    if (result.subscriberCreated) {
-      try {
-        const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
-        if (resendConfigured()) {
-          await notifySimple({
-            store,
-            subject: `Passeport MENES · ${email}`,
-            html: brandShell({
-              title: 'Nouveau passeport',
-              bodyHtml: `<p style="color:#9a958c">${escHtml(email)} · source ${escHtml(result.passport.source || 'passport')} · ${(store.subscribers || []).filter((s) => s.active !== false).length} abonnés</p>`,
-            }),
-          });
-        }
-      } catch {}
-    }
     const passport = findPassport(store, email) || result.passport;
     const full = Boolean(result.created) || tokenMatches(passport, token);
     return {
