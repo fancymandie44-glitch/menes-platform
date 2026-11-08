@@ -259,10 +259,12 @@
         <img src="${esc(url)}" alt="" width="64" height="64">
       </button>`).join('');
 
-    const swatches = bundle.kind === 'combo' ? comboList(bundle).map((c) => `
+    const swatches = bundle.kind === 'combo'
+      ? comboList(bundle).map((c) => `
       <button type="button" class="bundle-swatch${c.id === selectedCombo ? ' active' : ''}" data-combo="${esc(c.id)}"
         style="--swatch:${esc(c.swatch || '#888')}"
-        aria-label="${esc(loc(c.name))}" aria-pressed="${c.id === selectedCombo ? 'true' : 'false'}"></button>`).join('');
+        aria-label="${esc(loc(c.name))}" aria-pressed="${c.id === selectedCombo ? 'true' : 'false'}"></button>`).join('')
+      : '';
 
     const builder = bundle.kind === 'builder' ? renderBuilder(bundle) : '';
     inner.innerHTML = `

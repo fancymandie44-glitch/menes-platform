@@ -69,6 +69,11 @@ function run() {
     'images/lookbook/drop-table.jpg',
   ];
 
+  for (const file of ['shop-bundles.js', 'shop.js', 'data/bundles.js']) {
+    const check = spawnSync(process.execPath, ['--check', path.join(DIST, file)], { encoding: 'utf8' });
+    assert(check.status === 0, `${file} syntax error: ${check.stderr || check.stdout}`);
+  }
+
   for (const rel of required) {
     const full = path.join(DIST, rel);
     assert(fs.existsSync(full), `missing dist/${rel}`);
