@@ -72,8 +72,8 @@
       currency: 'CAD',
       urgency: { fr: 'Prêt à partir', en: 'Ready to ship' },
       highlights: {
-        fr: ['1 paire Kultur charcoal (fixe)', '2 paires de couleur au choix', '34,99 $ CAD', 'Livraison Québec & Canada'],
-        en: ['1 charcoal Kultur pair (fixed)', '2 color pairs of your choice', '34.99 CAD', 'Ships Quebec & Canada'],
+        fr: ['1 paire Kultur charcoal (fixe)', '2 paires de couleur au choix', '34,99 $ CAD'],
+        en: ['1 charcoal Kultur pair (fixed)', '2 color pairs of your choice', '34.99 CAD'],
       },
       included: {
         fr: ['1 paire Kultur charcoal', '2 paires de couleur au choix'],
@@ -100,8 +100,8 @@
         en: 'Kultur cap. Two pairs. One boxer. You choose.',
       },
       description: {
-        fr: 'Pack MENES Essentials : 1 casquette Kultur MENES, 2 paires de chaussettes au choix, 1 boxer Red ou Grey (tailles S–XL). Le quotidien street luxe, en un pack.',
-        en: 'MENES Essentials pack: 1 Kultur MENES cap, 2 sock pairs of your choice, 1 Red or Grey boxer (sizes S–XL). Daily street luxe, one pack.',
+        fr: 'Pack MENES Essentials : 1 casquette Kultur MENES, 2 paires de chaussettes au choix, 1 boxer Red ou Grey (tailles S à XL). Le quotidien street luxe, en un pack.',
+        en: 'MENES Essentials pack: 1 Kultur MENES cap, 2 sock pairs of your choice, 1 Red or Grey boxer (sizes S to XL). Daily street luxe, one pack.',
       },
       seoTitle: {
         fr: 'MENES ESSENTIALS | Casquette, 2 paires et boxer',
@@ -117,8 +117,8 @@
       currency: 'CAD',
       urgency: { fr: 'Le pack de tous les jours', en: 'The everyday pack' },
       highlights: {
-        fr: ['1 casquette Kultur MENES', '2 paires au choix', '1 boxer Red ou Grey, S–XL', '99,99 $ CAD'],
-        en: ['1 Kultur MENES cap', '2 pairs of your choice', '1 Red or Grey boxer, S–XL', '99.99 CAD'],
+        fr: ['1 casquette Kultur MENES', '2 paires au choix', '1 boxer Red ou Grey, S à XL', '99,99 $ CAD'],
+        en: ['1 Kultur MENES cap', '2 pairs of your choice', '1 Red or Grey boxer, S to XL', '99.99 CAD'],
       },
       included: {
         fr: ['1 casquette Kultur MENES', '2 paires Kultur Steps au choix', '1 boxer MENES au choix (Red ou Grey)'],

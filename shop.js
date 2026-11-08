@@ -216,7 +216,7 @@ const I18N = {
     reviews_title_field: 'Titre',
     reviews_body: 'Ton avis',
     reviews_submit: 'Envoyer l\'avis',
-    reviews_thanks: 'Merci — ton avis sera publié après validation',
+    reviews_thanks: 'Merci. Ton avis sera publié après validation',
     reviews_after_order: 'Laisser un avis',
     reviews_count: '{n} avis',
     reviews_based: 'Basé sur {n} avis',
@@ -227,7 +227,7 @@ const I18N = {
     passport: 'Passeport',
     passport_kicker: 'Passeport MENES',
     passport_title: 'Ta carte membre',
-    passport_help: 'Entre ton email. Ton passeport MENES s’ouvre tout de suite — même avant une commande.',
+    passport_help: 'Entre ton email. Ton passeport MENES s’ouvre tout de suite, même avant une commande.',
     passport_open: 'Ouvrir le passeport',
     passport_none: 'Impossible d’ouvrir le passeport. Réessaie avec un email valide.',
     passport_member: 'Membre depuis',
@@ -342,7 +342,7 @@ const I18N = {
     reviews_title_field: 'Title',
     reviews_body: 'Your review',
     reviews_submit: 'Submit review',
-    reviews_thanks: 'Thanks — your review will go live after approval',
+    reviews_thanks: 'Thanks. Your review will go live after approval',
     reviews_after_order: 'Leave a review',
     reviews_count: '{n} reviews',
     reviews_based: 'Based on {n} reviews',
@@ -353,7 +353,7 @@ const I18N = {
     passport: 'Passport',
     passport_kicker: 'MENES Passport',
     passport_title: 'Your member card',
-    passport_help: 'Enter your email. Your MENES Passport opens now — even before an order.',
+    passport_help: 'Enter your email. Your MENES Passport opens now, even before an order.',
     passport_open: 'Open passport',
     passport_none: 'Could not open the passport. Try a valid email.',
     passport_member: 'Member since',
@@ -431,7 +431,7 @@ const DEFAULT_SITE_EN = {
   heroTitle: 'Street luxe.\nThis is MENES.',
   heroSubtitle: 'Clothes and accessories for people who set the trend. Not the ones who follow it.',
   heroCta: 'Shop the collection',
-  announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
+  announcement: 'Limited drop. Find a MENES ambassador for exclusive 10% off',
   galleryTitle: 'They wear MENES',
   gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
   guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
@@ -459,7 +459,7 @@ const DEFAULT_SITE_EN = {
   },
   emailCapture: {
     title: 'Join the MENES inner circle',
-    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.',
+    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.',
     button: 'Sign me up',
     placeholder: 'you@email.com',
   },
@@ -480,9 +480,14 @@ function softHeroTitle(str) {
 
 function humanizeCopy(str) {
   return String(str || '')
-    .replace(/[—–]/g, ', ')
+    .replace(/[—–]/g, '. ')
     .replace(/\s*·\s*/g, '. ')
+    .replace(/FREE shipping Canada/gi, '')
+    .replace(/Livraison GRATUITE Canada/gi, '')
+    .replace(/Ships Quebec(?:\s*[&and]+\s*Canada)?/gi, '')
+    .replace(/Livraison Québec(?:\s*[&et]+\s*Canada)?/gi, '')
     .replace(/\s{2,}/g, ' ')
+    .replace(/(\s*\.){2,}/g, '.')
     .trim();
 }
 
@@ -492,16 +497,16 @@ function looksLikeRetiredVipPromo(str) {
 
 function ambassadorAnnouncement(lang) {
   return lang === 'en'
-    ? 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off'
-    : 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs';
+    ? 'Limited drop. Find a MENES ambassador for exclusive 10% off'
+    : 'Drop limité. Trouve un ambassadeur MENES pour 10% exclusifs';
 }
 
 function migrateEmailCapture(ec, lang) {
   const out = { ...(ec || {}) };
   if (looksLikeRetiredVipPromo(out.subtitle) || /-10%/.test(String(out.subtitle || ''))) {
     out.subtitle = lang === 'en'
-      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.'
-      : 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES — son code est la seule clé.';
+      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.'
+      : 'Drops en avant-première et accès exclusif. Tu veux 10%? Trouve un ambassadeur MENES. Son code est la seule clé.';
   }
   if (/liste VIP|VIP list/i.test(String(out.title || ''))) {
     out.title = lang === 'en' ? 'Join the MENES inner circle' : 'Rejoins le cercle MENES';
@@ -1227,7 +1232,7 @@ function applySeo() {
     document.title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
+    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing. Secure checkout.';
   } else {
     document.title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
     let meta = document.querySelector('meta[name="description"]');
@@ -1304,8 +1309,8 @@ async function refreshStore(opts = {}) {
 
 const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 const HOLIDAY_ANNOUNCE = {
-  en: 'Holiday season is here · FREE shipping Canada · Essentials 99.99 · Kultur Steps 34.99 · Holiday Exclusive 329.99',
-  fr: 'Le temps des fêtes est là · Livraison GRATUITE Canada · Essentials 99,99 · Kultur Steps 34,99 · Holiday Exclusive 329,99',
+  en: 'Holiday season is here. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
+  fr: 'Le temps des fêtes est là. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
 };
 
 function applySectionOrder() {
@@ -3385,7 +3390,7 @@ async function confirmPaidOrderFromUrl(params) {
         return data;
       }
       showSuccess({
-        title: currentLang === 'en' ? 'Payment received — confirming' : 'Paiement reçu — confirmation en cours',
+        title: currentLang === 'en' ? 'Payment received. Confirming' : 'Paiement reçu. Confirmation en cours',
         msg: data.message || (currentLang === 'en'
           ? 'We are confirming your payment with the provider. You will receive an email shortly.'
           : 'Nous confirmons votre paiement auprès du prestataire. Vous recevrez un courriel sous peu.'),

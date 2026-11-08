@@ -99,6 +99,7 @@ function run() {
   assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
   assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
   assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
+  assert(!/FREE shipping Canada/i.test(shopJs.match(/HOLIDAY_ANNOUNCE = \{[\s\S]*?\};/)?.[0] || ''), 'top bar must not say free shipping Canada');
   assert(shopJs.includes('HOLIDAY_FREE_SHIPPING'), 'holiday free shipping flag');
   assert(shopJs.includes('passport_pieces'), 'passport must show purchased pieces');
   assert(shopJs.includes('Open my passport') || html.includes('Open my passport'), 'entry overlay asks for passport email');

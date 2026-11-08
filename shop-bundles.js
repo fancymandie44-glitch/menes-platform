@@ -79,8 +79,8 @@
 
   function headline() {
     return lang() === 'fr'
-      ? 'Le cadeau, sans te casser la tête. Essentials à 99,99 $. Kultur Steps à 34,99 $. Holiday Exclusive à 329,99 $. Tu construis le pack en une minute, on livre.'
-      : 'Don\'t overthink the gift. Essentials at 99.99. Kultur Steps at 34.99. Holiday Exclusive at 329.99. Build it in a minute — we ship Quebec & Canada.';
+      ? 'Le cadeau, sans te casser la tête. Essentials à 99,99 $. Kultur Steps à 34,99 $. Holiday Exclusive à 329,99 $. Tu construis le pack en une minute.'
+      : 'Don\'t overthink the gift. Essentials at 99.99. Kultur Steps at 34.99. Holiday Exclusive at 329.99. Build it in a minute.';
   }
 
   function viewLabel() {
@@ -146,8 +146,8 @@
     }
     row.innerHTML = ready.map((bundle) => {
       const label = lang() === 'fr'
-        ? `${loc(bundle.name)} · ${money(bundle.price)} — Acheter`
-        : `${loc(bundle.name)} · ${money(bundle.price)} — Shop now`;
+        ? `${loc(bundle.name)} ${money(bundle.price)}. Acheter`
+        : `${loc(bundle.name)} ${money(bundle.price)}. Shop now`;
       return `<a class="shop-bundles-fast-btn${bundle.featured ? ' is-featured' : ''}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
     }).join('');
     wireBundleLinks(row);
@@ -199,14 +199,14 @@
 
   function missingMessage(bundle) {
     const B = api();
-    if (!B.isPriced(bundle)) return lang() === 'fr' ? 'Prix à confirmer — pas encore en vente.' : 'Price to confirm — not on sale yet.';
+    if (!B.isPriced(bundle)) return lang() === 'fr' ? 'Prix à confirmer. Pas encore en vente.' : 'Price to confirm. Not on sale yet.';
     if (bundle.kind === 'combo' && comboList(bundle).length && !selectedCombo) {
       return lang() === 'fr' ? 'Choisis un combo de couleurs.' : 'Pick a color combo.';
     }
     if (bundle.kind === 'builder') {
       const need = B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3);
       const n = builderPicks.filter(Boolean).length;
-      if (n < need) return lang() === 'fr' ? `${n} / ${need} paires choisies — il en manque ${need - n}.` : `${n} / ${need} pairs chosen — ${need - n} left.`;
+      if (n < need) return lang() === 'fr' ? `${n} / ${need} paires choisies. Il en manque ${need - n}.` : `${n} / ${need} pairs chosen. ${need - n} left.`;
       if (bundle.boxer && !selectedBoxerColor) return lang() === 'fr' ? 'Choisis ton boxer (Red ou Grey).' : 'Pick your boxer (Red or Grey).';
       if (bundle.boxer && !selectedBoxerSize) return lang() === 'fr' ? 'Choisis la taille du boxer.' : 'Pick the boxer size.';
     }
@@ -271,7 +271,7 @@
       <div class="bundle-pdp">
         <div class="pdp-media">
           <div class="pdp-img-wrap">
-            <img id="bundleMainImg" src="${esc(mainImg)}" alt="${esc(loc(bundle.name))}${comboName ? ` — ${esc(comboName)}` : ''}" width="720" height="900">
+            <img id="bundleMainImg" src="${esc(mainImg)}" alt="${esc(loc(bundle.name))}${comboName ? ` ${esc(comboName)}` : ''}" width="720" height="900">
           </div>
           <div class="pdp-thumbs" id="bundleThumbs">${thumbsHtml}</div>
         </div>
@@ -343,7 +343,7 @@
       const used = !bundle.allowDuplicatePairs && builderPicks.includes(p.id);
       const disabled = out || used;
       return `<button type="button" class="builder-opt${disabled ? ' is-disabled' : ''}" data-pair="${esc(p.id)}" ${disabled ? 'disabled' : ''}
-        aria-label="${esc(loc(p.name))}${out ? ` — ${esc(t('sold_out'))}` : ''}">
+        aria-label="${esc(loc(p.name))}${out ? ` ${esc(t('sold_out'))}` : ''}">
         <img src="${esc(p.image)}" alt="${esc(loc(p.name))}" width="160" height="200">
         <span class="builder-opt-swatch" style="background:${esc(p.swatch || '#888')}" aria-hidden="true"></span>
         <strong>${esc(loc(p.name))}</strong>
