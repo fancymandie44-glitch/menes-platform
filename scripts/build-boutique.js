@@ -57,6 +57,8 @@ const REQUIRED_FILES = [
   'lib/public-catalog.js',
   'images/products/socks/black.jpg',
   'images/products/socks/kltr-orange.jpg',
+  'images/products/boxers/grey.jpg',
+  'images/products/boxers/red.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];

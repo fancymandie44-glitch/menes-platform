@@ -57,6 +57,10 @@ function run() {
     'images/products/socks/black.jpg',
     'images/products/socks/green.jpg',
     'images/products/socks/kltr-orange.jpg',
+    'images/products/boxers/grey.jpg',
+    'images/products/boxers/grey-worn.jpg',
+    'images/products/boxers/red.jpg',
+    'images/products/boxers/red-worn.jpg',
     'images/lookbook/drop-table.jpg',
   ];
 
