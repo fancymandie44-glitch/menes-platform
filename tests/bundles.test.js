@@ -15,6 +15,8 @@ assert.ok(bundles.isReady(bundles.bySlug('kultur-steps')), 'kultur must be sella
 assert.strictEqual(bundles.bySlug('kultur-steps').price, 34.99);
 assert.ok(bundles.isReady(bundles.bySlug('holiday-exclusive')), 'holiday must be sellable at 329.99');
 assert.strictEqual(bundles.bySlug('holiday-exclusive').price, 329.99);
+assert.strictEqual(bundles.bySlug('holiday-exclusive').featured, true);
+assert.ok(bundles.sorted()[0].slug === 'holiday-exclusive', 'holiday pack leads the grid');
 assert.ok(!bundles.isReady(bundles.bySlug('bundle-moyen')));
 assert.ok(bundles.visibleOnGrid(bundles.bySlug('bundle-moyen')), 'unpublished still occupies the grid');
 

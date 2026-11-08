@@ -1278,24 +1278,27 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'shopBundles', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const HOLIDAY_ANNOUNCE = {
+  en: 'Holiday season is here · Kultur Steps 34.99 · Holiday Exclusive 329.99 · Fast checkout · Ships Quebec & Canada',
+  fr: 'Le temps des fêtes est là · Kultur Steps 34,99 · Holiday Exclusive 329,99 · Paiement rapide · Livraison Québec & Canada',
+};
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
     ? [...storeData.site.sectionOrder]
     : [...DEFAULT_SECTION_ORDER];
-  if (!order.includes('shopBundles')) {
-    const i = order.indexOf('products');
-    order.splice(i >= 0 ? i + 1 : 0, 0, 'shopBundles');
+  const withoutBundles = order.filter((id) => id !== 'shopBundles');
+  withoutBundles.unshift('shopBundles');
+  if (!withoutBundles.includes('lookbook')) {
+    const i = withoutBundles.indexOf('products');
+    withoutBundles.splice(i >= 0 ? i + 1 : 1, 0, 'lookbook');
   }
-  if (!order.includes('lookbook')) {
-    const i = order.indexOf('shopBundles') >= 0 ? order.indexOf('shopBundles') : order.indexOf('products');
-    order.splice(i >= 0 ? i + 1 : 0, 0, 'lookbook');
-  }
+  const pinned = withoutBundles;
   const hero = document.getElementById('heroSection');
   if (!hero) return;
   let ref = hero;
-  order.forEach((id) => {
+  pinned.forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     ref.after(el);
@@ -1318,13 +1321,16 @@ function renderSite() {
     logo.classList.remove('hidden');
   }
 
-  toggle('announceBar', sec.announcement !== false && s.announcement);
-  if (s.announcement) document.getElementById('announceBar').textContent = s.announcement;
+  const holidayLine = HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en;
+  toggle('announceBar', sec.announcement !== false);
+  document.getElementById('announceBar').textContent = holidayLine;
 
   document.getElementById('heroTag').textContent = s.tagline || '';
   document.getElementById('heroTitle').textContent = (s.heroTitle || raw.name || 'MENES').replace(/\\n/g, '\n');
   document.getElementById('heroSubtitle').textContent = s.heroSubtitle || '';
-  document.getElementById('heroCta').textContent = s.heroCta || t('hero_cta');
+  const heroCta = document.getElementById('heroCta');
+  heroCta.textContent = currentLang === 'fr' ? 'Voir les specials' : 'Shop the holiday drop';
+  heroCta.setAttribute('href', '#shopBundles');
 
   const heroBg = document.getElementById('heroBg');
   const heroVideo = document.getElementById('heroVideo');

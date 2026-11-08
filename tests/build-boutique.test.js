@@ -74,6 +74,8 @@ function run() {
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
   assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
+  assert(html.includes('id="shopBundlesFast"'), 'homepage must include holiday fast-buy buttons');
+  assert(html.includes('Shop the holiday drop'), 'hero CTA must send shoppers to bundles');
   assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
   assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
   assert(html.includes('id="lookbookStory"'), 'story copy mount must exist');
@@ -83,6 +85,8 @@ function run() {
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
   assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
   assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
+  assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
+  assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
   const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
   assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
   assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');

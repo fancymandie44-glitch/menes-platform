@@ -76,12 +76,12 @@
 
   function headline() {
     return lang() === 'fr'
-      ? 'Trois packs. Un ancrage. Choisis ton entrée MENES.'
-      : 'Three packs. One anchor. Pick your MENES start.';
+      ? 'Le cadeau, sans te casser la tête. Kultur Steps à 34,99 $. Holiday Exclusive à 329,99 $. Tu construis le pack en une minute, on livre.'
+      : 'Don\'t overthink the gift. Kultur Steps at 34.99. Holiday Exclusive at 329.99. Build it in a minute — we ship Quebec & Canada.';
   }
 
   function viewLabel() {
-    return lang() === 'fr' ? 'Voir le bundle' : 'View bundle';
+    return lang() === 'fr' ? 'Acheter maintenant' : 'Shop now';
   }
 
   function soonLabel() {
@@ -95,9 +95,10 @@
     const title = document.getElementById('shopBundlesTitle');
     const lead = document.getElementById('shopBundlesLead');
     if (!grid || !B) return;
-    if (kicker) kicker.textContent = lang() === 'fr' ? 'Packs MENES' : 'MENES packs';
-    if (title) title.textContent = lang() === 'fr' ? 'Les trois bundles' : 'The three bundles';
+    if (kicker) kicker.textContent = lang() === 'fr' ? 'Drop des fêtes' : 'Holiday drop';
+    if (title) title.textContent = lang() === 'fr' ? 'Le temps des fêtes est là' : 'The season is on';
     if (lead) lead.textContent = headline();
+    renderFastBuy(B);
 
     const list = B.sorted();
     grid.innerHTML = list.map((bundle) => {
@@ -128,7 +129,30 @@
       </article>`;
     }).join('');
 
-    grid.querySelectorAll('a[href^="/bundle/"]').forEach((a) => {
+    wireBundleLinks(grid);
+  }
+
+  function renderFastBuy(B) {
+    const row = document.getElementById('shopBundlesFast');
+    if (!row || !B) return;
+    const ready = B.sorted().filter((b) => B.isReady(b))
+      .sort((a, b) => Number(a.price) - Number(b.price));
+    if (!ready.length) {
+      row.innerHTML = '';
+      return;
+    }
+    row.innerHTML = ready.map((bundle) => {
+      const label = lang() === 'fr'
+        ? `${loc(bundle.name)} · ${money(bundle.price)} — Acheter`
+        : `${loc(bundle.name)} · ${money(bundle.price)} — Shop now`;
+      return `<a class="shop-bundles-fast-btn${bundle.featured ? ' is-featured' : ''}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
+    }).join('');
+    wireBundleLinks(row);
+  }
+
+  function wireBundleLinks(root) {
+    if (!root) return;
+    root.querySelectorAll('a[href^="/bundle/"]').forEach((a) => {
       a.addEventListener('click', (e) => {
         const href = a.getAttribute('href') || '';
         const slug = href.replace(/^\/bundle\//, '').replace(/\/$/, '');
