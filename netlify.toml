@@ -53,6 +53,11 @@
   status = 200
 
 [[redirects]]
+  from = "/bundle/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/r/*"
   to = "/index.html"
   status = 200
