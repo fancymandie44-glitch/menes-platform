@@ -36,15 +36,12 @@ exports.handler = async (event) => {
     }
 
     const store = await readSiteStore(siteId);
-    let passport = findPassport(store, email);
     let created = false;
-    if (!passport) {
-      const result = upsertPassportFromPaidOrders(store, email);
-      if (result?.passport) {
-        passport = result.passport;
-        created = Boolean(result.created);
-        await writeSiteStore(siteId, store);
-      }
+    const refreshed = upsertPassportFromPaidOrders(store, email);
+    let passport = refreshed?.passport || findPassport(store, email);
+    if (refreshed?.passport) {
+      created = Boolean(refreshed.created);
+      await writeSiteStore(siteId, store);
     }
     if (!passport) {
       return { statusCode: 404, headers, body: JSON.stringify({ ok: false, exists: false }) };

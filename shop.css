@@ -104,6 +104,20 @@ body {
 }
 .passport-card-name { font-size: 1.05rem; margin-bottom: 4px; }
 .passport-card-meta { color: var(--gray-600); font-size: 0.88rem; line-height: 1.6; }
+.passport-pieces { margin-top: 16px; text-align: left; }
+.passport-pieces-label {
+  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px;
+}
+.passport-pieces-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+}
+.passport-piece {
+  border: 1px solid var(--hairline); background: var(--surface-2);
+  padding: 8px; display: flex; flex-direction: column; gap: 6px;
+}
+.passport-piece img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #000; }
+.passport-piece span { font-size: 0.75rem; line-height: 1.3; color: var(--white); }
 .passport-badge {
   display: inline-block; margin-top: 12px; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
   border: 1px solid var(--gold); color: var(--gold); padding: 4px 8px;

@@ -37,7 +37,14 @@ function run() {
   assert(first.passport.email === 'alex@example.com', 'email stored lowercase');
   assert(first.passport.token && first.passport.token.length >= 24, 'token issued');
   assert(publicCode(first.passport.id).startsWith('MENES-'), 'public code MENES-');
-  assert(first.passport.orderCount === 1, 'one paid order');
+  store.orders[0].items = [
+    { id: 'bundle-essentials', name: 'MENES ESSENTIALS', qty: 1, image: '/images/bundles/essentials.jpg', bundle: true },
+    { id: 'summer-socks', name: 'MENES Summer Socks', qty: 2, image: '/images/products/socks/black.jpg' },
+  ];
+  const withItems = upsertPassportFromOrder(store, store.orders[0]);
+  assert(withItems.passport.pieces.length === 2, 'passport stores purchased products');
+  assert(withItems.passport.pieces.some((p) => p.bundle && p.id === 'bundle-essentials'), 'bundles land in the passport');
+  assert(clientView(withItems.passport, { full: true }).pieces.length === 2, 'client sees purchased pieces');
   assert(first.passport.vip === false, 'single order under VIP threshold is not VIP');
 
   const unpaid = paidOrder({ id: 'PEND', status: 'pending' });

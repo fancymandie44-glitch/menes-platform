@@ -11,6 +11,7 @@ const LOW_STOCK_LIMIT = 10;
 const VIP_DISMISS_DAYS = 14;
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
+const HOLIDAY_FREE_SHIPPING = true;
 const LANG_KEY = 'menes_lang_v2';
 const API = '/api/store';
 
@@ -65,6 +66,7 @@ async function captureAmbassadorRef() {
 }
 
 function shippingThreshold() {
+  if (HOLIDAY_FREE_SHIPPING) return 0;
   const n = Number(storeData?.site?.freeShippingThreshold);
   return Number.isFinite(n) && n > 0 ? n : FREE_SHIPPING_THRESHOLD;
 }
@@ -163,6 +165,8 @@ const I18N = {
     promo_min: 'Panier minimum {amount}$ CAD',
     shipping_progress: 'Plus que {amount}$ pour la livraison gratuite',
     shipping_unlocked: 'Livraison gratuite débloquée',
+    shipping_holiday: 'Livraison gratuite pour le temps des fêtes',
+    passport_pieces: 'Tes pièces MENES',
     viewers: '{n} personnes regardent ce produit',
     stock_left: 'Plus que {n} en stock',
     sold_out: 'Épuisé',
@@ -184,7 +188,7 @@ const I18N = {
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
-    proof_ship: 'Livraison CA',
+    proof_ship: 'Livraison gratuite',
     proof_ex: 'Échange 14 jours',
     upsell_cart_title: 'Complète ton panier',
     upsell_eyebrow: 'Avant de continuer',
@@ -286,6 +290,8 @@ const I18N = {
     promo_min: 'Minimum cart {amount}$ CAD',
     shipping_progress: '{amount}$ more for free shipping',
     shipping_unlocked: 'Free shipping unlocked',
+    shipping_holiday: 'Free shipping this holiday season',
+    passport_pieces: 'Your MENES pieces',
     viewers: '{n} people are viewing this product',
     stock_left: 'Only {n} left in stock',
     sold_out: 'Sold out',
@@ -307,7 +313,7 @@ const I18N = {
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
-    proof_ship: 'Ships to CA',
+    proof_ship: 'Free shipping',
     proof_ex: '14-day exchange',
     upsell_cart_title: 'Complete your cart',
     upsell_eyebrow: 'Before you go',
@@ -606,10 +612,15 @@ function renderShippingBar() {
 
   const subtotal = cartSubtotal();
   const threshold = shippingThreshold();
+  bar.classList.remove('hidden');
+  if (threshold <= 0) {
+    fill.style.width = '100%';
+    text.textContent = t('shipping_holiday');
+    text.classList.add('is-unlocked');
+    return;
+  }
   const remaining = Math.max(0, threshold - subtotal);
   const pct = Math.min(100, (subtotal / threshold) * 100);
-
-  bar.classList.remove('hidden');
   fill.style.width = `${pct}%`;
 
   if (remaining <= 0) {
@@ -897,7 +908,18 @@ function renderPassportCard(passport) {
       ${Number.isFinite(spent) && spent > 0 ? `<br>${esc(t('passport_spent'))}: ${spent.toFixed(2)}$ CAD` : ''}
       ${since ? `<br>${esc(t('passport_member'))}: ${esc(since)}` : ''}
     </div>
-    ${passport.vip ? `<span class="passport-badge">${esc(t('passport_vip'))}</span>` : ''}`;
+    ${passport.vip ? `<span class="passport-badge">${esc(t('passport_vip'))}</span>` : ''}
+    ${Array.isArray(passport.pieces) && passport.pieces.length
+      ? `<div class="passport-pieces">
+          <p class="passport-pieces-label">${esc(t('passport_pieces'))}</p>
+          <div class="passport-pieces-grid">${passport.pieces.map((p) => `
+            <div class="passport-piece">
+              ${p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name || '')}">` : '<span class="placeholder">◆</span>'}
+              <span>${esc(p.name || '')}${p.qty > 1 ? ` ×${p.qty}` : ''}${p.bundle ? ' · bundle' : ''}</span>
+            </div>`).join('')}
+          </div>
+        </div>`
+      : ''}`;
   card.classList.remove('hidden');
   if (form) form.classList.add('hidden');
 }
@@ -1280,8 +1302,8 @@ async function refreshStore(opts = {}) {
 
 const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 const HOLIDAY_ANNOUNCE = {
-  en: 'Holiday season is here · Essentials 99.99 · Kultur Steps 34.99 · Holiday Exclusive 329.99 · Fast checkout · Ships Quebec & Canada',
-  fr: 'Le temps des fêtes est là · Essentials 99,99 · Kultur Steps 34,99 · Holiday Exclusive 329,99 · Paiement rapide · Livraison Québec & Canada',
+  en: 'Holiday season is here · FREE shipping Canada · Essentials 99.99 · Kultur Steps 34.99 · Holiday Exclusive 329.99',
+  fr: 'Le temps des fêtes est là · Livraison GRATUITE Canada · Essentials 99,99 · Kultur Steps 34,99 · Holiday Exclusive 329,99',
 };
 
 function applySectionOrder() {
