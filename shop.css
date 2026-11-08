@@ -1376,7 +1376,7 @@ body.scroll-locked .checkout-pay-dock {
   display: flex; flex-direction: column; gap: 6px; background: var(--surface-2);
 }
 .builder-slot.is-filled { border-style: solid; border-color: var(--gold); }
-.builder-slot img { width: 100%; aspect-ratio: 4/5; object-fit: cover; }
+.builder-slot img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #000; }
 .builder-slot-n { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); }
 .builder-clear {
   min-height: 44px; border: 1px solid var(--hairline); background: transparent;
@@ -1389,7 +1389,7 @@ body.scroll-locked .checkout-pay-dock {
   position: relative; min-height: 44px; padding: 0; border: 1px solid var(--hairline);
   background: var(--surface-2); color: var(--white); cursor: pointer; font: inherit; text-align: left;
 }
-.builder-opt img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; }
+.builder-opt img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #000; display: block; }
 .builder-opt strong { display: block; padding: 8px; font-size: 0.78rem; }
 .builder-opt-swatch { position: absolute; top: 8px; left: 8px; width: 14px; height: 14px; border-radius: 50%; border: 1px solid #fff; }
 .builder-opt.is-disabled { opacity: 0.4; cursor: not-allowed; }

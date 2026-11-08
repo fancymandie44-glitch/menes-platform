@@ -28,14 +28,14 @@
   };
 
   const PAIR_OPTIONS = [
-    { id: 'noir', name: { fr: 'Noir / blanc', en: 'Black / white' }, swatch: '#1a1a1a', image: '/images/bundles/kultur-steps-noir-jaune.jpg', inStock: true },
-    { id: 'jaune', name: { fr: 'Jaune', en: 'Yellow' }, swatch: '#e6c200', image: '/images/bundles/kultur-steps-noir-jaune.jpg', inStock: true },
-    { id: 'rouge', name: { fr: 'Rouge', en: 'Red' }, swatch: '#c41e3a', image: '/images/bundles/kultur-steps-rouge-noir.jpg', inStock: true },
-    { id: 'vert', name: { fr: 'Vert', en: 'Green' }, swatch: '#2e8b57', image: '/images/bundles/kultur-steps-vert-jaune.jpg', inStock: true },
-    { id: 'violet', name: { fr: 'Violet', en: 'Purple' }, swatch: '#6b3fa0', image: '/images/bundles/kultur-steps-violet-cyan.jpg', inStock: true },
-    { id: 'cyan', name: { fr: 'Cyan', en: 'Cyan' }, swatch: '#2aa8d4', image: '/images/bundles/kultur-steps-violet-cyan.jpg', inStock: true },
-    { id: 'rose', name: { fr: 'Rose', en: 'Pink' }, swatch: '#e85aad', image: '/images/bundles/kultur-steps-rose-cyan.jpg', inStock: true },
-    { id: 'kultur', name: { fr: 'Kultur charcoal', en: 'Kultur charcoal' }, swatch: '#2b2b2b', image: '/images/bundles/kultur-steps-noir-jaune.jpg', inStock: true },
+    { id: 'noir', name: { fr: 'Noir / blanc', en: 'Black / white' }, swatch: '#1a1a1a', image: '/images/bundles/pairs/noir.jpg?v=1', inStock: true },
+    { id: 'jaune', name: { fr: 'Jaune', en: 'Yellow' }, swatch: '#e6c200', image: '/images/bundles/pairs/jaune.jpg?v=1', inStock: true },
+    { id: 'rouge', name: { fr: 'Rouge', en: 'Red' }, swatch: '#c41e3a', image: '/images/bundles/pairs/rouge.jpg?v=1', inStock: true },
+    { id: 'vert', name: { fr: 'Vert', en: 'Green' }, swatch: '#2e8b57', image: '/images/bundles/pairs/vert.jpg?v=1', inStock: true },
+    { id: 'violet', name: { fr: 'Violet', en: 'Purple' }, swatch: '#6b3fa0', image: '/images/bundles/pairs/violet.jpg?v=1', inStock: true },
+    { id: 'cyan', name: { fr: 'Cyan', en: 'Cyan' }, swatch: '#2aa8d4', image: '/images/bundles/pairs/cyan.jpg?v=1', inStock: true },
+    { id: 'rose', name: { fr: 'Rose', en: 'Pink' }, swatch: '#e85aad', image: '/images/bundles/pairs/rose.jpg?v=1', inStock: true },
+    { id: 'kultur', name: { fr: 'Kultur charcoal', en: 'Kultur charcoal' }, swatch: '#2b2b2b', image: '/images/bundles/pairs/kultur.jpg?v=1', inStock: true },
   ];
 
   const BUNDLES = [

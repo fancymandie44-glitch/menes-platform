@@ -59,6 +59,8 @@ const REQUIRED_FILES = [
   'images/products/socks/kltr-orange.jpg',
   'images/products/boxers/grey.jpg',
   'images/products/boxers/red.jpg',
+  'images/bundles/pairs/noir.jpg',
+  'images/bundles/pairs/kultur.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];

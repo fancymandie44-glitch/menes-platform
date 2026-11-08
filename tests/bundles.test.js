@@ -21,6 +21,10 @@ assert.ok(!bundles.isReady(bundles.bySlug('bundle-moyen')));
 assert.ok(bundles.visibleOnGrid(bundles.bySlug('bundle-moyen')), 'unpublished still occupies the grid');
 
 const holiday = bundles.bySlug('holiday-exclusive');
+const pairImages = (holiday.pairOptions || bundles.PAIR_OPTIONS).map((p) => p.image);
+assert.ok(pairImages.length === 8, 'eight holiday pair photos');
+assert.ok(pairImages.every((src) => src.includes('/images/bundles/pairs/')), 'holiday pairs use pack shots, not combo photos');
+assert.ok(pairImages.every((src) => !src.includes('kultur-steps-')), 'holiday pairs must not reuse Kultur Steps combo photos');
 assert.ok(bundles.validateLine(holiday, { pairs: ['noir'] }).error);
 assert.ok(!bundles.validateLine(holiday, { pairs: ['noir', 'jaune', 'rose'] }).error);
 assert.ok(bundles.validateLine(holiday, { pairs: ['noir', 'nope', 'rose'] }).error);
