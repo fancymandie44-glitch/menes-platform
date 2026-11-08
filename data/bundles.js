@@ -2,7 +2,7 @@
  * MENES shop bundles — single source of truth.
  * Add or edit a bundle here only. UI, cart, and checkout read this file.
  *
- * Bundles: Kultur Steps (combo), Essentials (2 pairs + boxer), Holiday Exclusive (3 pairs).
+ * Bundles: Kultur Steps (1 Kultur pair + 2 color pairs), Essentials (2 pairs + boxer), Holiday Exclusive (3 pairs).
  *
  * clientDiscount.percent: fill with a number (e.g. 10) to activate member pricing.
  * Member price applies with code MENESFAM, or automatically if a MENES Passport
@@ -32,6 +32,7 @@
     { id: 'rose', name: { fr: 'Rose', en: 'Pink' }, swatch: '#e85aad', image: '/images/bundles/pairs/rose.jpg?v=1', inStock: true },
     { id: 'kultur', name: { fr: 'Kultur charcoal', en: 'Kultur charcoal' }, swatch: '#2b2b2b', image: '/images/bundles/pairs/kultur.jpg?v=1', inStock: true },
   ];
+  const COLOR_PAIR_OPTIONS = PAIR_OPTIONS.filter((p) => p.id !== 'kultur');
 
   const BOXER_SIZES = ['S', 'M', 'L', 'XL'];
   const BOXER_OPTIONS = [
@@ -45,25 +46,25 @@
       slug: 'kultur-steps',
       published: true,
       featured: false,
-      kind: 'combo',
+      kind: 'builder',
       order: 3,
       badge: { fr: 'Le plus rapide', en: 'Easiest gift' },
       name: { fr: 'KULTUR STEPS', en: 'KULTUR STEPS' },
       tagline: {
-        fr: 'Trois paires. Une vibe. Le pack pour partir.',
-        en: 'Three pairs. One vibe. The pack that starts it.',
+        fr: '1 paire Kultur. 2 paires de couleur à toi.',
+        en: '1 Kultur pair. 2 color pairs of your choice.',
       },
       description: {
-        fr: 'Pack Kultur Steps : trois paires MENES (bas Kultur charcoal au centre + deux paires colorblock). Tu choisis le combo photo. Street luxe, prêt à porter.',
-        en: 'Kultur Steps pack: three MENES pairs (charcoal Kultur sock in the center + two colorblock pairs). Pick the photo combo. Street luxe, ready to wear.',
+        fr: 'Pack Kultur Steps : 1 paire Kultur charcoal (toujours incluse) + 2 paires de couleur au choix (noir, jaune, rouge, vert, violet, cyan, rose). Street luxe, prêt à porter.',
+        en: 'Kultur Steps pack: 1 charcoal Kultur pair (always included) + 2 color pairs of your choice (black, yellow, red, green, purple, cyan, pink). Street luxe, ready to wear.',
       },
       seoTitle: {
-        fr: 'KULTUR STEPS | Pack 3 paires MENES',
-        en: 'KULTUR STEPS | MENES 3-pair pack',
+        fr: 'KULTUR STEPS | 1 paire Kultur + 2 paires au choix',
+        en: 'KULTUR STEPS | 1 Kultur pair + 2 color pairs',
       },
       seoDescription: {
-        fr: 'Bundle KULTUR STEPS MENES : 3 paires de chaussettes streetwear. Combos noir, jaune, rouge, vert, violet, cyan, rose. Livraison Québec et Canada.',
-        en: 'MENES KULTUR STEPS bundle: 3 pairs of streetwear socks. Combos in black, yellow, red, green, purple, cyan, pink. Ships Quebec and Canada.',
+        fr: 'Bundle KULTUR STEPS MENES 34,99 $ : 1 paire Kultur charcoal et 2 paires de couleur au choix. Livraison Québec et Canada.',
+        en: 'MENES KULTUR STEPS bundle 34.99: 1 charcoal Kultur pair and 2 color pairs of your choice. Ships Quebec and Canada.',
       },
       image: '/images/bundles/kultur-steps-noir-jaune.jpg',
       price: 34.99,
@@ -71,21 +72,16 @@
       currency: 'CAD',
       urgency: { fr: 'Prêt à partir', en: 'Ready to ship' },
       highlights: {
-        fr: ['3 paires Kultur Steps', 'Combo de couleurs au choix', 'Photo studio officielle', 'Livraison Québec & Canada'],
-        en: ['3 Kultur Steps pairs', 'Color combo of your choice', 'Official studio photo', 'Ships Quebec & Canada'],
+        fr: ['1 paire Kultur charcoal (fixe)', '2 paires de couleur au choix', '34,99 $ CAD', 'Livraison Québec & Canada'],
+        en: ['1 charcoal Kultur pair (fixed)', '2 color pairs of your choice', '34.99 CAD', 'Ships Quebec & Canada'],
       },
       included: {
-        fr: ['1 paire Kultur charcoal (centre)', '2 paires colorblock selon le combo choisi'],
-        en: ['1 charcoal Kultur pair (center)', '2 colorblock pairs from the chosen combo'],
+        fr: ['1 paire Kultur charcoal', '2 paires de couleur au choix'],
+        en: ['1 charcoal Kultur pair', '2 color pairs of your choice'],
       },
-      combos: [
-        { id: 'noir-jaune', name: { fr: 'Noir + Kultur + Jaune', en: 'Black + Kultur + Yellow' }, swatch: '#1a1a1a', image: '/images/bundles/kultur-steps-noir-jaune.jpg' },
-        { id: 'rouge-noir', name: { fr: 'Rouge + Kultur + Noir', en: 'Red + Kultur + Black' }, swatch: '#c41e3a', image: '/images/bundles/kultur-steps-rouge-noir.jpg' },
-        { id: 'vert-jaune', name: { fr: 'Vert + Kultur + Jaune', en: 'Green + Kultur + Yellow' }, swatch: '#2e8b57', image: '/images/bundles/kultur-steps-vert-jaune.jpg' },
-        { id: 'violet-cyan', name: { fr: 'Violet + Kultur + Cyan', en: 'Purple + Kultur + Cyan' }, swatch: '#6b3fa0', image: '/images/bundles/kultur-steps-violet-cyan.jpg' },
-        { id: 'violet-jaune', name: { fr: 'Violet + Kultur + Jaune', en: 'Purple + Kultur + Yellow' }, swatch: '#7a4cb8', image: '/images/bundles/kultur-steps-violet-jaune.jpg' },
-        { id: 'rose-cyan', name: { fr: 'Rose + Kultur + Cyan', en: 'Pink + Kultur + Cyan' }, swatch: '#e85aad', image: '/images/bundles/kultur-steps-rose-cyan.jpg' },
-      ],
+      pairCount: 2,
+      pairOptions: COLOR_PAIR_OPTIONS,
+      fixedPairId: 'kultur',
       sizes: [],
       stock: null,
       allowDuplicatePairs: true,
@@ -246,7 +242,9 @@
   }
 
   function pairById(bundle, pairId) {
-    return (bundle?.pairOptions || PAIR_OPTIONS).find((p) => p.id === pairId) || null;
+    const id = String(pairId || '');
+    const list = bundle?.pairOptions || PAIR_OPTIONS;
+    return list.find((p) => p.id === id) || PAIR_OPTIONS.find((p) => p.id === id) || null;
   }
 
   function boxerById(bundle, boxerId) {
@@ -275,11 +273,17 @@
       const allowDup = bundle.allowDuplicatePairs !== false;
       if (!allowDup && new Set(picks).size !== picks.length) return { error: 'Paires en double non permises' };
       for (const id of picks) {
+        if (bundle.fixedPairId && id === bundle.fixedPairId) return { error: 'La paire Kultur est déjà incluse' };
         const pair = pairById(bundle, id);
         if (!pair) return { error: `Paire inconnue: ${id}` };
         if (pair.inStock === false) return { error: `Rupture: ${id}` };
       }
       const out = { pairs: picks };
+      if (bundle.fixedPairId) {
+        const fixed = pairById(bundle, bundle.fixedPairId);
+        if (!fixed) return { error: 'Paire Kultur introuvable' };
+        out.fixedPair = fixed.id;
+      }
       if (bundle.boxer) {
         const color = String(variant?.boxerColor || variant?.boxer?.color || '').toLowerCase();
         const size = String(variant?.boxerSize || variant?.boxer?.size || '').toUpperCase();
@@ -303,7 +307,11 @@
     }
     if (bundle.kind === 'builder') {
       const picks = Array.isArray(variant?.pairs) ? variant.pairs : [];
-      const parts = picks.map((id) => loc(pairById(bundle, id)?.name, lang) || id);
+      const parts = [];
+      if (bundle.fixedPairId) {
+        parts.push(loc(pairById(bundle, variant?.fixedPair || bundle.fixedPairId)?.name, lang) || bundle.fixedPairId);
+      }
+      picks.forEach((id) => parts.push(loc(pairById(bundle, id)?.name, lang) || id));
       if (bundle.boxer && (variant?.boxerColor || variant?.boxerSize)) {
         const boxer = boxerById(bundle, variant.boxerColor);
         const color = loc(boxer?.name, lang) || variant.boxerColor;
@@ -326,6 +334,7 @@
     SITE_ORIGIN,
     CLIENT_DISCOUNT,
     PAIR_OPTIONS,
+    COLOR_PAIR_OPTIONS,
     BOXER_OPTIONS,
     BOXER_SIZES,
     BUNDLES,

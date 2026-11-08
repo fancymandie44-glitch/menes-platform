@@ -1390,6 +1390,7 @@ body.scroll-locked .checkout-pay-dock {
   display: flex; flex-direction: column; gap: 6px; background: var(--surface-2);
 }
 .builder-slot.is-filled { border-style: solid; border-color: var(--gold); }
+.builder-slot.is-locked { border-style: solid; border-color: var(--hairline); opacity: 0.95; }
 .builder-slot img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #000; }
 .builder-slot-n { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); }
 .builder-clear {

@@ -186,6 +186,14 @@
     (bundle.boxerOptions || []).forEach((b) => {
       if (b.image && !urls.includes(b.image)) urls.push(b.image);
     });
+    if (bundle.fixedPairId) {
+      const B = api();
+      const fixed = B?.pairById(bundle, bundle.fixedPairId);
+      if (fixed?.image && !urls.includes(fixed.image)) urls.push(fixed.image);
+    }
+    (bundle.pairOptions || []).forEach((p) => {
+      if (p.image && !urls.includes(p.image)) urls.push(p.image);
+    });
     return urls;
   }
 
@@ -251,7 +259,7 @@
         <img src="${esc(url)}" alt="" width="64" height="64">
       </button>`).join('');
 
-    const swatches = comboList(bundle).map((c) => `
+    const swatches = bundle.kind === 'combo' ? comboList(bundle).map((c) => `
       <button type="button" class="bundle-swatch${c.id === selectedCombo ? ' active' : ''}" data-combo="${esc(c.id)}"
         style="--swatch:${esc(c.swatch || '#888')}"
         aria-label="${esc(loc(c.name))}" aria-pressed="${c.id === selectedCombo ? 'true' : 'false'}"></button>`).join('');
@@ -313,6 +321,12 @@
     const need = B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3);
     if (builderPicks.length !== need) builderPicks = Array.from({ length: need }, (_, i) => builderPicks[i] || null);
     const filled = builderPicks.filter(Boolean).length;
+    const fixedPair = bundle.fixedPairId ? B.pairById(bundle, bundle.fixedPairId) : null;
+    const locked = fixedPair ? `<div class="builder-slot is-filled is-locked" aria-label="${esc(loc(fixedPair.name))}">
+        <span class="builder-slot-n">${esc(lang() === 'fr' ? 'Incluse' : 'Included')}</span>
+        <img src="${esc(fixedPair.image)}" alt="${esc(loc(fixedPair.name))}">
+        <strong>${esc(loc(fixedPair.name))}</strong>
+      </div>` : '';
     const slots = builderPicks.map((id, i) => {
       const pair = id ? B.pairById(bundle, id) : null;
       return `<div class="builder-slot${pair ? ' is-filled' : ''}" data-slot="${i}">
@@ -352,12 +366,17 @@
           ${boxerSizes.map((s) => `<button type="button" class="opt-chip${s === selectedBoxerSize ? ' active' : ''}" data-boxer-size="${esc(s)}" aria-pressed="${s === selectedBoxerSize ? 'true' : 'false'}">${esc(s)}</button>`).join('')}
         </div>
       </div>` : '';
-    const summary = builderPicks.filter(Boolean).map((id) => loc(B.pairById(bundle, id)?.name) || id);
+    const summary = [];
+    if (fixedPair) summary.push(loc(fixedPair.name));
+    builderPicks.filter(Boolean).forEach((id) => summary.push(loc(B.pairById(bundle, id)?.name) || id));
     if (boxer) summary.push(`${loc(boxer.name)} ${selectedBoxerSize}`.trim());
-    const slotClass = need === 2 ? ' builder-slots-2' : '';
+    const slotClass = (need + (fixedPair ? 1 : 0)) === 3 ? '' : (need === 2 ? ' builder-slots-2' : '');
+    const countLine = fixedPair
+      ? `${esc(lang() === 'fr' ? '1 paire Kultur incluse' : '1 Kultur pair included')} · ${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'couleurs' : 'colors')}`
+      : `${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'paires choisies' : 'pairs chosen')}`;
     return `<div class="bundle-builder" aria-label="${esc(lang() === 'fr' ? 'Compose ton pack' : 'Build your pack')}">
-      <div class="builder-count" aria-live="polite">${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'paires choisies' : 'pairs chosen')}</div>
-      <div class="builder-slots${slotClass}">${slots}</div>
+      <div class="builder-count" aria-live="polite">${countLine}</div>
+      <div class="builder-slots${slotClass}">${locked}${slots}</div>
       <div class="builder-grid">${options}</div>
       ${boxerBlock}
       <div class="builder-summary">

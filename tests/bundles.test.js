@@ -7,7 +7,9 @@ const bundles = require('../data/bundles.js');
 const { buildTrustedOrder, findDiscount } = require('../lib/order-pricing');
 
 assert.ok(bundles.BUNDLES.length === 3, 'three bundles');
-assert.strictEqual(bundles.bySlug('kultur-steps').kind, 'combo');
+assert.strictEqual(bundles.bySlug('kultur-steps').kind, 'builder');
+assert.strictEqual(bundles.bySlug('kultur-steps').pairCount, 2);
+assert.strictEqual(bundles.bySlug('kultur-steps').fixedPairId, 'kultur');
 assert.strictEqual(bundles.bySlug('holiday-exclusive').kind, 'builder');
 assert.ok(bundles.isReady(bundles.bySlug('essentials')), 'essentials must be sellable at 99.99');
 assert.strictEqual(bundles.bySlug('essentials').price, 99.99);
@@ -38,12 +40,17 @@ const store = {
 };
 const customer = { name: 'A', email: 'a@b.com', phone: '5141112222', address: '1 rue' };
 
+assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { combo: 'noir-jaune' }).error);
+assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir'] }).error);
+assert.ok(!bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir', 'jaune'] }).error);
+assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir', 'kultur'] }).error);
 const kultur = buildTrustedOrder(store, {
   customer,
-  items: [{ id: 'bundle-kultur-steps', qty: 1, price: 1, variant: { combo: 'noir-jaune' } }],
+  items: [{ id: 'bundle-kultur-steps', qty: 1, price: 1, variant: { pairs: ['noir', 'rose'] } }],
 });
 assert.ok(!kultur.error, kultur.error);
 assert.strictEqual(kultur.order.items[0].price, 34.99, 'server ignores client kultur price');
+assert.match(kultur.order.items[0].size, /Kultur/i);
 
 const ok = buildTrustedOrder(store, {
   customer,
