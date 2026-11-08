@@ -4,11 +4,10 @@ const VIP_KEY = 'menes_vip';
 const PROMO_KEY = 'menes_promo_code';
 const ATTR_KEY = 'menes_ambassador_attr';
 const WISHLIST_KEY = 'menes_wishlist';
-const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
 const PASSPORT_EMAIL_KEY = 'menes_passport_email';
 const PASSPORT_TOKEN_KEY = 'menes_passport_token';
 const LOW_STOCK_LIMIT = 10;
-const VIP_DISMISS_DAYS = 14;
+const PASSPORT_GATE_SKIP_KEY = 'menes_passport_gate_skip';
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
 const HOLIDAY_FREE_SHIPPING = true;
@@ -177,12 +176,13 @@ const I18N = {
     wishlist_add: 'Ajouté aux favoris',
     wishlist_remove: 'Retiré des favoris',
     purchase_ticker: '<strong>{name}</strong> de {city} vient d\'acheter {product}',
-    vip_overlay_label: 'Cercle ambassadeurs',
-    vip_overlay_title: 'Les −10% ne sont pas publics',
-    vip_overlay_sub: 'Seuls les ambassadeurs MENES détiennent la clé. Trouve le tien, entre son code exclusif, et débloque −10% sur ta commande.',
-    vip_overlay_btn: 'Recevoir les drops',
-    vip_overlay_skip: 'Je vais trouver un ambassadeur',
-    vip_welcome: 'Bienvenue dans le cercle MENES!',
+    vip_overlay_label: 'Passeport MENES',
+    vip_overlay_title: 'Entre ton email. Ton passeport s’ouvre.',
+    vip_overlay_sub: 'Même si tu ne commandes pas aujourd’hui, tu es dans le cercle. Drops, pièces, et tes achats collent à ce courriel.',
+    vip_overlay_btn: 'Ouvrir mon passeport',
+    vip_overlay_skip: 'Plus tard',
+    vip_overlay_consent: 'En continuant, tu reçois les emails MENES. Désinscription à tout moment.',
+    vip_welcome: 'Passeport MENES ouvert. Bienvenue.',
     gallery_empty: 'Photos clients bientôt. Tag',
     gallery_empty_ig: 'sur Instagram.',
     email_ph: 'ton@email.com',
@@ -227,9 +227,9 @@ const I18N = {
     passport: 'Passeport',
     passport_kicker: 'Passeport MENES',
     passport_title: 'Ta carte membre',
-    passport_help: 'Entre le courriel utilisé à la caisse. Chaque client qui paie reçoit un passeport automatiquement.',
+    passport_help: 'Entre ton email. Ton passeport MENES s’ouvre tout de suite — même avant une commande.',
     passport_open: 'Ouvrir le passeport',
-    passport_none: 'Aucun passeport pour cet email — il se crée dès le premier paiement.',
+    passport_none: 'Impossible d’ouvrir le passeport. Réessaie avec un email valide.',
     passport_member: 'Membre depuis',
     passport_orders: 'Commandes',
     passport_spent: 'Total dépensé',
@@ -302,12 +302,13 @@ const I18N = {
     wishlist_add: 'Added to wishlist',
     wishlist_remove: 'Removed from wishlist',
     purchase_ticker: '<strong>{name}</strong> from {city} just bought {product}',
-    vip_overlay_label: 'Ambassador circle',
-    vip_overlay_title: 'Your 10% isn’t on the shelf',
-    vip_overlay_sub: 'MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off — the public codes are gone.',
-    vip_overlay_btn: 'Get drop alerts',
-    vip_overlay_skip: 'I’ll find an ambassador',
-    vip_welcome: 'Welcome to the MENES circle!',
+    vip_overlay_label: 'MENES Passport',
+    vip_overlay_title: 'Drop your email. Your passport opens.',
+    vip_overlay_sub: 'Even if you don’t buy today, you’re in. Drops, pieces, and future orders stick to this email.',
+    vip_overlay_btn: 'Open my passport',
+    vip_overlay_skip: 'Shop first',
+    vip_overlay_consent: 'By continuing you get MENES emails. Unsubscribe anytime.',
+    vip_welcome: 'MENES Passport open. Welcome.',
     gallery_empty: 'Customer photos soon. Tag',
     gallery_empty_ig: 'on Instagram.',
     email_ph: 'you@email.com',
@@ -352,9 +353,9 @@ const I18N = {
     passport: 'Passport',
     passport_kicker: 'MENES Passport',
     passport_title: 'Your member card',
-    passport_help: 'Enter the email used at checkout. Paying customers get a passport automatically.',
+    passport_help: 'Enter your email. Your MENES Passport opens now — even before an order.',
     passport_open: 'Open passport',
-    passport_none: 'No passport for this email — it is created on the first paid order.',
+    passport_none: 'Could not open the passport. Try a valid email.',
     passport_member: 'Member since',
     passport_orders: 'Orders',
     passport_spent: 'Total spent',
@@ -663,33 +664,30 @@ function setupPurchaseTicker() {
   if (el) el.classList.add('hidden');
 }
 
-/* ---------- VIP exit overlay ---------- */
-function isVipDismissed() {
-  const raw = localStorage.getItem(VIP_DISMISSED_KEY);
-  if (!raw) return false;
-  const ts = Number(raw);
-  if (!Number.isFinite(ts)) return false;
-  return Date.now() - ts < VIP_DISMISS_DAYS * 24 * 60 * 60 * 1000;
+/* ---------- Passport entry overlay ---------- */
+function skippedPassportGate() {
+  try { return sessionStorage.getItem(PASSPORT_GATE_SKIP_KEY) === '1'; }
+  catch { return false; }
 }
 
 function shouldShowVipOverlay() {
-  if (isVipMember()) return false;
-  if (isVipDismissed()) return false;
+  if (rememberedPassportEmail()) return false;
+  if (skippedPassportGate()) return false;
   return true;
 }
 
 function markVipOverlayShown() {
-  localStorage.setItem(VIP_DISMISSED_KEY, String(Date.now()));
+  try { sessionStorage.setItem(PASSPORT_GATE_SKIP_KEY, '1'); } catch {}
 }
 
 function showVipOverlay() {
   if (!shouldShowVipOverlay()) return;
-  markVipOverlayShown();
   const overlay = document.getElementById('vipOverlay');
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.setAttribute('aria-hidden', 'false');
   syncScrollLock();
+  window.setTimeout(() => document.getElementById('vipOverlayEmail')?.focus(), 80);
 }
 
 function hideVipOverlay() {
@@ -700,25 +698,27 @@ function hideVipOverlay() {
   syncScrollLock();
 }
 
-async function submitVipEmail(email, btn, source = 'vip') {
+async function submitVipEmail(email, btn, source = 'entry') {
   if (!email) return false;
   const oldText = btn?.textContent;
   if (btn) { btn.disabled = true; btn.textContent = '...'; }
   try {
-    const res = await fetch(shopApi('/api/subscribe'), {
+    const res = await fetch(shopApi('/api/passport'), {
       method: 'POST',
       headers: shopHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' }),
       body: JSON.stringify({
         email,
         source,
         locale: currentLang,
-        tags: ['vip'],
+        token: rememberedPassportToken(),
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'subscribe failed');
-    showToast(t('vip_welcome'));
+    if (!res.ok || !data.ok) throw new Error(data.error || 'passport failed');
+    rememberPassportIdentity(email, data.passport?.token);
+    if (data.passport) applyPassport(data.passport);
     localStorage.setItem(VIP_KEY, '1');
+    showToast(t('vip_welcome'));
     syncPromoField();
     hideVipOverlay();
     return true;
@@ -769,19 +769,6 @@ function setupOverlayGestures() {
 setupOverlayGestures();
 
 function setupVipOverlay() {
-  if (!shouldShowVipOverlay()) return;
-
-  const isDesktop = () => window.matchMedia('(pointer: fine) and (hover: hover)').matches
-    && window.innerWidth >= 768;
-
-  let exitReady = false;
-  setTimeout(() => { exitReady = true; }, 8000);
-
-  document.addEventListener('mouseout', (e) => {
-    if (!isDesktop() || !shouldShowVipOverlay() || isOverlayOpen()) return;
-    if (e.clientY <= 0 && e.relatedTarget == null && exitReady) showVipOverlay();
-  });
-
   document.getElementById('vipOverlayClose')?.addEventListener('click', () => {
     markVipOverlayShown();
     hideVipOverlay();
@@ -790,17 +777,14 @@ function setupVipOverlay() {
     markVipOverlayShown();
     hideVipOverlay();
   });
-  document.getElementById('vipOverlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'vipOverlay') {
-      markVipOverlayShown();
-      hideVipOverlay();
-    }
-  });
   document.getElementById('vipOverlayForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (document.getElementById('vipOverlayHoney')?.value) return;
-    await submitVipEmail(document.getElementById('vipOverlayEmail')?.value.trim(), document.getElementById('vipOverlayBtn'));
+    await submitVipEmail(document.getElementById('vipOverlayEmail')?.value.trim(), document.getElementById('vipOverlayBtn'), 'entry');
   });
+  window.setTimeout(() => {
+    if (!isOverlayOpen()) showVipOverlay();
+  }, 450);
 }
 
 /* ---------- Taxes (Canadian merchant) ---------- */
@@ -928,7 +912,7 @@ async function fetchPassport(email, token) {
   const res = await fetch(shopApi('/api/passport'), {
     method: 'POST',
     headers: shopHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ email, token: token || '' }),
+    body: JSON.stringify({ email, token: token || '', source: 'passport', locale: currentLang }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) return null;
@@ -3593,7 +3577,6 @@ async function init() {
   updateCartUI();
   updateWishlistUI();
   setupPurchaseTicker();
-  setupVipOverlay();
   setupReviewsUI();
   document.getElementById('langToggle')?.addEventListener('click', () => {
     setVisitorLang(currentLang === 'en' ? 'fr' : 'en');
@@ -3650,6 +3633,7 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  setupVipOverlay();
   if (typeof initShopBundles === 'function') initShopBundles();
 }
 

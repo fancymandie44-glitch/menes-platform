@@ -988,6 +988,12 @@ body.scroll-locked .checkout-pay-dock {
   letter-spacing: 0.06em; text-transform: uppercase;
 }
 .vip-overlay-form button[type="submit"]:hover { background: var(--white); }
+.vip-overlay-consent {
+  font-size: 0.72rem !important;
+  color: var(--gray-400) !important;
+  margin: 0 0 12px !important;
+  line-height: 1.4 !important;
+}
 .vip-overlay-skip {
   background: none; border: none; color: var(--gray-400); font: inherit; font-size: 0.78rem;
   cursor: pointer; text-decoration: underline; padding: 4px;

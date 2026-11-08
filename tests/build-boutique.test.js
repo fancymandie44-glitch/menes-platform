@@ -99,6 +99,9 @@ function run() {
   assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
   assert(shopJs.includes('HOLIDAY_FREE_SHIPPING'), 'holiday free shipping flag');
   assert(shopJs.includes('passport_pieces'), 'passport must show purchased pieces');
+  assert(shopJs.includes('Open my passport') || html.includes('Open my passport'), 'entry overlay asks for passport email');
+  assert(shopJs.includes('PASSPORT_GATE_SKIP_KEY'), 'passport gate skip is session-only');
+  assert(shopJs.includes("submitVipEmail") && shopJs.includes("'entry'"), 'entry overlay claims a passport');
   const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
   assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
   assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');

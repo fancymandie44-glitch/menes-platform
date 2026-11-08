@@ -6,7 +6,7 @@ const {
   cleanEmail,
   isEmail,
   findPassport,
-  upsertPassportFromPaidOrders,
+  ensurePassportFromEmail,
   clientView,
   tokenMatches,
 } = require('../lib/passport');
@@ -36,25 +36,39 @@ exports.handler = async (event) => {
     }
 
     const store = await readSiteStore(siteId);
-    let created = false;
-    const refreshed = upsertPassportFromPaidOrders(store, email);
-    let passport = refreshed?.passport || findPassport(store, email);
-    if (refreshed?.passport) {
-      created = Boolean(refreshed.created);
-      await writeSiteStore(siteId, store);
+    const result = ensurePassportFromEmail(store, email, {
+      source: body.source || params.source || 'passport',
+      locale: body.locale || params.locale,
+      name: body.name,
+    });
+    if (!result?.passport) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email invalide' }) };
     }
-    if (!passport) {
-      return { statusCode: 404, headers, body: JSON.stringify({ ok: false, exists: false }) };
+    await writeSiteStore(siteId, store);
+    if (result.subscriberCreated) {
+      try {
+        const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
+        if (resendConfigured()) {
+          await notifySimple({
+            store,
+            subject: `Passeport MENES · ${email}`,
+            html: brandShell({
+              title: 'Nouveau passeport',
+              bodyHtml: `<p style="color:#9a958c">${escHtml(email)} · source ${escHtml(result.passport.source || 'passport')} · ${(store.subscribers || []).filter((s) => s.active !== false).length} abonnés</p>`,
+            }),
+          });
+        }
+      } catch {}
     }
-
-    const full = tokenMatches(passport, token);
+    const passport = findPassport(store, email) || result.passport;
+    const full = Boolean(result.created) || tokenMatches(passport, token);
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         ok: true,
         exists: true,
-        created,
+        created: Boolean(result.created),
         full,
         passport: clientView(passport, { full }),
       }),

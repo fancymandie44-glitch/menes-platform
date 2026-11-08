@@ -1,18 +1,7 @@
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
-
-function cleanEmail(email) {
-  return String(email || '').trim().toLowerCase();
-}
-
-function isEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function uid(prefix) {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-}
+const { cleanEmail, isEmail, ensurePassportFromEmail, clientView } = require('../lib/passport');
 
 exports.handler = async (event) => {
   setLambdaEvent(event);
@@ -37,37 +26,22 @@ exports.handler = async (event) => {
     }
 
     const store = await readSiteStore(siteId);
-    if (!Array.isArray(store.subscribers)) store.subscribers = [];
-
-    const existing = store.subscribers.find((s) => s.email === email);
-    if (existing) {
-      existing.active = true;
-      existing.source = existing.source || body.source || 'vip';
-      existing.updatedAt = new Date().toISOString();
-      if (body.locale) existing.locale = body.locale === 'en' ? 'en' : 'fr';
-    } else {
-      store.subscribers.unshift({
-        id: uid('sub'),
-        email,
-        source: String(body.source || 'vip').slice(0, 40),
-        locale: body.locale === 'en' ? 'en' : 'fr',
-        tags: Array.isArray(body.tags) ? body.tags.slice(0, 8) : ['vip'],
-        active: true,
-        consent: true,
-        createdAt: new Date().toISOString(),
-      });
-    }
+    const result = ensurePassportFromEmail(store, email, {
+      source: body.source || 'vip',
+      locale: body.locale,
+      tags: Array.isArray(body.tags) ? body.tags : ['vip', 'passport'],
+    });
     await writeSiteStore(siteId, store);
 
     try {
       const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
-      if (resendConfigured()) {
+      if (resendConfigured() && (result.created || result.subscriberCreated)) {
         await notifySimple({
           store,
           subject: `Inscription VIP MENES · ${email}`,
           html: brandShell({
             title: 'Nouvelle inscription VIP',
-            bodyHtml: `<p style="color:#9a958c">${escHtml(email)} · source ${escHtml(body.source || 'vip')} · ${store.subscribers.filter((s) => s.active !== false).length} abonnés</p>`,
+            bodyHtml: `<p style="color:#9a958c">${escHtml(email)} · source ${escHtml(body.source || 'vip')} · ${(store.subscribers || []).filter((s) => s.active !== false).length} abonnés</p>`,
           }),
         });
       }
@@ -76,7 +50,12 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ ok: true, already: !!existing }),
+      body: JSON.stringify({
+        ok: true,
+        already: !result.created && !result.subscriberCreated,
+        created: Boolean(result.created),
+        passport: clientView(result.passport, { full: Boolean(result.created) }),
+      }),
     };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur inscription' }) };

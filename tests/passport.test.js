@@ -3,6 +3,7 @@
 const {
   upsertPassportFromOrder,
   upsertPassportFromPaidOrders,
+  ensurePassportFromEmail,
   findPassport,
   clientView,
   tokenMatches,
@@ -67,7 +68,25 @@ function run() {
   assert(other && other.created, 'lazy create from paid history');
 
   const missing = upsertPassportFromPaidOrders({ orders: [], passports: [] }, 'ghost@x.com');
-  assert(missing === null, 'no paid history = no passport');
+  assert(missing === null, 'paid-history helper still requires a paid order');
+
+  const walkIn = { orders: [], passports: [], subscribers: [] };
+  const claimed = ensurePassportFromEmail(walkIn, 'new@mymenes.com', { source: 'entry', locale: 'en' });
+  assert(claimed && claimed.created, 'entry email creates a passport without an order');
+  assert(claimed.passport.email === 'new@mymenes.com', 'walk-in email stored');
+  assert(claimed.passport.orderCount === 0, 'walk-in passport has no orders yet');
+  assert(walkIn.subscribers.length === 1, 'walk-in email joins the list');
+  assert(walkIn.subscribers[0].consent === true, 'walk-in consents to email');
+  const claimedAgain = ensurePassportFromEmail(walkIn, 'NEW@mymenes.com', { source: 'entry' });
+  assert(claimedAgain && !claimedAgain.created, 'same email reuses the walk-in passport');
+  assert(walkIn.passports.length === 1, 'no duplicate walk-in passports');
+  assert(walkIn.subscribers.length === 1, 'no duplicate subscribers');
+
+  walkIn.orders.push(paidOrder({ customer: { email: 'new@mymenes.com', name: 'Sam' }, total: 34.99 }));
+  const afterBuy = upsertPassportFromOrder(walkIn, walkIn.orders[0]);
+  assert(afterBuy && !afterBuy.created, 'later purchase attaches to the existing passport');
+  assert(afterBuy.passport.token === claimed.passport.token, 'walk-in token stays stable after purchase');
+  assert(afterBuy.passport.orderCount === 1, 'purchase counts on walk-in passport');
 
   const found = findPassport(store, 'ALEX@example.com');
   assert(found && found.email === 'alex@example.com', 'lookup is case-insensitive');
@@ -84,7 +103,7 @@ function run() {
   assert(isPaidOrder({ status: 'shipped' }), 'shipped counts as paid');
   assert(!isPaidOrder({ status: 'awaiting_payment' }), 'awaiting is not paid');
 
-  console.log('ok: passport auto-create from paid email');
+  console.log('ok: passport auto-create from paid email and walk-in claim');
 }
 
 run();
