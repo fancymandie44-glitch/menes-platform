@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shop.css?v=20261027t">
+  <link rel="stylesheet" href="/shop.css?v=20261108c">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -33,6 +33,7 @@
     </a>
     <div class="nav-links">
       <a href="#products" data-i18n="nav_shop">Shop</a>
+      <a href="#shopBundles" data-i18n="nav_bundles">Bundles</a>
       <a href="#lookbook" data-i18n="nav_story">Story</a>
       <a href="#gallery" data-i18n="nav_community">Community</a>
       <a href="#why" data-i18n="nav_why">Why MENES</a>
@@ -93,12 +94,28 @@
   <section id="lookbook" class="story-section">
     <div class="container story-inner">
       <figure class="story-photo">
-        <img src="images/lookbook/drop-table.jpg" alt="MENES drop table" width="1600" height="1067">
+        <img src="/images/lookbook/drop-table.jpg" alt="MENES drop table" width="1600" height="1067">
       </figure>
       <div class="story-copy">
         <span class="section-label" data-i18n="lookbook_label">The story</span>
         <h2 id="lookbookTitle" data-i18n="nav_story">Story</h2>
         <div id="lookbookStory"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shopBundles" class="shop-bundles-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label" id="shopBundlesKicker" data-i18n="bundles_kicker">MENES packs</span>
+        <h2 id="shopBundlesTitle">The three bundles</h2>
+        <p class="section-sub" id="shopBundlesLead"></p>
+      </div>
+      <div id="shopBundlesGrid" class="shop-bundles-grid"></div>
+      <div class="shop-bundles-trust">
+        <span data-i18n="proof_pay">Secure payment</span>
+        <span data-i18n="proof_ship">Ships CA</span>
+        <span data-i18n="proof_ex">14-day exchange</span>
       </div>
     </div>
   </section>
@@ -233,6 +250,12 @@
       <div class="cart-total"><span data-i18n="cart_total">Total:</span> <strong id="cartTotal">0$</strong> CAD</div>
       <button id="checkoutBtn" class="btn-checkout" data-i18n="cart_checkout">Checkout</button>
     </div>
+  </aside>
+
+  <div id="bundleOverlay" class="pdp-overlay hidden"></div>
+  <aside id="bundlePanel" class="pdp-panel bundle-panel hidden" aria-hidden="true">
+    <button type="button" id="closeBundle" class="pdp-close" aria-label="Fermer">✕</button>
+    <div id="bundlePanelInner"></div>
   </aside>
 
   <div id="pdpOverlay" class="pdp-overlay hidden"></div>
@@ -498,7 +521,9 @@
   <div id="menesCursorDot" class="menes-cursor-dot" aria-hidden="true"></div>
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
-  <script src="config.js?v=20260805b"></script>
-  <script src="shop.js?v=20261027t"></script>
+  <script src="/config.js?v=20260805b"></script>
+  <script src="/data/bundles.js?v=20261108c"></script>
+  <script src="/shop-bundles.js?v=20261108c"></script>
+  <script src="/shop.js?v=20261108c"></script>
 </body>
 </html>

@@ -125,7 +125,8 @@ const CATEGORY_LABELS_I18N = {
 
 const I18N = {
   fr: {
-    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Boutique', nav_story: 'L\'histoire', nav_bundles: 'Bundles', nav_community: 'Communauté', nav_why: 'Pourquoi MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    bundles_kicker: 'Packs MENES',
     lookbook_label: 'L\'histoire',
     cart: 'Panier', hero_cta: 'Voir la collection', label_collection: 'Collection', label_boutique: 'Boutique',
     label_community: 'Communauté', label_questions: 'Questions', label_why: 'Pourquoi nous', label_contact: 'Contact',
@@ -247,7 +248,8 @@ const I18N = {
     country_other: 'Autre',
   },
   en: {
-    nav_shop: 'Shop', nav_story: 'Story', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_shop: 'Shop', nav_story: 'Story', nav_bundles: 'Bundles', nav_community: 'Community', nav_why: 'Why MENES', nav_faq: 'FAQ', nav_contact: 'Contact',
+    bundles_kicker: 'MENES packs',
     lookbook_label: 'The story',
     cart: 'Cart', hero_cta: 'Shop the collection', label_collection: 'Collection', label_boutique: 'Shop',
     label_community: 'Community', label_questions: 'Questions', label_why: 'Why us', label_contact: 'Contact',
@@ -381,7 +383,7 @@ const WHY_STORY_EN = {
   lead: 'Menes. The first pharaoh of Egypt. The one who united Upper and Lower Egypt: two worlds divided, brought together by the vision, courage, and determination of one man.',
   punch: 'MENES isn’t a tribute. It’s a mirror.',
   paragraphs: [
-    'I come from the most hated neighborhood in Montreal. I never denied it.',
+    'I come from one of the most hated neighborhoods in Montreal. I never denied it.',
     'And yet, people from everywhere, even those who don’t love my neighborhood, come to me for advice, for help, for support. Not because I picked a side. Because I chose to help, period: through entrepreneurship, through giving back to youth across different neighborhoods, no matter where they’re from.',
     'That’s what it means to be a bridge instead of a wall.',
     'MENES KULTUR is that energy, worn. Every piece carries a value we live, not just wear:',
@@ -397,7 +399,7 @@ const WHY_STORY_FR = {
   lead: 'Menes. Le premier pharaon d’Égypte. Celui qui a uni la Haute et la Basse-Égypte : deux mondes divisés, réunis par la vision, le courage et la détermination d’un seul homme.',
   punch: 'MENES n’est pas un hommage. C’est un miroir.',
   paragraphs: [
-    'Je viens du quartier le plus haï de Montréal. Je ne l’ai jamais nié.',
+    'Je viens d’un des quartiers les plus haïs de Montréal. Je ne l’ai jamais nié.',
     'Et pourtant, des gens de partout, même ceux qui n’aiment pas mon quartier, viennent me voir pour un conseil, de l’aide, du soutien. Pas parce que j’ai choisi un camp. Parce que j’ai choisi d’aider, point : par l’entrepreneuriat, en redonnant aux jeunes de plusieurs quartiers, peu importe d’où ils viennent.',
     'C’est ça, être un pont plutôt qu’un mur.',
     'MENES KULTUR, c’est cette énergie, portée. Chaque pièce porte une valeur qu’on vit, pas juste qu’on porte :',
@@ -409,7 +411,12 @@ const WHY_STORY_FR = {
   ],
 };
 
-const STORY_PHOTO = 'images/lookbook/drop-table.jpg';
+const STORY_PHOTO = '/images/lookbook/drop-table.jpg';
+const LOOKBOOK_STREET = [
+  'crew-steps.jpg', 'cyan-steps.jpg', 'pink-duo.jpg', 'green-hoodie.jpg', 'purple-hat.jpg',
+  'cyan-window.jpg', 'black-jeep.jpg', 'red-jordan.jpg', 'black-yeezy.jpg', 'green-close.jpg',
+  'pink-walk.jpg', 'purple-car.jpg', 'purple-car-wide.jpg', 'red-close.jpg',
+];
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -713,7 +720,7 @@ async function submitVipEmail(email, btn, source = 'vip') {
 }
 
 function isOverlayOpen() {
-  return ['cartPanel', 'pdpPanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal', 'passportPanel']
+  return ['cartPanel', 'pdpPanel', 'bundlePanel', 'checkoutModal', 'cryptoModal', 'successModal', 'vipOverlay', 'reviewModal', 'upsellModal', 'sizeGuideModal', 'passportPanel']
     .some((id) => !document.getElementById(id)?.classList.contains('hidden'));
 }
 
@@ -856,6 +863,8 @@ function applyPassport(passport) {
     : rememberedPassportEmail();
   rememberPassportIdentity(email, passport.token);
   renderPassportCard(passport);
+  if (typeof maybeApplyMemberPromo === 'function') maybeApplyMemberPromo();
+  if (typeof renderShopBundles === 'function') renderShopBundles();
   const teaser = document.getElementById('successPassport');
   if (teaser && passport.code) {
     teaser.classList.remove('hidden');
@@ -930,6 +939,8 @@ function findDiscount(code) {
   const c = (code || '').trim().toUpperCase();
   if (!c) return null;
   if (RETIRED_PUBLIC_CODES.has(c)) return null;
+  const member = window.MENES_BUNDLES?.clientDiscountRule?.(c);
+  if (member) return member;
   return (storeData?.discounts || []).find((d) => d && d.active !== false && String(d.code || '').toUpperCase() === c) || null;
 }
 
@@ -1128,6 +1139,8 @@ function setVisitorLang(lang, opts = {}) {
     updateCartUI();
     populateProvinces();
     if (activePdpId) openPdp(activePdpId);
+    if (typeof refreshBundleUi === 'function') refreshBundleUi();
+    else if (typeof renderShopBundles === 'function') renderShopBundles();
   }
 }
 
@@ -1264,14 +1277,18 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'shopBundles', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
     ? [...storeData.site.sectionOrder]
     : [...DEFAULT_SECTION_ORDER];
-  if (!order.includes('lookbook')) {
+  if (!order.includes('shopBundles')) {
     const i = order.indexOf('products');
+    order.splice(i >= 0 ? i + 1 : 0, 0, 'shopBundles');
+  }
+  if (!order.includes('lookbook')) {
+    const i = order.indexOf('shopBundles') >= 0 ? order.indexOf('shopBundles') : order.indexOf('products');
     order.splice(i >= 0 ? i + 1 : 0, 0, 'lookbook');
   }
   const hero = document.getElementById('heroSection');
@@ -1337,6 +1354,7 @@ function renderSite() {
 
   renderLookbook(sec);
   renderBundle(s, sec);
+  if (typeof renderShopBundles === 'function') renderShopBundles();
   renderGallery(s, sec, raw);
   renderReviewsSection(sec);
   renderEmailCapture(s, sec);
@@ -1407,16 +1425,40 @@ function renderBundle(/* s, sec */) {
   toggle('bundle', false);
 }
 
+function gallerySrc(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  const media = raw.match(/\/api\/media\?([^#]+)/i);
+  if (media) {
+    const params = new URLSearchParams(media[1]);
+    const id = params.get('id');
+    if (id) return `/api/media?id=${encodeURIComponent(id)}&site=menes`;
+  }
+  if (raw.startsWith('images/')) return `/${raw}`;
+  return raw;
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
   const seen = new Set(storyKeys);
-  const items = (src.gallery || []).filter((g) => {
-    if (!(g.image || g.postUrl || g.handle)) return false;
-    const key = imageKey(g.image);
-    if (key && seen.has(key)) return false;
+  const items = [];
+  const pushItem = (g) => {
+    if (!g || !(g.image || g.postUrl || g.handle)) return;
+    const image = gallerySrc(g.image);
+    const key = imageKey(image);
+    if (key && seen.has(key)) return;
     if (key) seen.add(key);
-    return true;
+    items.push({ ...g, image });
+  };
+  (src.gallery || []).forEach(pushItem);
+  LOOKBOOK_STREET.forEach((file) => {
+    pushItem({
+      image: `/images/lookbook/${file}`,
+      handle: 'MENES',
+      caption: '',
+      postUrl: '#products',
+    });
   });
   const allItems = src.gallery || [];
   toggle('gallery', sec.gallery !== false);
@@ -3579,6 +3621,7 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  if (typeof initShopBundles === 'function') initShopBundles();
 }
 
 window.addEventListener('storage', (e) => {

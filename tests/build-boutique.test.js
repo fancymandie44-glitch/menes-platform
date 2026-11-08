@@ -25,7 +25,13 @@ function run() {
   const required = [
     'index.html',
     'shop.js',
+    'shop-bundles.js',
     'shop.css',
+    'data/bundles.js',
+    'images/bundles/holiday-exclusive.jpg',
+    'bundle/kultur-steps/index.html',
+    'bundle/holiday-exclusive/index.html',
+    'sitemap.xml',
     'config.js',
     'paiement.html',
     'paiement.js',
@@ -63,6 +69,7 @@ function run() {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
+  assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
   assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
   assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
   assert(html.includes('id="lookbookStory"'), 'story copy mount must exist');
@@ -70,6 +77,11 @@ function run() {
   assert(html.includes('data-i18n="nav_story"'), 'nav must include Story / L\'histoire');
   const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
+  assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
+  assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
+  const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
+  assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
+  assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');
   assert(shopJs.includes('function productPackImages'), 'grid must prefer pack shots over lookbook dupes');
 
   const { ALLOWED_ORIGINS } = require(path.join(DIST, 'lib/cors.js'));
