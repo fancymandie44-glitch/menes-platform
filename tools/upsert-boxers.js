@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getStore } = require('@netlify/blobs');
-const { BOXERS, upsertInto } = require('../data/boxers');
+const { BOXER, upsertInto } = require('../data/boxers');
 
 const SITE_ID = '2098727e-c606-4c3e-a8fe-15c6b1469067';
 const STORE_NAME = 'menes-data';
@@ -34,16 +34,19 @@ function netlifyToken() {
   if (!current || !Array.isArray(current.products) || !current.products.length) {
     throw new Error('Refus: catalogue live introuvable ou vide');
   }
-  const before = current.products.length;
+  const keepId = (p) => p && !String(p.id || '').includes('boxer');
+  const beforeKeep = current.products.filter(keepId).length;
   const next = upsertInto(current);
-  if (next.products.length < before) {
-    throw new Error('Refus: upsert would drop products');
+  if (next.products.filter(keepId).length < beforeKeep) {
+    throw new Error('Refus: upsert would drop non-boxer products');
+  }
+  if (!next.products.some((p) => p.id === BOXER.id && p.active !== false)) {
+    throw new Error('Refus: MENES Boxer missing after upsert');
   }
   await blobs.setJSON('store:menes', next);
   await blobs.setJSON('store', next);
   await blobs.setJSON('store:menes:backup', next);
-  const ids = BOXERS.map((p) => p.id).join(', ');
-  console.log('BOXERS LIVE', ids, 'catalogue', next.products.length, 'produits');
+  console.log('BOXERS LIVE', BOXER.id, 'catalogue', next.products.length, 'produits');
 })().catch((e) => {
   console.error('ECHEC UPSERT BOXERS:', e.message);
   process.exit(1);

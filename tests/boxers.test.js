@@ -2,7 +2,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { BOXERS, SIZES, UNITS_PER_SIZE, PRICE, upsertInto } = require('../data/boxers');
+const {
+  BOXER, BOXERS, COLORS, SIZES, UNITS_PER_VARIANT, PRICE, RETIRED_IDS, upsertInto,
+} = require('../data/boxers');
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
@@ -20,19 +22,25 @@ for (const file of [
   assert(fs.statSync(full).size > 1000, `tiny ${file}`);
 }
 
-assert(BOXERS.length === 2, 'two boxer products');
-assert(BOXERS[0].id === 'menes-grey-boxer' && BOXERS[1].id === 'menes-red-boxer', 'ids');
-for (const p of BOXERS) {
-  assert(p.active === true, `${p.id} must be published`);
-  assert(p.price === PRICE && PRICE > 0, `${p.id} price`);
-  assert(p.variants.length === SIZES.length, `${p.id} sizes`);
-  assert(p.variants.every((v) => v.stock === UNITS_PER_SIZE), `${p.id} 5 per size`);
-  assert(p.stock === SIZES.length * UNITS_PER_SIZE, `${p.id} total stock`);
-  assert(p.images.length === 2 && p.image === p.images[0].url, `${p.id} photos`);
-}
+assert(BOXERS.length === 1 && BOXERS[0].id === 'menes-boxer', 'single MENES Boxer product');
+assert(BOXER.name === 'MENES Boxer', 'name');
+assert(BOXER.options[0].name === 'Color' && BOXER.options[0].values.join(',') === 'Red,Grey', 'color first');
+assert(BOXER.options[1].name === 'Size' && BOXER.options[1].values.join(',') === 'S,M,L,XL', 'sizes after color');
+assert(BOXER.price === PRICE && PRICE > 0, 'price');
+assert(BOXER.variants.length === COLORS.length * SIZES.length, '8 color/size variants');
+assert(BOXER.variants.every((v) => v.stock === UNITS_PER_VARIANT), '5 of each');
+assert(BOXER.variants.some((v) => v.key === 'Color=Red|Size=S'), 'variant key order');
+assert(BOXER.images[0].label === 'Red' && BOXER.images[1].label === 'Grey', 'pack shots labeled for color chips');
 
-const merged = upsertInto({ products: [{ id: 'summer-socks', name: 'Socks' }] });
-assert(merged.products.length === 3, 'upsert keeps existing products');
-assert(merged.products[0].id === 'summer-socks', 'existing first');
+const merged = upsertInto({
+  products: [
+    { id: 'summer-socks', name: 'Socks' },
+    { id: 'menes-grey-boxer', name: 'old grey' },
+    { id: 'menes-red-boxer', name: 'old red' },
+  ],
+});
+assert(merged.products.some((p) => p.id === 'summer-socks'), 'keeps other products');
+assert(merged.products.filter((p) => p.id === 'menes-boxer').length === 1, 'one boxer');
+assert(merged.products.every((p) => !RETIRED_IDS.includes(p.id)), 'retired split SKUs');
 
 console.log('ok: boxers');
