@@ -29,6 +29,8 @@ function run() {
     'shop.css',
     'data/bundles.js',
     'images/bundles/holiday-exclusive.jpg',
+    'images/bundles/essentials.jpg',
+    'bundle/essentials/index.html',
     'images/bundles/pairs/noir.jpg',
     'images/bundles/pairs/jaune.jpg',
     'images/bundles/pairs/kultur.jpg',

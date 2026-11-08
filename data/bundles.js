@@ -2,12 +2,7 @@
  * MENES shop bundles — single source of truth.
  * Add or edit a bundle here only. UI, cart, and checkout read this file.
  *
- * To publish the middle bundle:
- *  1. Set name.fr / name.en
- *  2. Set price (CAD number) and optional comparePrice
- *  3. Set image (path under /images/bundles/)
- *  4. Fill highlights + included
- *  5. Set published: true
+ * Bundles: Kultur Steps (combo), Essentials (2 pairs + boxer), Holiday Exclusive (3 pairs).
  *
  * clientDiscount.percent: fill with a number (e.g. 10) to activate member pricing.
  * Member price applies with code MENESFAM, or automatically if a MENES Passport
@@ -38,6 +33,12 @@
     { id: 'kultur', name: { fr: 'Kultur charcoal', en: 'Kultur charcoal' }, swatch: '#2b2b2b', image: '/images/bundles/pairs/kultur.jpg?v=1', inStock: true },
   ];
 
+  const BOXER_SIZES = ['S', 'M', 'L', 'XL'];
+  const BOXER_OPTIONS = [
+    { id: 'red', name: { fr: 'Red', en: 'Red' }, swatch: '#c41e3a', image: '/images/products/boxers/red.jpg?v=crop1' },
+    { id: 'grey', name: { fr: 'Grey', en: 'Grey' }, swatch: '#8a8a8a', image: '/images/products/boxers/grey.jpg?v=crop1' },
+  ];
+
   const BUNDLES = [
     {
       id: 'bundle-kultur-steps',
@@ -45,7 +46,7 @@
       published: true,
       featured: false,
       kind: 'combo',
-      order: 2,
+      order: 3,
       badge: { fr: 'Le plus rapide', en: 'Easiest gift' },
       name: { fr: 'KULTUR STEPS', en: 'KULTUR STEPS' },
       tagline: {
@@ -90,32 +91,48 @@
       allowDuplicatePairs: true,
     },
     {
-      id: 'bundle-moyen',
-      slug: 'bundle-moyen',
-      published: false,
-      featured: false,
-      kind: 'combo',
-      order: 3,
+      id: 'bundle-essentials',
+      slug: 'essentials',
+      published: true,
+      featured: true,
+      kind: 'builder',
+      order: 2,
       badge: { fr: 'Le plus populaire', en: 'Most popular' },
-      name: { fr: '[NOM DU BUNDLE MOYEN]', en: '[MID BUNDLE NAME]' },
+      name: { fr: 'MENES ESSENTIALS', en: 'MENES ESSENTIALS' },
       tagline: {
-        fr: 'Le choix ancre. On le remplit dès que le pack est prêt.',
-        en: 'The anchor pick. Filled when the pack is ready.',
+        fr: 'Casquette Kultur. Deux paires. Un boxer. Tu choisis.',
+        en: 'Kultur cap. Two pairs. One boxer. You choose.',
       },
       description: {
-        fr: 'Emplacement du bundle milieu. Ajoute nom, prix, image et highlights dans data/bundles.js, puis published: true.',
-        en: 'Middle bundle slot. Add name, price, image and highlights in data/bundles.js, then published: true.',
+        fr: 'Pack MENES Essentials : 1 casquette Kultur MENES, 2 paires de chaussettes au choix, 1 boxer Red ou Grey (tailles S–XL). Le quotidien street luxe, en un pack.',
+        en: 'MENES Essentials pack: 1 Kultur MENES cap, 2 sock pairs of your choice, 1 Red or Grey boxer (sizes S–XL). Daily street luxe, one pack.',
       },
-      seoTitle: { fr: 'Bundle MENES', en: 'MENES bundle' },
-      seoDescription: { fr: 'Bundle MENES — bientôt.', en: 'MENES bundle — coming soon.' },
-      image: '',
-      price: null,
+      seoTitle: {
+        fr: 'MENES ESSENTIALS | Casquette, 2 paires et boxer',
+        en: 'MENES ESSENTIALS | Cap, 2 pairs and boxer',
+      },
+      seoDescription: {
+        fr: 'Bundle MENES Essentials 99,99 $ : casquette Kultur, 2 paires de chaussettes au choix et 1 boxer au choix. Livraison Québec et Canada.',
+        en: 'MENES Essentials bundle 99.99: Kultur cap, 2 sock pairs of your choice and 1 boxer of your choice. Ships Quebec and Canada.',
+      },
+      image: '/images/bundles/essentials.jpg',
+      price: 99.99,
       comparePrice: null,
       currency: 'CAD',
-      urgency: '',
-      highlights: { fr: [], en: [] },
-      included: { fr: [], en: [] },
-      combos: [],
+      urgency: { fr: 'Le pack de tous les jours', en: 'The everyday pack' },
+      highlights: {
+        fr: ['1 casquette Kultur MENES', '2 paires au choix', '1 boxer Red ou Grey, S–XL', '99,99 $ CAD'],
+        en: ['1 Kultur MENES cap', '2 pairs of your choice', '1 Red or Grey boxer, S–XL', '99.99 CAD'],
+      },
+      included: {
+        fr: ['1 casquette Kultur MENES', '2 paires Kultur Steps au choix', '1 boxer MENES au choix (Red ou Grey)'],
+        en: ['1 Kultur MENES cap', '2 Kultur Steps pairs of your choice', '1 MENES boxer of your choice (Red or Grey)'],
+      },
+      pairCount: 2,
+      pairOptions: PAIR_OPTIONS,
+      boxer: true,
+      boxerOptions: BOXER_OPTIONS,
+      boxerSizes: BOXER_SIZES,
       sizes: [],
       stock: null,
       allowDuplicatePairs: true,
@@ -232,6 +249,16 @@
     return (bundle?.pairOptions || PAIR_OPTIONS).find((p) => p.id === pairId) || null;
   }
 
+  function boxerById(bundle, boxerId) {
+    return (bundle?.boxerOptions || BOXER_OPTIONS).find((b) => b.id === String(boxerId || '')) || null;
+  }
+
+  function pairNeed(bundle) {
+    if (bundle?.pairCount == null) return bundle?.kind === 'builder' ? 3 : 0;
+    const n = Number(bundle.pairCount);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
   function validateLine(bundle, variant) {
     if (!bundle) return { error: 'Bundle introuvable' };
     if (bundle.kind === 'combo') {
@@ -242,7 +269,7 @@
       return { ok: true, variant: { combo: combo.id } };
     }
     if (bundle.kind === 'builder') {
-      const need = Number(bundle.pairCount) || 3;
+      const need = pairNeed(bundle);
       const picks = Array.isArray(variant?.pairs) ? variant.pairs.map(String) : [];
       if (picks.length !== need) return { error: `Choisis ${need} paires` };
       const allowDup = bundle.allowDuplicatePairs !== false;
@@ -252,7 +279,18 @@
         if (!pair) return { error: `Paire inconnue: ${id}` };
         if (pair.inStock === false) return { error: `Rupture: ${id}` };
       }
-      return { ok: true, variant: { pairs: picks } };
+      const out = { pairs: picks };
+      if (bundle.boxer) {
+        const color = String(variant?.boxerColor || variant?.boxer?.color || '').toLowerCase();
+        const size = String(variant?.boxerSize || variant?.boxer?.size || '').toUpperCase();
+        const boxer = boxerById(bundle, color);
+        const sizes = bundle.boxerSizes || BOXER_SIZES;
+        if (!boxer) return { error: 'Choisis un boxer' };
+        if (!sizes.includes(size)) return { error: 'Choisis une taille de boxer' };
+        out.boxerColor = boxer.id;
+        out.boxerSize = size;
+      }
+      return { ok: true, variant: out };
     }
     return { ok: true, variant: variant || {} };
   }
@@ -265,7 +303,13 @@
     }
     if (bundle.kind === 'builder') {
       const picks = Array.isArray(variant?.pairs) ? variant.pairs : [];
-      return picks.map((id) => loc(pairById(bundle, id)?.name, lang) || id).join(' · ');
+      const parts = picks.map((id) => loc(pairById(bundle, id)?.name, lang) || id);
+      if (bundle.boxer && (variant?.boxerColor || variant?.boxerSize)) {
+        const boxer = boxerById(bundle, variant.boxerColor);
+        const color = loc(boxer?.name, lang) || variant.boxerColor;
+        parts.push([color, variant.boxerSize].filter(Boolean).join(' '));
+      }
+      return parts.filter(Boolean).join(' · ');
     }
     return '';
   }
@@ -282,6 +326,8 @@
     SITE_ORIGIN,
     CLIENT_DISCOUNT,
     PAIR_OPTIONS,
+    BOXER_OPTIONS,
+    BOXER_SIZES,
     BUNDLES,
     loc,
     isPriced,
@@ -295,6 +341,8 @@
     savings,
     comboById,
     pairById,
+    boxerById,
+    pairNeed,
     validateLine,
     variantLabel,
     clientDiscountRule,

@@ -9,7 +9,10 @@ const { buildTrustedOrder, findDiscount } = require('../lib/order-pricing');
 assert.ok(bundles.BUNDLES.length === 3, 'three bundles');
 assert.strictEqual(bundles.bySlug('kultur-steps').kind, 'combo');
 assert.strictEqual(bundles.bySlug('holiday-exclusive').kind, 'builder');
-assert.strictEqual(bundles.bySlug('bundle-moyen').published, false);
+assert.ok(bundles.isReady(bundles.bySlug('essentials')), 'essentials must be sellable at 99.99');
+assert.strictEqual(bundles.bySlug('essentials').price, 99.99);
+assert.strictEqual(bundles.bySlug('essentials').pairCount, 2);
+assert.strictEqual(bundles.bySlug('essentials').boxer, true);
 assert.ok(bundles.isBrowsable(bundles.bySlug('kultur-steps')));
 assert.ok(bundles.isReady(bundles.bySlug('kultur-steps')), 'kultur must be sellable at 34.99');
 assert.strictEqual(bundles.bySlug('kultur-steps').price, 34.99);
@@ -17,8 +20,7 @@ assert.ok(bundles.isReady(bundles.bySlug('holiday-exclusive')), 'holiday must be
 assert.strictEqual(bundles.bySlug('holiday-exclusive').price, 329.99);
 assert.strictEqual(bundles.bySlug('holiday-exclusive').featured, true);
 assert.ok(bundles.sorted()[0].slug === 'holiday-exclusive', 'holiday pack leads the grid');
-assert.ok(!bundles.isReady(bundles.bySlug('bundle-moyen')));
-assert.ok(bundles.visibleOnGrid(bundles.bySlug('bundle-moyen')), 'unpublished still occupies the grid');
+assert.ok(bundles.visibleOnGrid(bundles.bySlug('essentials')));
 
 const holiday = bundles.bySlug('holiday-exclusive');
 const pairImages = (holiday.pairOptions || bundles.PAIR_OPTIONS).map((p) => p.image);
@@ -56,10 +58,19 @@ assert.ok(!ok.error, ok.error);
 assert.strictEqual(ok.order.items[0].price, 329.99, 'server ignores client holiday price');
 assert.match(ok.order.items[0].size, /Noir/);
 
-assert.ok(buildTrustedOrder(store, {
-  customer,
-  items: [{ id: 'bundle-moyen', qty: 1 }],
-}).error, 'unpublished middle bundle must not sell');
+const essentialsLine = {
+  id: 'bundle-essentials',
+  qty: 1,
+  price: 1,
+  variant: { pairs: ['noir', 'jaune'], boxerColor: 'red', boxerSize: 'M' },
+};
+assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir'] }).error);
+assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir', 'jaune'] }).error, 'boxer required');
+assert.ok(!bundles.validateLine(bundles.bySlug('essentials'), essentialsLine.variant).error);
+const essentials = buildTrustedOrder(store, { customer, items: [essentialsLine] });
+assert.ok(!essentials.error, essentials.error);
+assert.strictEqual(essentials.order.items[0].price, 99.99, 'server ignores client essentials price');
+assert.match(essentials.order.items[0].size, /Red/i);
 
 assert.strictEqual(findDiscount(store, 'MENESFAM'), null, 'empty percent must not invent a discount');
 bundles.CLIENT_DISCOUNT.percent = 10;

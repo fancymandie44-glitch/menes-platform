@@ -1280,8 +1280,8 @@ async function refreshStore(opts = {}) {
 
 const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 const HOLIDAY_ANNOUNCE = {
-  en: 'Holiday season is here · Kultur Steps 34.99 · Holiday Exclusive 329.99 · Fast checkout · Ships Quebec & Canada',
-  fr: 'Le temps des fêtes est là · Kultur Steps 34,99 · Holiday Exclusive 329,99 · Paiement rapide · Livraison Québec & Canada',
+  en: 'Holiday season is here · Essentials 99.99 · Kultur Steps 34.99 · Holiday Exclusive 329.99 · Fast checkout · Ships Quebec & Canada',
+  fr: 'Le temps des fêtes est là · Essentials 99,99 · Kultur Steps 34,99 · Holiday Exclusive 329,99 · Paiement rapide · Livraison Québec & Canada',
 };
 
 function applySectionOrder() {
