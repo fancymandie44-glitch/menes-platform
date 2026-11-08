@@ -78,6 +78,7 @@ function run() {
   const shopJs = fs.readFileSync(path.join(DIST, 'shop.js'), 'utf8');
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
   assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
+  assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
   const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
   assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
   assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');

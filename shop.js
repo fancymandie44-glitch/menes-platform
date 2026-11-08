@@ -411,7 +411,12 @@ const WHY_STORY_FR = {
   ],
 };
 
-const STORY_PHOTO = 'images/lookbook/drop-table.jpg';
+const STORY_PHOTO = '/images/lookbook/drop-table.jpg';
+const LOOKBOOK_STREET = [
+  'crew-steps.jpg', 'cyan-steps.jpg', 'pink-duo.jpg', 'green-hoodie.jpg', 'purple-hat.jpg',
+  'cyan-window.jpg', 'black-jeep.jpg', 'red-jordan.jpg', 'black-yeezy.jpg', 'green-close.jpg',
+  'pink-walk.jpg', 'purple-car.jpg', 'purple-car-wide.jpg', 'red-close.jpg',
+];
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -1420,16 +1425,40 @@ function renderBundle(/* s, sec */) {
   toggle('bundle', false);
 }
 
+function gallerySrc(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  const media = raw.match(/\/api\/media\?([^#]+)/i);
+  if (media) {
+    const params = new URLSearchParams(media[1]);
+    const id = params.get('id');
+    if (id) return `/api/media?id=${encodeURIComponent(id)}&site=menes`;
+  }
+  if (raw.startsWith('images/')) return `/${raw}`;
+  return raw;
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
   const seen = new Set(storyKeys);
-  const items = (src.gallery || []).filter((g) => {
-    if (!(g.image || g.postUrl || g.handle)) return false;
-    const key = imageKey(g.image);
-    if (key && seen.has(key)) return false;
+  const items = [];
+  const pushItem = (g) => {
+    if (!g || !(g.image || g.postUrl || g.handle)) return;
+    const image = gallerySrc(g.image);
+    const key = imageKey(image);
+    if (key && seen.has(key)) return;
     if (key) seen.add(key);
-    return true;
+    items.push({ ...g, image });
+  };
+  (src.gallery || []).forEach(pushItem);
+  LOOKBOOK_STREET.forEach((file) => {
+    pushItem({
+      image: `/images/lookbook/${file}`,
+      handle: 'MENES',
+      caption: '',
+      postUrl: '#products',
+    });
   });
   const allItems = src.gallery || [];
   toggle('gallery', sec.gallery !== false);
