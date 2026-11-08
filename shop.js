@@ -1217,10 +1217,9 @@ function applySeo() {
   }
 }
 
-function cachedStoreScore(data) {
+function liveCatalogIsUsable(data) {
   const products = Array.isArray(data?.products) ? data.products : [];
-  const withImage = products.filter((p) => p && (p.image || (Array.isArray(p.images) && p.images.length))).length;
-  return products.length * 10 + withImage * 100;
+  return products.some((p) => p && p.active !== false);
 }
 
 async function loadStoreData() {
@@ -1231,7 +1230,9 @@ async function loadStoreData() {
     if (res.ok) {
       const data = await res.json();
       delete data._siteId;
-      if (cached && cachedStoreScore(cached) > cachedStoreScore(data)) {
+      // Never keep a stale local catalogue that has extra old SKUs.
+      // Only fall back to cache if the live API came back empty.
+      if (cached && !liveCatalogIsUsable(data) && liveCatalogIsUsable(cached)) {
         return cached;
       }
       try {
