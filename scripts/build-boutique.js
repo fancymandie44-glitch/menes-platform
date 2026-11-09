@@ -62,6 +62,8 @@ const REQUIRED_FILES = [
   'images/bundles/pairs/noir.jpg',
   'images/bundles/pairs/kultur.jpg',
   'images/bundles/essentials.jpg',
+  'images/community/hat-outdoor.jpg',
+  'images/community/street-point.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];

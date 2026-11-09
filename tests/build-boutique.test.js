@@ -69,6 +69,9 @@ function run() {
     'images/products/boxers/red.jpg',
     'images/products/boxers/red-worn.jpg',
     'images/lookbook/drop-table.jpg',
+    'images/community/hat-outdoor.jpg',
+    'images/community/street-point.jpg',
+    'images/community/dj-chain.jpg',
   ];
 
   for (const file of ['shop-bundles.js', 'shop.js', 'data/bundles.js']) {
@@ -97,6 +100,9 @@ function run() {
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
   assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
   assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
+  assert(shopJs.includes('COMMUNITY_PHOTOS'), 'community gallery must include We Wear MENES photos');
+  assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
+  assert(shopJs.includes('function galleryDedupeKey'), 'instagram data-uri posts must not collapse into one tile');
   assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
   assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
   assert(!/FREE shipping Canada/i.test(shopJs.match(/HOLIDAY_ANNOUNCE = \{[\s\S]*?\};/)?.[0] || ''), 'top bar must not say free shipping Canada');

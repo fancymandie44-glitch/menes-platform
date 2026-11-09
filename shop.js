@@ -424,6 +424,23 @@ const LOOKBOOK_STREET = [
   'cyan-window.jpg', 'black-jeep.jpg', 'red-jordan.jpg', 'black-yeezy.jpg', 'green-close.jpg',
   'pink-walk.jpg', 'purple-car.jpg', 'purple-car-wide.jpg', 'red-close.jpg',
 ];
+const IG_HANDLE = '@menes_jewelry';
+const COMMUNITY_PHOTOS = [
+  { image: '/images/community/hat-outdoor.jpg', handle: IG_HANDLE, caption: 'MENES Kultur' },
+  { image: '/images/community/street-point.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/field-duo.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hoodie-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hallway-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/studio-session.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/dj-chain.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/kid-pitch.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/painter.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/camera-selfie.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/bathtub-campaign.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-beige-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-black-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-orange-studio.jpg', handle: IG_HANDLE, caption: '' },
+];
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -432,7 +449,7 @@ const DEFAULT_SITE_EN = {
   heroSubtitle: 'Clothes and accessories for people who set the trend. Not the ones who follow it.',
   heroCta: 'Shop the collection',
   announcement: 'Limited drop. Find a MENES ambassador for exclusive 10% off',
-  galleryTitle: 'They wear MENES',
+  galleryTitle: 'WE WEAR MENES',
   gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
   guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
@@ -551,7 +568,7 @@ function siteCopy(lang = currentLang) {
     trust: en.trust || DEFAULT_SITE_EN.trust,
     why: en.why || DEFAULT_SITE_EN.why,
     faq: en.faq || DEFAULT_SITE_EN.faq,
-    galleryTitle: en.galleryTitle || DEFAULT_SITE_EN.galleryTitle,
+    galleryTitle: s.galleryTitle || en.galleryTitle || DEFAULT_SITE_EN.galleryTitle,
     gallerySubtitle: humanizeCopy(en.gallerySubtitle || DEFAULT_SITE_EN.gallerySubtitle),
     guarantee: humanizeCopy(en.guarantee || DEFAULT_SITE_EN.guarantee),
     bundle: { ...DEFAULT_SITE_EN.bundle, ...(en.bundle || {}) },
@@ -1480,20 +1497,41 @@ function gallerySrc(url) {
   return raw;
 }
 
+function galleryDedupeKey(g) {
+  const post = String(g.postUrl || '').trim().replace(/\/+$/, '').split('?')[0];
+  if (/^https?:\/\//i.test(post)) return `post:${post.toLowerCase()}`;
+  const img = gallerySrc(g.image);
+  if (!img) return '';
+  if (img.startsWith('data:')) {
+    return `data:${img.length}:${img.slice(40, 120)}:${img.slice(-64)}`;
+  }
+  return imageKey(img);
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
   const seen = new Set(storyKeys);
   const items = [];
+  const igHome = src.instagram || 'https://www.instagram.com/menes_jewelry';
+  const igHandle = src.instagramHandle || IG_HANDLE;
   const pushItem = (g) => {
     if (!g || !(g.image || g.postUrl || g.handle)) return;
     const image = gallerySrc(g.image);
-    const key = imageKey(image);
+    const next = { ...g, image };
+    const key = galleryDedupeKey(next);
     if (key && seen.has(key)) return;
     if (key) seen.add(key);
-    items.push({ ...g, image });
+    items.push(next);
   };
   (src.gallery || []).forEach(pushItem);
+  COMMUNITY_PHOTOS.forEach((g) => {
+    pushItem({
+      ...g,
+      handle: g.handle || igHandle,
+      postUrl: g.postUrl || igHome,
+    });
+  });
   LOOKBOOK_STREET.forEach((file) => {
     pushItem({
       image: `/images/lookbook/${file}`,
@@ -1506,7 +1544,7 @@ function renderGallery(s, sec, raw) {
   toggle('gallery', sec.gallery !== false);
   if (sec.gallery === false) return;
 
-  document.getElementById('galleryTitle').textContent = s.galleryTitle || (currentLang === 'en' ? 'They wear MENES' : 'Ils portent MENES');
+  document.getElementById('galleryTitle').textContent = s.galleryTitle || (currentLang === 'en' ? 'WE WEAR MENES' : 'Ils portent MENES');
   document.getElementById('gallerySubtitle').textContent = s.gallerySubtitle || '';
   const igLink = document.getElementById('galleryIgLink');
   if (src.instagram) {
