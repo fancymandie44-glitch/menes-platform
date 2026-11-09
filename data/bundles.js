@@ -45,6 +45,7 @@
     pairKultur: 22,
     boxer: 19.99,
     capKultur: 99.99,
+    capCamo: 99.99,
     bagKeyz: 300,
   };
 
@@ -54,7 +55,7 @@
 
   const KULTUR_STEPS_COMPARE = cad(UNIT_PRICES.pairKultur + UNIT_PRICES.pairColor * 2);
   const ESSENTIALS_COMPARE = cad(UNIT_PRICES.capKultur + UNIT_PRICES.pairColor * 2 + UNIT_PRICES.boxer);
-  const HOLIDAY_COMPARE = cad(UNIT_PRICES.capKultur + UNIT_PRICES.bagKeyz + UNIT_PRICES.pairColor * 3);
+  const HOLIDAY_COMPARE = cad(UNIT_PRICES.capCamo + UNIT_PRICES.bagKeyz + UNIT_PRICES.pairColor * 3);
 
   function moneyFr(n) {
     const x = cad(n);

@@ -29,6 +29,7 @@ assert.strictEqual(unit.pairColor, 13);
 assert.strictEqual(unit.pairKultur, 22);
 assert.strictEqual(unit.boxer, 19.99);
 assert.strictEqual(unit.capKultur, 99.99);
+assert.strictEqual(unit.capCamo, 99.99);
 assert.strictEqual(unit.bagKeyz, 300);
 const kulturBundle = bundles.bySlug('kultur-steps');
 const essentialsBundle = bundles.bySlug('essentials');
