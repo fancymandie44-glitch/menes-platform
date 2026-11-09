@@ -15,6 +15,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   const SITE_ORIGIN = 'https://www.mymenes.com';
 
+  const DROP_TZ = 'America/Toronto';
+  const DROP_AT = '2026-11-20T00:00:00-05:00';
+
   const CLIENT_DISCOUNT = {
     code: 'MENESFAM',
     percent: null,
@@ -33,6 +36,21 @@
     { id: 'kultur', name: { fr: 'Kultur charcoal', en: 'Kultur charcoal' }, swatch: '#2b2b2b', image: '/images/bundles/pairs/kultur.jpg?v=1', inStock: true },
   ];
   const COLOR_PAIR_OPTIONS = PAIR_OPTIONS.filter((p) => p.id !== 'kultur');
+
+  const PAIR_STOCK = {
+    noir: { productId: 'summer-socks', color: 'Black' },
+    jaune: { productId: 'summer-socks', color: 'Yellow' },
+    rouge: { productId: 'summer-socks', color: 'Red' },
+    vert: { productId: 'summer-socks', color: 'Green' },
+    violet: { productId: 'summer-socks', color: 'Purple' },
+    cyan: { productId: 'summer-socks', color: 'Cyan' },
+    rose: { productId: 'summer-socks', color: 'Pink' },
+    kultur: { productId: 'menes-kltr-socks' },
+  };
+  const BOXER_PRODUCT_ID = 'menes-boxer';
+  const HAT_PRODUCT_ID = 'menes-kltr-trucker-hat';
+  const BAG_PRODUCT_ID = 'menes-m-keyz-crossbody-bag-';
+  const PENDING_RESERVE_MS = 45 * 60 * 1000;
 
   const BOXER_SIZES = ['S', 'M', 'L', 'XL'];
   const BOXER_OPTIONS = [
@@ -121,6 +139,7 @@
       pairOptions: COLOR_PAIR_OPTIONS,
       fixedPairId: 'kultur',
       sizes: [],
+      limit: null,
       stock: null,
       allowDuplicatePairs: true,
     },
@@ -153,7 +172,7 @@
       price: 99.99,
       comparePrice: ESSENTIALS_COMPARE,
       currency: 'CAD',
-      urgency: { fr: 'Le pack de tous les jours', en: 'The everyday pack' },
+      urgency: { fr: '3 packs seulement', en: 'Only 3 packs' },
       highlights: {
         fr: ['1 casquette Kultur MENES', '2 paires au choix', '1 boxer Red ou Grey', ESSENTIALS_DEAL.hitFr],
         en: ['1 Kultur MENES cap', '2 pairs of your choice', '1 Red or Grey boxer', ESSENTIALS_DEAL.hitEn],
@@ -164,6 +183,7 @@
       },
       pairCount: 2,
       pairOptions: PAIR_OPTIONS,
+      limit: 3,
       boxer: true,
       boxerOptions: BOXER_OPTIONS,
       boxerSizes: BOXER_SIZES,
@@ -200,7 +220,7 @@
       price: 329.99,
       comparePrice: HOLIDAY_COMPARE,
       currency: 'CAD',
-      urgency: { fr: 'Quantités limitées', en: 'Limited quantities' },
+      urgency: { fr: '5 packs seulement', en: 'Only 5 packs' },
       highlights: {
         fr: ['Casquette MENES camo', 'Sac M Keyz', '3 paires au choix', HOLIDAY_DEAL.hitFr],
         en: ['MENES camo trucker', 'M Keyz bag', '3 pairs of your choice', HOLIDAY_DEAL.hitEn],
@@ -211,6 +231,7 @@
       },
       pairCount: 3,
       pairOptions: PAIR_OPTIONS,
+      limit: 5,
       sizes: [],
       stock: null,
       allowDuplicatePairs: true,
@@ -235,6 +256,182 @@
 
   function isReady(bundle) {
     return isBrowsable(bundle) && isPriced(bundle);
+  }
+
+  function dropAtMs() {
+    const n = Date.parse(DROP_AT);
+    return Number.isFinite(n) ? n : Date.parse('2026-11-20T05:00:00.000Z');
+  }
+
+  function isDropLive(now) {
+    const t = now == null ? Date.now() : Number(now);
+    return Number.isFinite(t) && t >= dropAtMs();
+  }
+
+  function bundleLimit(bundle) {
+    if (bundle?.limit == null || bundle.limit === '') return null;
+    const n = Number(bundle.limit);
+    if (!Number.isFinite(n) || n < 0) return null;
+    return n;
+  }
+
+  function countsTowardBundleLimit(order) {
+    const s = String(order?.status || '').toLowerCase();
+    if (['cancelled', 'canceled', 'failed', 'expired', 'refunded'].includes(s)) return false;
+    if (['paid', 'processing', 'shipped', 'delivered', 'completed', 'fulfilled'].includes(s)) return true;
+    if (s === 'pending' || s === 'awaiting_payment') {
+      const t = Date.parse(order.date || order.createdAt || '');
+      return Number.isFinite(t) && (Date.now() - t) < PENDING_RESERVE_MS;
+    }
+    return false;
+  }
+
+  function countCommitted(store, bundleId) {
+    let n = 0;
+    for (const order of store?.orders || []) {
+      if (!countsTowardBundleLimit(order)) continue;
+      for (const item of order.items || []) {
+        if (item && (item.id === bundleId || item.productId === bundleId)) {
+          n += Math.max(1, parseInt(item.qty, 10) || 1);
+        }
+      }
+    }
+    return n;
+  }
+
+  function bundleRemaining(store, bundle) {
+    const limit = bundleLimit(bundle);
+    if (limit == null) return Infinity;
+    if (store?.bundles?.remaining && Object.prototype.hasOwnProperty.call(store.bundles.remaining, bundle.id) && !Array.isArray(store.orders)) {
+      const n = store.bundles.remaining[bundle.id];
+      if (n == null) return Infinity;
+      return Math.max(0, Number(n) || 0);
+    }
+    return Math.max(0, limit - countCommitted(store, bundle.id));
+  }
+
+  function findProduct(store, id) {
+    return (store?.products || []).find((p) => p && p.id === id) || null;
+  }
+
+  function unitsForProduct(product, optionMap) {
+    if (!product) return Infinity;
+    const list = Array.isArray(product.variants) ? product.variants : [];
+    if (!list.length) {
+      const s = Number(product.stock);
+      if (!Number.isFinite(s)) return Infinity;
+      return Math.max(0, s);
+    }
+    const opts = optionMap || {};
+    const hit = list.find((v) => {
+      const vo = v.options || {};
+      return Object.keys(opts).every((k) => String(vo[k] || '').toLowerCase() === String(opts[k] || '').toLowerCase());
+    });
+    if (!hit) return 0;
+    const s = Number(hit.stock);
+    if (!Number.isFinite(s)) return 0;
+    return Math.max(0, s);
+  }
+
+  function pairUnitsLeft(store, pairId) {
+    if (store?.bundles?.pairs && typeof store.bundles.pairs[pairId] === 'boolean' && !Array.isArray(store.orders)) {
+      return store.bundles.pairs[pairId] ? Infinity : 0;
+    }
+    const spec = PAIR_STOCK[pairId];
+    if (!spec) return Infinity;
+    const product = findProduct(store, spec.productId);
+    if (!product) return Infinity;
+    return unitsForProduct(product, spec.color ? { Color: spec.color } : {});
+  }
+
+  function pairAvailable(store, pairId) {
+    return pairUnitsLeft(store, pairId) > 0;
+  }
+
+  function boxerUnitsLeft(store, color, size) {
+    const key = `${String(color || '').toLowerCase()}:${String(size || '').toUpperCase()}`;
+    if (store?.bundles?.boxers && typeof store.bundles.boxers[key] === 'boolean' && !Array.isArray(store.orders)) {
+      return store.bundles.boxers[key] ? Infinity : 0;
+    }
+    const product = findProduct(store, BOXER_PRODUCT_ID);
+    if (!product) return Infinity;
+    const colorName = String(color || '').toLowerCase() === 'grey' ? 'Grey' : 'Red';
+    return unitsForProduct(product, { Color: colorName, Size: String(size || '').toUpperCase() });
+  }
+
+  function canPurchase(bundle, now, store) {
+    if (!isReady(bundle) || !isDropLive(now)) return false;
+    return bundleRemaining(store, bundle) > 0;
+  }
+
+  function soldOutMessage(bundle, lang) {
+    const name = loc(bundle?.name, lang) || 'Bundle';
+    return lang === 'en' ? `${name} is sold out.` : `${name} est épuisé.`;
+  }
+
+  function validateBundleStock(store, bundle, variant, qty) {
+    const q = Math.max(1, parseInt(qty, 10) || 1);
+    if (bundleRemaining(store, bundle) < q) {
+      return { error: soldOutMessage(bundle, 'fr') };
+    }
+    const picks = [];
+    if (bundle.fixedPairId) {
+      for (let i = 0; i < q; i += 1) picks.push(bundle.fixedPairId);
+    }
+    (Array.isArray(variant?.pairs) ? variant.pairs : []).forEach((id) => {
+      for (let i = 0; i < q; i += 1) picks.push(String(id));
+    });
+    const need = {};
+    picks.forEach((id) => { need[id] = (need[id] || 0) + 1; });
+    for (const [id, n] of Object.entries(need)) {
+      const left = pairUnitsLeft(store, id);
+      if (left < n) return { error: `Paire indisponible: ${id}` };
+    }
+    if (bundle.boxer) {
+      const left = boxerUnitsLeft(store, variant?.boxerColor, variant?.boxerSize);
+      if (left < q) return { error: 'Boxer indisponible dans cette taille' };
+    }
+    return { ok: true };
+  }
+
+  function publicBundleState(store) {
+    const remaining = {};
+    BUNDLES.forEach((b) => {
+      const left = bundleRemaining(store, b);
+      remaining[b.id] = Number.isFinite(left) ? left : null;
+    });
+    const pairs = {};
+    Object.keys(PAIR_STOCK).forEach((id) => {
+      pairs[id] = pairAvailable(store, id);
+    });
+    const boxers = {};
+    BOXER_OPTIONS.forEach((b) => {
+      BOXER_SIZES.forEach((size) => {
+        boxers[`${b.id}:${size}`] = boxerUnitsLeft(store, b.id, size) > 0;
+      });
+    });
+    return { remaining, pairs, boxers };
+  }
+
+  function dropLockMessage(lang) {
+    return lang === 'en'
+      ? 'Packs unlock Nov 20 at midnight Eastern.'
+      : 'Les packs s’ouvrent le 20 novembre à minuit (Montréal).';
+  }
+
+  function countdownParts(now) {
+    const t = now == null ? Date.now() : Number(now);
+    let ms = dropAtMs() - t;
+    if (!Number.isFinite(ms) || ms < 0) ms = 0;
+    const total = Math.floor(ms / 1000);
+    return {
+      live: ms <= 0,
+      days: Math.floor(total / 86400),
+      hours: Math.floor((total % 86400) / 3600),
+      minutes: Math.floor((total % 3600) / 60),
+      seconds: total % 60,
+      ms,
+    };
   }
 
   function visibleOnGrid(bundle) {
@@ -370,6 +567,25 @@
 
   return {
     SITE_ORIGIN,
+    DROP_TZ,
+    DROP_AT,
+    PAIR_STOCK,
+    BOXER_PRODUCT_ID,
+    HAT_PRODUCT_ID,
+    BAG_PRODUCT_ID,
+    dropAtMs,
+    isDropLive,
+    bundleLimit,
+    bundleRemaining,
+    pairAvailable,
+    pairUnitsLeft,
+    boxerUnitsLeft,
+    canPurchase,
+    soldOutMessage,
+    validateBundleStock,
+    publicBundleState,
+    dropLockMessage,
+    countdownParts,
     CLIENT_DISCOUNT,
     UNIT_PRICES,
     PAIR_OPTIONS,

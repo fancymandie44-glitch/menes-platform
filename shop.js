@@ -1332,8 +1332,8 @@ async function refreshStore(opts = {}) {
 
 const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 const HOLIDAY_ANNOUNCE = {
-  en: 'Holiday season is here. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
-  fr: 'Le temps des fêtes est là. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
+  en: 'Holiday packs drop Nov 20 at midnight. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
+  fr: 'Les packs s’ouvrent le 20 novembre à minuit. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
 };
 
 function applySectionOrder() {
@@ -1373,7 +1373,12 @@ function renderSite() {
     logo.classList.remove('hidden');
   }
 
-  const holidayLine = HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en;
+  const B = window.MENES_BUNDLES;
+  const holidayLine = (B && !B.isDropLive())
+    ? (HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en)
+    : (currentLang === 'fr'
+      ? 'Le temps des fêtes est là. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99'
+      : 'Holiday season is here. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99');
   toggle('announceBar', sec.announcement !== false);
   document.getElementById('announceBar').textContent = holidayLine;
 
@@ -3228,9 +3233,20 @@ function closeCart() {
   syncScrollLock();
 }
 
+function cartHasLockedBundle() {
+  const B = window.MENES_BUNDLES;
+  if (!B || B.isDropLive()) return false;
+  return (cart || []).some((c) => c && (c.bundle || B.byId(c.id)));
+}
+
 document.getElementById('checkoutBtn').addEventListener('click', () => {
   if (!cart.length) {
     showToast(t('cart_empty'));
+    return;
+  }
+  if (cartHasLockedBundle()) {
+    const B = window.MENES_BUNDLES;
+    showToast(B?.dropLockMessage(currentLang === 'fr' ? 'fr' : 'en') || 'Packs unlock Nov 20 at midnight.');
     return;
   }
   populateProvinces();
@@ -3308,6 +3324,10 @@ document.getElementById('altPayBtn').addEventListener('click', () => {
     showToast(t('cart_empty'));
     return;
   }
+  if (cartHasLockedBundle()) {
+    showToast(window.MENES_BUNDLES?.dropLockMessage(currentLang === 'fr' ? 'fr' : 'en') || 'Packs unlock Nov 20 at midnight.');
+    return;
+  }
   saveCheckoutDraft(getCheckoutCustomer(new FormData(form)));
   window.location.href = '/paiement.html';
 });
@@ -3320,6 +3340,10 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const method = form.get('method') || 'stripe';
   if (!cart.length) {
     showToast(currentLang === 'en' ? 'Your cart is empty' : 'Panier vide');
+    return;
+  }
+  if (cartHasLockedBundle()) {
+    showToast(window.MENES_BUNDLES?.dropLockMessage(currentLang === 'fr' ? 'fr' : 'en') || 'Packs unlock Nov 20 at midnight.');
     return;
   }
   const customer = getCheckoutCustomer(form);

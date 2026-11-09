@@ -90,6 +90,7 @@ function run() {
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
   assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
   assert(html.includes('id="shopBundlesFast"'), 'homepage must include holiday fast-buy buttons');
+  assert(html.includes('id="shopBundlesTimer"'), 'homepage must include the bundle drop timer');
   assert(html.includes('Shop the holiday drop'), 'hero CTA must send shoppers to bundles');
   assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
   assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
@@ -100,11 +101,19 @@ function run() {
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
   assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
   assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
+  const bundleJs = fs.readFileSync(path.join(DIST, 'data/bundles.js'), 'utf8');
+  const shopBundlesJs = fs.readFileSync(path.join(DIST, 'shop-bundles.js'), 'utf8');
+  assert(bundleJs.includes("DROP_AT = '2026-11-20T00:00:00-05:00'"), 'drop is Nov 20 midnight Eastern');
+  assert(shopBundlesJs.includes('startDropTimer'), 'bundle UI must tick the drop clock');
+  assert(shopBundlesJs.includes('canPurchase'), 'bundle add-to-cart must wait for the drop');
+  assert(shopBundlesJs.includes('pairAvailable'), 'sold-out pairs must show as unavailable');
+  assert(bundleJs.includes('limit: 3') && bundleJs.includes('limit: 5'), 'essentials 3 / holiday 5');
+  assert(shopJs.includes('Holiday season is here'), 'after the drop the timer copy is gone');
   assert(shopJs.includes('COMMUNITY_PHOTOS'), 'community gallery must include We Wear MENES photos');
   assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
   assert(shopJs.includes('function galleryDedupeKey'), 'instagram data-uri posts must not collapse into one tile');
   assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
-  assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
+  assert(shopJs.includes('Holiday packs drop Nov 20 at midnight'), 'holiday announcement must lock packs until Nov 20');
   assert(!/FREE shipping Canada/i.test(shopJs.match(/HOLIDAY_ANNOUNCE = \{[\s\S]*?\};/)?.[0] || ''), 'top bar must not say free shipping Canada');
   assert(shopJs.includes('HOLIDAY_FREE_SHIPPING'), 'holiday free shipping flag');
   assert(shopJs.includes('passport_pieces'), 'passport must show purchased pieces');
