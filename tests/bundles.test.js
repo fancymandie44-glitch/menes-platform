@@ -6,6 +6,16 @@ const path = require('path');
 const bundles = require('../data/bundles.js');
 const { buildTrustedOrder, findDiscount } = require('../lib/order-pricing');
 
+const LIVE = bundles.dropAtMs();
+const LOCKED = LIVE - 1000;
+assert.strictEqual(new Date(bundles.DROP_AT).toISOString(), '2026-11-20T05:00:00.000Z');
+assert.ok(!bundles.isDropLive(LOCKED), 'packs stay locked before Nov 20 midnight Eastern');
+assert.ok(bundles.isDropLive(LIVE), 'packs unlock at Nov 20 00:00 Eastern');
+assert.ok(!bundles.canPurchase(bundles.bySlug('essentials'), LOCKED));
+assert.ok(bundles.canPurchase(bundles.bySlug('essentials'), LIVE));
+assert.ok(bundles.countdownParts(LOCKED).days >= 0);
+assert.ok(bundles.countdownParts(LIVE).live);
+
 assert.ok(bundles.BUNDLES.length === 3, 'three bundles');
 assert.strictEqual(bundles.bySlug('kultur-steps').kind, 'builder');
 assert.strictEqual(bundles.bySlug('kultur-steps').pairCount, 2);
@@ -62,10 +72,17 @@ assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { combo: 'noir-ja
 assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir'] }).error);
 assert.ok(!bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir', 'jaune'] }).error);
 assert.ok(bundles.validateLine(bundles.bySlug('kultur-steps'), { pairs: ['noir', 'kultur'] }).error);
+const lockedOrder = buildTrustedOrder(store, {
+  customer,
+  items: [{ id: 'bundle-kultur-steps', qty: 1, price: 1, variant: { pairs: ['noir', 'rose'] } }],
+}, LOCKED);
+assert.ok(lockedOrder.error, 'server must refuse bundle checkout before the drop');
+assert.match(lockedOrder.error, /minuit|midnight/i);
+
 const kultur = buildTrustedOrder(store, {
   customer,
   items: [{ id: 'bundle-kultur-steps', qty: 1, price: 1, variant: { pairs: ['noir', 'rose'] } }],
-});
+}, LIVE);
 assert.ok(!kultur.error, kultur.error);
 assert.strictEqual(kultur.order.items[0].price, 34.99, 'server ignores client kultur price');
 assert.match(kultur.order.items[0].size, /Kultur/i);
@@ -78,7 +95,7 @@ const ok = buildTrustedOrder(store, {
     price: 1,
     variant: { pairs: ['noir', 'jaune', 'rose'] },
   }],
-});
+}, LIVE);
 assert.ok(!ok.error, ok.error);
 assert.strictEqual(ok.order.items[0].price, 329.99, 'server ignores client holiday price');
 assert.match(ok.order.items[0].size, /Noir/);
@@ -92,7 +109,7 @@ const essentialsLine = {
 assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir'] }).error);
 assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir', 'jaune'] }).error, 'boxer required');
 assert.ok(!bundles.validateLine(bundles.bySlug('essentials'), essentialsLine.variant).error);
-const essentials = buildTrustedOrder(store, { customer, items: [essentialsLine] });
+const essentials = buildTrustedOrder(store, { customer, items: [essentialsLine] }, LIVE);
 assert.ok(!essentials.error, essentials.error);
 assert.strictEqual(essentials.order.items[0].price, 99.99, 'server ignores client essentials price');
 assert.match(essentials.order.items[0].size, /Red/i);

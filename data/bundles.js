@@ -15,6 +15,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   const SITE_ORIGIN = 'https://www.mymenes.com';
 
+  const DROP_TZ = 'America/Toronto';
+  const DROP_AT = '2026-11-20T00:00:00-05:00';
+
   const CLIENT_DISCOUNT = {
     code: 'MENESFAM',
     percent: null,
@@ -237,6 +240,41 @@
     return isBrowsable(bundle) && isPriced(bundle);
   }
 
+  function dropAtMs() {
+    const n = Date.parse(DROP_AT);
+    return Number.isFinite(n) ? n : Date.parse('2026-11-20T05:00:00.000Z');
+  }
+
+  function isDropLive(now) {
+    const t = now == null ? Date.now() : Number(now);
+    return Number.isFinite(t) && t >= dropAtMs();
+  }
+
+  function canPurchase(bundle, now) {
+    return isReady(bundle) && isDropLive(now);
+  }
+
+  function dropLockMessage(lang) {
+    return lang === 'en'
+      ? 'Packs unlock Nov 20 at midnight Eastern.'
+      : 'Les packs s’ouvrent le 20 novembre à minuit (Montréal).';
+  }
+
+  function countdownParts(now) {
+    const t = now == null ? Date.now() : Number(now);
+    let ms = dropAtMs() - t;
+    if (!Number.isFinite(ms) || ms < 0) ms = 0;
+    const total = Math.floor(ms / 1000);
+    return {
+      live: ms <= 0,
+      days: Math.floor(total / 86400),
+      hours: Math.floor((total % 86400) / 3600),
+      minutes: Math.floor((total % 3600) / 60),
+      seconds: total % 60,
+      ms,
+    };
+  }
+
   function visibleOnGrid(bundle) {
     return Boolean(bundle);
   }
@@ -370,6 +408,13 @@
 
   return {
     SITE_ORIGIN,
+    DROP_TZ,
+    DROP_AT,
+    dropAtMs,
+    isDropLive,
+    canPurchase,
+    dropLockMessage,
+    countdownParts,
     CLIENT_DISCOUNT,
     UNIT_PRICES,
     PAIR_OPTIONS,
