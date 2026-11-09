@@ -6,7 +6,7 @@ const {
   cleanEmail,
   isEmail,
   findPassport,
-  upsertPassportFromPaidOrders,
+  ensurePassportFromEmail,
   clientView,
   tokenMatches,
 } = require('../lib/passport');
@@ -36,28 +36,26 @@ exports.handler = async (event) => {
     }
 
     const store = await readSiteStore(siteId);
-    let passport = findPassport(store, email);
-    let created = false;
-    if (!passport) {
-      const result = upsertPassportFromPaidOrders(store, email);
-      if (result?.passport) {
-        passport = result.passport;
-        created = Boolean(result.created);
-        await writeSiteStore(siteId, store);
-      }
+    const result = ensurePassportFromEmail(store, email, {
+      source: body.source || params.source || 'passport',
+      locale: body.locale || params.locale,
+      name: body.name,
+    });
+    if (!result?.passport) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email invalide' }) };
     }
-    if (!passport) {
-      return { statusCode: 404, headers, body: JSON.stringify({ ok: false, exists: false }) };
-    }
-
-    const full = tokenMatches(passport, token);
+    const { deliverNewPassportEmails } = require('../lib/passport-email');
+    await deliverNewPassportEmails(store, result, body.locale || params.locale);
+    await writeSiteStore(siteId, store);
+    const passport = findPassport(store, email) || result.passport;
+    const full = Boolean(result.created) || tokenMatches(passport, token);
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         ok: true,
         exists: true,
-        created,
+        created: Boolean(result.created),
         full,
         passport: clientView(passport, { full }),
       }),

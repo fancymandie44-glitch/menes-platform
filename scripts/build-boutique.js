@@ -57,6 +57,13 @@ const REQUIRED_FILES = [
   'lib/public-catalog.js',
   'images/products/socks/black.jpg',
   'images/products/socks/kltr-orange.jpg',
+  'images/products/boxers/grey.jpg',
+  'images/products/boxers/red.jpg',
+  'images/bundles/pairs/noir.jpg',
+  'images/bundles/pairs/kultur.jpg',
+  'images/bundles/essentials.jpg',
+  'images/community/hat-outdoor.jpg',
+  'images/community/street-point.jpg',
 ];
 
 const STATIC_DIRS = ['data', 'api', 'lib', 'images'];

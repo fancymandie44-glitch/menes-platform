@@ -61,5 +61,6 @@ assert.ok(shopJs.includes('function isLowStock'));
 assert.ok(shopJs.includes('function cardRemaining'));
 assert.ok(shopJs.includes('product-stock-left'));
 assert.ok(shopJs.includes("tFill('stock_left'"));
+assert.ok(shopJs.includes('listedStockForOption'), 'color chips must use all sizes, not the selected size only');
 
 console.log('ok: public low-stock catalog');

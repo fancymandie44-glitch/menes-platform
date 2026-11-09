@@ -1,7 +1,7 @@
 const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
 const { checkAdminAuth } = require('../lib/admin-auth');
-const { resendConfigured, sendResend } = require('../lib/notify');
+const { resendConfigured, emailConfigured, sendEmail, shopUrl } = require('../lib/notify');
 
 function uid(prefix) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -30,26 +30,28 @@ function brandShell({ subject, preheader, bodyHtml, ctaLabel, ctaUrl, siteName }
     <div class="card">${bodyHtml}
       ${ctaLabel && ctaUrl ? `<p style="margin-top:22px"><a class="cta" href="${ctaUrl}">${ctaLabel}</a></p>` : ''}
     </div>
-    <div class="foot">© ${new Date().getFullYear()} ${name}<br>Tu reçois cet email car tu es sur la liste VIP.</div>
+    <div class="foot">© ${new Date().getFullYear()} ${name}<br>Tu reçois cet email car tu as un passeport MENES. Réponds STOP pour quitter la liste.</div>
   </div></body></html>`;
 }
 
 const TEMPLATES = {
   welcome: {
-    name: 'Bienvenue VIP',
-    subject: 'Bienvenue dans le cercle MENES',
-    preheader: 'Ton accès anticipé commence ici.',
+    name: 'Bienvenue passeport',
+    subject: 'Ton passeport MENES est ouvert',
+    preheader: 'Ouvre ta carte. Les nouveautés arrivent ici.',
     bodyHtml: `<h1>Tu es dedans.</h1>
-      <p>Merci de rejoindre la liste VIP MENES. Tu auras les drops en avant-première, les codes exclusifs, et le droit de porter ce que les autres suivront.</p>
-      <p>Les −10% publics sont terminés. Trouve un <strong style="color:#c9a84c">ambassadeur MENES</strong> — son code exclusif débloque −10% sur ta commande.</p>`,
-    ctaLabel: 'Voir la boutique',
+      <p>Ton passeport MENES est créé. Tes pièces, tes bundles et tes commandes collent à cet email.</p>
+      <p>Tu reçois aussi les <strong style="color:#c9a84c">nouveautés</strong>, drops, et packs des fêtes — en avant-première.</p>`,
+    ctaLabel: 'Ouvrir mon passeport',
+    ctaPath: '/?pass=1',
   },
   drop: {
     name: 'Nouveau drop',
     subject: 'Drop MENES · maintenant en ligne',
-    preheader: 'Pièces limitées. Pas de restock.',
+    preheader: 'Nouveauté pour les passeports MENES.',
     bodyHtml: `<h1>Le drop est live.</h1>
-      <p>Nouvelles pièces disponibles. Qualité premium, quantités limitées — quand c’est parti, c’est parti.</p>`,
+      <p>Nouvelle pièce, nouveau pack. Tu reçois cet email parce que tu as un passeport MENES.</p>
+      <p>Qualité premium, quantités limitées — quand c’est parti, c’est parti.</p>`,
     ctaLabel: 'Shopper le drop',
   },
   review: {
@@ -75,18 +77,20 @@ function segmentEmails(store, segment) {
   const subs = (store.subscribers || []).filter((s) => s.active !== false && s.email);
   const orders = store.orders || [];
   const buyers = [...new Set(orders.map((o) => (o.customer?.email || '').toLowerCase()).filter(Boolean))];
+  const passports = [...new Set((store.passports || []).map((p) => String(p.email || '').toLowerCase()).filter(Boolean))];
 
-  if (segment === 'subscribers' || segment === 'vip') return subs.map((s) => s.email);
+  if (segment === 'subscribers' || segment === 'vip') return [...new Set([...subs.map((s) => s.email), ...passports])];
+  if (segment === 'passports') return passports;
   if (segment === 'buyers') return buyers;
-  if (segment === 'all') return [...new Set([...subs.map((s) => s.email), ...buyers])];
-  return subs.map((s) => s.email);
+  if (segment === 'all') return [...new Set([...subs.map((s) => s.email), ...buyers, ...passports])];
+  return [...new Set([...subs.map((s) => s.email), ...passports])];
 }
 
-async function sendWithResend({ to, subject, html }) {
-  if (!resendConfigured()) {
-    return { error: 'Email non configuré : RESEND_API_KEY + RESEND_FROM (domaine vérifié) requis.' };
+async function sendCampaignEmail({ to, subject, html }) {
+  if (!emailConfigured()) {
+    return { error: 'Email non configuré : RESEND_API_KEY + RESEND_FROM, ou BREVO_API_KEY + EMAIL_FROM, ou SMTP.' };
   }
-  const result = await sendResend({ to, subject, html });
+  const result = await sendEmail({ to, subject, html });
   if (!result.ok) return { error: result.error };
   return { id: result.id };
 }
@@ -114,6 +118,7 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           templates: Object.entries(TEMPLATES).map(([id, t]) => ({ id, name: t.name, subject: t.subject })),
           resendConfigured: resendConfigured(),
+          emailConfigured: emailConfigured(),
           merchantEmailSet: Boolean(process.env.MERCHANT_EMAIL),
         }),
       };
@@ -127,7 +132,7 @@ exports.handler = async (event) => {
     const store = await readSiteStore(siteId);
     if (!Array.isArray(store.campaigns)) store.campaigns = [];
     const siteName = store.site?.name || 'MENES';
-    const storeUrl = process.env.URL || 'https://boutiquemenes.netlify.app';
+    const storeUrl = shopUrl();
 
     if (body.action === 'preview') {
       const tpl = TEMPLATES[body.template] || TEMPLATES.welcome;
@@ -156,14 +161,14 @@ exports.handler = async (event) => {
         ctaUrl: body.ctaUrl || (tpl.ctaPath ? `${storeUrl}${tpl.ctaPath}` : storeUrl),
         siteName,
       });
-      const sent = await sendWithResend({ to, subject, html });
+      const sent = await sendCampaignEmail({ to, subject, html });
       if (sent.error) {
         return {
           statusCode: 503,
           headers,
           body: JSON.stringify({
             error: sent.error,
-            hint: 'Netlify → Environment : RESEND_API_KEY, RESEND_FROM (domaine vérifié), MERCHANT_EMAIL.',
+            hint: 'Netlify → Environment : email (Resend, Brevo ou SMTP).',
           }),
         };
       }
@@ -177,13 +182,13 @@ exports.handler = async (event) => {
       if (!emails.length) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'Aucun destinataire dans ce segment' }) };
       }
-      if (!resendConfigured()) {
+      if (!emailConfigured()) {
         return {
           statusCode: 503,
           headers,
           body: JSON.stringify({
-            error: 'Resend non configuré',
-            hint: 'Ajoutez RESEND_API_KEY + RESEND_FROM (domaine vérifié) dans Netlify.',
+            error: 'Email non configuré',
+            hint: 'Ajoutez Resend, Brevo ou SMTP dans Netlify.',
             audience: emails.length,
           }),
         };
@@ -205,7 +210,7 @@ exports.handler = async (event) => {
       // Cap per call to protect function timeout
       const batch = emails.slice(0, 40);
       for (const to of batch) {
-        const r = await sendWithResend({ to, subject, html });
+        const r = await sendCampaignEmail({ to, subject, html });
         if (r.error) { failed += 1; if (errors.length < 3) errors.push(r.error); }
         else sent += 1;
       }
@@ -238,3 +243,4 @@ exports.handler = async (event) => {
 };
 
 exports.TEMPLATES = TEMPLATES;
+exports.segmentEmails = segmentEmails;

@@ -4,13 +4,13 @@ const VIP_KEY = 'menes_vip';
 const PROMO_KEY = 'menes_promo_code';
 const ATTR_KEY = 'menes_ambassador_attr';
 const WISHLIST_KEY = 'menes_wishlist';
-const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
 const PASSPORT_EMAIL_KEY = 'menes_passport_email';
 const PASSPORT_TOKEN_KEY = 'menes_passport_token';
 const LOW_STOCK_LIMIT = 10;
-const VIP_DISMISS_DAYS = 14;
+const PASSPORT_GATE_SKIP_KEY = 'menes_passport_gate_skip';
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
+const HOLIDAY_FREE_SHIPPING = true;
 const LANG_KEY = 'menes_lang_v2';
 const API = '/api/store';
 
@@ -65,6 +65,7 @@ async function captureAmbassadorRef() {
 }
 
 function shippingThreshold() {
+  if (HOLIDAY_FREE_SHIPPING) return 0;
   const n = Number(storeData?.site?.freeShippingThreshold);
   return Number.isFinite(n) && n > 0 ? n : FREE_SHIPPING_THRESHOLD;
 }
@@ -163,6 +164,8 @@ const I18N = {
     promo_min: 'Panier minimum {amount}$ CAD',
     shipping_progress: 'Plus que {amount}$ pour la livraison gratuite',
     shipping_unlocked: 'Livraison gratuite débloquée',
+    shipping_holiday: 'Livraison gratuite pour le temps des fêtes',
+    passport_pieces: 'Tes pièces MENES',
     viewers: '{n} personnes regardent ce produit',
     stock_left: 'Plus que {n} en stock',
     sold_out: 'Épuisé',
@@ -173,18 +176,19 @@ const I18N = {
     wishlist_add: 'Ajouté aux favoris',
     wishlist_remove: 'Retiré des favoris',
     purchase_ticker: '<strong>{name}</strong> de {city} vient d\'acheter {product}',
-    vip_overlay_label: 'Cercle ambassadeurs',
-    vip_overlay_title: 'Les −10% ne sont pas publics',
-    vip_overlay_sub: 'Seuls les ambassadeurs MENES détiennent la clé. Trouve le tien, entre son code exclusif, et débloque −10% sur ta commande.',
-    vip_overlay_btn: 'Recevoir les drops',
-    vip_overlay_skip: 'Je vais trouver un ambassadeur',
-    vip_welcome: 'Bienvenue dans le cercle MENES!',
+    vip_overlay_label: 'Passeport MENES',
+    vip_overlay_title: 'Entre ton email. Ton passeport s’ouvre.',
+    vip_overlay_sub: 'Même si tu ne commandes pas aujourd’hui, tu es dans le cercle. Drops, pièces, et tes achats collent à ce courriel.',
+    vip_overlay_btn: 'Ouvrir mon passeport',
+    vip_overlay_skip: 'Plus tard',
+    vip_overlay_consent: 'En continuant, tu reçois les emails MENES. Désinscription à tout moment.',
+    vip_welcome: 'Passeport MENES ouvert. Bienvenue.',
     gallery_empty: 'Photos clients bientôt. Tag',
     gallery_empty_ig: 'sur Instagram.',
     email_ph: 'ton@email.com',
     addr_ph: 'Commence à taper ton adresse...',
     proof_pay: 'Paiement sécurisé',
-    proof_ship: 'Livraison CA',
+    proof_ship: 'Livraison gratuite',
     proof_ex: 'Échange 14 jours',
     upsell_cart_title: 'Complète ton panier',
     upsell_eyebrow: 'Avant de continuer',
@@ -212,7 +216,7 @@ const I18N = {
     reviews_title_field: 'Titre',
     reviews_body: 'Ton avis',
     reviews_submit: 'Envoyer l\'avis',
-    reviews_thanks: 'Merci — ton avis sera publié après validation',
+    reviews_thanks: 'Merci. Ton avis sera publié après validation',
     reviews_after_order: 'Laisser un avis',
     reviews_count: '{n} avis',
     reviews_based: 'Basé sur {n} avis',
@@ -223,9 +227,9 @@ const I18N = {
     passport: 'Passeport',
     passport_kicker: 'Passeport MENES',
     passport_title: 'Ta carte membre',
-    passport_help: 'Entre le courriel utilisé à la caisse. Chaque client qui paie reçoit un passeport automatiquement.',
+    passport_help: 'Entre ton email. Ton passeport MENES s’ouvre tout de suite, même avant une commande.',
     passport_open: 'Ouvrir le passeport',
-    passport_none: 'Aucun passeport pour cet email — il se crée dès le premier paiement.',
+    passport_none: 'Impossible d’ouvrir le passeport. Réessaie avec un email valide.',
     passport_member: 'Membre depuis',
     passport_orders: 'Commandes',
     passport_spent: 'Total dépensé',
@@ -286,6 +290,8 @@ const I18N = {
     promo_min: 'Minimum cart {amount}$ CAD',
     shipping_progress: '{amount}$ more for free shipping',
     shipping_unlocked: 'Free shipping unlocked',
+    shipping_holiday: 'Free shipping this holiday season',
+    passport_pieces: 'Your MENES pieces',
     viewers: '{n} people are viewing this product',
     stock_left: 'Only {n} left in stock',
     sold_out: 'Sold out',
@@ -296,18 +302,19 @@ const I18N = {
     wishlist_add: 'Added to wishlist',
     wishlist_remove: 'Removed from wishlist',
     purchase_ticker: '<strong>{name}</strong> from {city} just bought {product}',
-    vip_overlay_label: 'Ambassador circle',
-    vip_overlay_title: 'Your 10% isn’t on the shelf',
-    vip_overlay_sub: 'MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off — the public codes are gone.',
-    vip_overlay_btn: 'Get drop alerts',
-    vip_overlay_skip: 'I’ll find an ambassador',
-    vip_welcome: 'Welcome to the MENES circle!',
+    vip_overlay_label: 'MENES Passport',
+    vip_overlay_title: 'Drop your email. Your passport opens.',
+    vip_overlay_sub: 'Even if you don’t buy today, you’re in. Drops, pieces, and future orders stick to this email.',
+    vip_overlay_btn: 'Open my passport',
+    vip_overlay_skip: 'Shop first',
+    vip_overlay_consent: 'By continuing you get MENES emails. Unsubscribe anytime.',
+    vip_welcome: 'MENES Passport open. Welcome.',
     gallery_empty: 'Customer photos soon. Tag',
     gallery_empty_ig: 'on Instagram.',
     email_ph: 'you@email.com',
     addr_ph: 'Start typing your address...',
     proof_pay: 'Secure payment',
-    proof_ship: 'Ships to CA',
+    proof_ship: 'Free shipping',
     proof_ex: '14-day exchange',
     upsell_cart_title: 'Complete your cart',
     upsell_eyebrow: 'Before you go',
@@ -335,7 +342,7 @@ const I18N = {
     reviews_title_field: 'Title',
     reviews_body: 'Your review',
     reviews_submit: 'Submit review',
-    reviews_thanks: 'Thanks — your review will go live after approval',
+    reviews_thanks: 'Thanks. Your review will go live after approval',
     reviews_after_order: 'Leave a review',
     reviews_count: '{n} reviews',
     reviews_based: 'Based on {n} reviews',
@@ -346,9 +353,9 @@ const I18N = {
     passport: 'Passport',
     passport_kicker: 'MENES Passport',
     passport_title: 'Your member card',
-    passport_help: 'Enter the email used at checkout. Paying customers get a passport automatically.',
+    passport_help: 'Enter your email. Your MENES Passport opens now, even before an order.',
     passport_open: 'Open passport',
-    passport_none: 'No passport for this email — it is created on the first paid order.',
+    passport_none: 'Could not open the passport. Try a valid email.',
     passport_member: 'Member since',
     passport_orders: 'Orders',
     passport_spent: 'Total spent',
@@ -417,6 +424,23 @@ const LOOKBOOK_STREET = [
   'cyan-window.jpg', 'black-jeep.jpg', 'red-jordan.jpg', 'black-yeezy.jpg', 'green-close.jpg',
   'pink-walk.jpg', 'purple-car.jpg', 'purple-car-wide.jpg', 'red-close.jpg',
 ];
+const IG_HANDLE = '@menes_jewelry';
+const COMMUNITY_PHOTOS = [
+  { image: '/images/community/hat-outdoor.jpg', handle: IG_HANDLE, caption: 'MENES Kultur' },
+  { image: '/images/community/street-point.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/field-duo.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hoodie-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hallway-look.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/studio-session.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/dj-chain.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/kid-pitch.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/painter.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/camera-selfie.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/bathtub-campaign.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-beige-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-black-studio.jpg', handle: IG_HANDLE, caption: '' },
+  { image: '/images/community/hat-orange-studio.jpg', handle: IG_HANDLE, caption: '' },
+];
 
 /** English CMS fallbacks when blob/store has no site.i18n.en yet */
 const DEFAULT_SITE_EN = {
@@ -424,8 +448,8 @@ const DEFAULT_SITE_EN = {
   heroTitle: 'Street luxe.\nThis is MENES.',
   heroSubtitle: 'Clothes and accessories for people who set the trend. Not the ones who follow it.',
   heroCta: 'Shop the collection',
-  announcement: 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off',
-  galleryTitle: 'They wear MENES',
+  announcement: 'Limited drop. Find a MENES ambassador for exclusive 10% off',
+  galleryTitle: 'WE WEAR MENES',
   gallerySubtitle: 'Join the community. Tag @menes_jewelry to get featured.',
   guarantee: 'SSL 256-bit encrypted checkout. Your card details never sit on our servers. Square, Stripe and PayPal handle payments, PCI-DSS certified.',
   trust: [
@@ -452,7 +476,7 @@ const DEFAULT_SITE_EN = {
   },
   emailCapture: {
     title: 'Join the MENES inner circle',
-    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.',
+    subtitle: 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.',
     button: 'Sign me up',
     placeholder: 'you@email.com',
   },
@@ -473,9 +497,14 @@ function softHeroTitle(str) {
 
 function humanizeCopy(str) {
   return String(str || '')
-    .replace(/[—–]/g, ', ')
+    .replace(/[—–]/g, '. ')
     .replace(/\s*·\s*/g, '. ')
+    .replace(/FREE shipping Canada/gi, '')
+    .replace(/Livraison GRATUITE Canada/gi, '')
+    .replace(/Ships Quebec(?:\s*[&and]+\s*Canada)?/gi, '')
+    .replace(/Livraison Québec(?:\s*[&et]+\s*Canada)?/gi, '')
     .replace(/\s{2,}/g, ' ')
+    .replace(/(\s*\.){2,}/g, '.')
     .trim();
 }
 
@@ -485,16 +514,16 @@ function looksLikeRetiredVipPromo(str) {
 
 function ambassadorAnnouncement(lang) {
   return lang === 'en'
-    ? 'Limited drop · Ships Quebec & Canada · Find a MENES ambassador — unlock exclusive 10% off'
-    : 'Drop limité · Livraison Québec & Canada · Trouve un ambassadeur MENES — débloque −10% exclusifs';
+    ? 'Limited drop. Find a MENES ambassador for exclusive 10% off'
+    : 'Drop limité. Trouve un ambassadeur MENES pour 10% exclusifs';
 }
 
 function migrateEmailCapture(ec, lang) {
   const out = { ...(ec || {}) };
   if (looksLikeRetiredVipPromo(out.subtitle) || /-10%/.test(String(out.subtitle || ''))) {
     out.subtitle = lang === 'en'
-      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador — their code is the only key.'
-      : 'Drops en avant-première et accès exclusif. Tu veux −10% ? Trouve un ambassadeur MENES — son code est la seule clé.';
+      ? 'Early drops and exclusive access. Want 10% off? Find a MENES ambassador. Their code is the only key.'
+      : 'Drops en avant-première et accès exclusif. Tu veux 10%? Trouve un ambassadeur MENES. Son code est la seule clé.';
   }
   if (/liste VIP|VIP list/i.test(String(out.title || ''))) {
     out.title = lang === 'en' ? 'Join the MENES inner circle' : 'Rejoins le cercle MENES';
@@ -539,7 +568,7 @@ function siteCopy(lang = currentLang) {
     trust: en.trust || DEFAULT_SITE_EN.trust,
     why: en.why || DEFAULT_SITE_EN.why,
     faq: en.faq || DEFAULT_SITE_EN.faq,
-    galleryTitle: en.galleryTitle || DEFAULT_SITE_EN.galleryTitle,
+    galleryTitle: s.galleryTitle || en.galleryTitle || DEFAULT_SITE_EN.galleryTitle,
     gallerySubtitle: humanizeCopy(en.gallerySubtitle || DEFAULT_SITE_EN.gallerySubtitle),
     guarantee: humanizeCopy(en.guarantee || DEFAULT_SITE_EN.guarantee),
     bundle: { ...DEFAULT_SITE_EN.bundle, ...(en.bundle || {}) },
@@ -606,10 +635,15 @@ function renderShippingBar() {
 
   const subtotal = cartSubtotal();
   const threshold = shippingThreshold();
+  bar.classList.remove('hidden');
+  if (threshold <= 0) {
+    fill.style.width = '100%';
+    text.textContent = t('shipping_holiday');
+    text.classList.add('is-unlocked');
+    return;
+  }
   const remaining = Math.max(0, threshold - subtotal);
   const pct = Math.min(100, (subtotal / threshold) * 100);
-
-  bar.classList.remove('hidden');
   fill.style.width = `${pct}%`;
 
   if (remaining <= 0) {
@@ -627,13 +661,19 @@ function renderPdpUrgency(product) {
   const panel = document.getElementById('pdpPanel');
   const variant = readSelectedVariant(panel);
   const left = availableStockFor(product, variant);
+  const colorName = colorOptionName(product);
+  const colorVal = colorName ? variant[colorName] : '';
+  const colorLeft = colorVal ? listedStockForOption(product, colorName, colorVal) : left;
   const bits = [];
-  if (Number.isFinite(left) && isLowStock(left)) {
-    bits.push(tFill('stock_left', { n: left }));
-    el.classList.add('is-low');
-  } else if (Number.isFinite(left) && left <= 0) {
+  if (Number.isFinite(left) && left <= 0) {
     bits.push(t('sold_out_variant'));
     el.classList.remove('is-low');
+  } else if (Number.isFinite(colorLeft) && isLowStock(colorLeft)) {
+    bits.push(tFill('stock_left', { n: colorLeft }));
+    el.classList.add('is-low');
+  } else if (!colorName && Number.isFinite(left) && isLowStock(left)) {
+    bits.push(tFill('stock_left', { n: left }));
+    el.classList.add('is-low');
   } else {
     el.classList.remove('is-low');
   }
@@ -652,33 +692,30 @@ function setupPurchaseTicker() {
   if (el) el.classList.add('hidden');
 }
 
-/* ---------- VIP exit overlay ---------- */
-function isVipDismissed() {
-  const raw = localStorage.getItem(VIP_DISMISSED_KEY);
-  if (!raw) return false;
-  const ts = Number(raw);
-  if (!Number.isFinite(ts)) return false;
-  return Date.now() - ts < VIP_DISMISS_DAYS * 24 * 60 * 60 * 1000;
+/* ---------- Passport entry overlay ---------- */
+function skippedPassportGate() {
+  try { return sessionStorage.getItem(PASSPORT_GATE_SKIP_KEY) === '1'; }
+  catch { return false; }
 }
 
 function shouldShowVipOverlay() {
-  if (isVipMember()) return false;
-  if (isVipDismissed()) return false;
+  if (rememberedPassportEmail()) return false;
+  if (skippedPassportGate()) return false;
   return true;
 }
 
 function markVipOverlayShown() {
-  localStorage.setItem(VIP_DISMISSED_KEY, String(Date.now()));
+  try { sessionStorage.setItem(PASSPORT_GATE_SKIP_KEY, '1'); } catch {}
 }
 
 function showVipOverlay() {
   if (!shouldShowVipOverlay()) return;
-  markVipOverlayShown();
   const overlay = document.getElementById('vipOverlay');
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.setAttribute('aria-hidden', 'false');
   syncScrollLock();
+  window.setTimeout(() => document.getElementById('vipOverlayEmail')?.focus(), 80);
 }
 
 function hideVipOverlay() {
@@ -689,25 +726,27 @@ function hideVipOverlay() {
   syncScrollLock();
 }
 
-async function submitVipEmail(email, btn, source = 'vip') {
+async function submitVipEmail(email, btn, source = 'entry') {
   if (!email) return false;
   const oldText = btn?.textContent;
   if (btn) { btn.disabled = true; btn.textContent = '...'; }
   try {
-    const res = await fetch(shopApi('/api/subscribe'), {
+    const res = await fetch(shopApi('/api/passport'), {
       method: 'POST',
       headers: shopHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' }),
       body: JSON.stringify({
         email,
         source,
         locale: currentLang,
-        tags: ['vip'],
+        token: rememberedPassportToken(),
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'subscribe failed');
-    showToast(t('vip_welcome'));
+    if (!res.ok || !data.ok) throw new Error(data.error || 'passport failed');
+    rememberPassportIdentity(email, data.passport?.token);
+    if (data.passport) applyPassport(data.passport);
     localStorage.setItem(VIP_KEY, '1');
+    showToast(t('vip_welcome'));
     syncPromoField();
     hideVipOverlay();
     return true;
@@ -758,19 +797,6 @@ function setupOverlayGestures() {
 setupOverlayGestures();
 
 function setupVipOverlay() {
-  if (!shouldShowVipOverlay()) return;
-
-  const isDesktop = () => window.matchMedia('(pointer: fine) and (hover: hover)').matches
-    && window.innerWidth >= 768;
-
-  let exitReady = false;
-  setTimeout(() => { exitReady = true; }, 8000);
-
-  document.addEventListener('mouseout', (e) => {
-    if (!isDesktop() || !shouldShowVipOverlay() || isOverlayOpen()) return;
-    if (e.clientY <= 0 && e.relatedTarget == null && exitReady) showVipOverlay();
-  });
-
   document.getElementById('vipOverlayClose')?.addEventListener('click', () => {
     markVipOverlayShown();
     hideVipOverlay();
@@ -779,17 +805,14 @@ function setupVipOverlay() {
     markVipOverlayShown();
     hideVipOverlay();
   });
-  document.getElementById('vipOverlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'vipOverlay') {
-      markVipOverlayShown();
-      hideVipOverlay();
-    }
-  });
   document.getElementById('vipOverlayForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (document.getElementById('vipOverlayHoney')?.value) return;
-    await submitVipEmail(document.getElementById('vipOverlayEmail')?.value.trim(), document.getElementById('vipOverlayBtn'));
+    await submitVipEmail(document.getElementById('vipOverlayEmail')?.value.trim(), document.getElementById('vipOverlayBtn'), 'entry');
   });
+  window.setTimeout(() => {
+    if (!isOverlayOpen()) showVipOverlay();
+  }, 450);
 }
 
 /* ---------- Taxes (Canadian merchant) ---------- */
@@ -834,6 +857,24 @@ function cartSubtotal() {
 
 function isVipMember() {
   return localStorage.getItem(VIP_KEY) === '1';
+}
+
+function consumePassportMagicLink() {
+  const params = new URLSearchParams(location.search);
+  const open = params.get('pass') === '1' || params.get('passport') === '1';
+  const email = String(params.get('e') || params.get('email') || '').trim().toLowerCase();
+  const token = String(params.get('t') || params.get('token') || '');
+  if (!open || !email) return false;
+  rememberPassportIdentity(email, token);
+  params.delete('pass');
+  params.delete('passport');
+  params.delete('e');
+  params.delete('email');
+  params.delete('t');
+  params.delete('token');
+  const qs = params.toString();
+  history.replaceState({}, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash || ''}`);
+  return true;
 }
 
 function rememberedPassportEmail() {
@@ -897,7 +938,18 @@ function renderPassportCard(passport) {
       ${Number.isFinite(spent) && spent > 0 ? `<br>${esc(t('passport_spent'))}: ${spent.toFixed(2)}$ CAD` : ''}
       ${since ? `<br>${esc(t('passport_member'))}: ${esc(since)}` : ''}
     </div>
-    ${passport.vip ? `<span class="passport-badge">${esc(t('passport_vip'))}</span>` : ''}`;
+    ${passport.vip ? `<span class="passport-badge">${esc(t('passport_vip'))}</span>` : ''}
+    ${Array.isArray(passport.pieces) && passport.pieces.length
+      ? `<div class="passport-pieces">
+          <p class="passport-pieces-label">${esc(t('passport_pieces'))}</p>
+          <div class="passport-pieces-grid">${passport.pieces.map((p) => `
+            <div class="passport-piece">
+              ${p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name || '')}">` : '<span class="placeholder">◆</span>'}
+              <span>${esc(p.name || '')}${p.qty > 1 ? ` ×${p.qty}` : ''}${p.bundle ? ' · bundle' : ''}</span>
+            </div>`).join('')}
+          </div>
+        </div>`
+      : ''}`;
   card.classList.remove('hidden');
   if (form) form.classList.add('hidden');
 }
@@ -906,7 +958,7 @@ async function fetchPassport(email, token) {
   const res = await fetch(shopApi('/api/passport'), {
     method: 'POST',
     headers: shopHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ email, token: token || '' }),
+    body: JSON.stringify({ email, token: token || '', source: 'passport', locale: currentLang }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) return null;
@@ -1203,7 +1255,7 @@ function applySeo() {
     document.title = enSeo.title || seo.titleEn || 'MENES | Luxury Streetwear';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.';
+    meta.content = enSeo.description || seo.descriptionEn || 'MENES. Luxury streetwear. Premium clothing. Secure checkout.';
   } else {
     document.title = seo.title || `${name} | ${s.tagline || 'Luxe Streetwear'}`;
     let meta = document.querySelector('meta[name="description"]');
@@ -1217,10 +1269,9 @@ function applySeo() {
   }
 }
 
-function cachedStoreScore(data) {
+function liveCatalogIsUsable(data) {
   const products = Array.isArray(data?.products) ? data.products : [];
-  const withImage = products.filter((p) => p && (p.image || (Array.isArray(p.images) && p.images.length))).length;
-  return products.length * 10 + withImage * 100;
+  return products.some((p) => p && p.active !== false);
 }
 
 async function loadStoreData() {
@@ -1231,7 +1282,9 @@ async function loadStoreData() {
     if (res.ok) {
       const data = await res.json();
       delete data._siteId;
-      if (cached && cachedStoreScore(cached) > cachedStoreScore(data)) {
+      // Never keep a stale local catalogue that has extra old SKUs.
+      // Only fall back to cache if the live API came back empty.
+      if (cached && !liveCatalogIsUsable(data) && liveCatalogIsUsable(cached)) {
         return cached;
       }
       try {
@@ -1277,24 +1330,27 @@ async function refreshStore(opts = {}) {
   setupDiscoveryControls();
 }
 
-const DEFAULT_SECTION_ORDER = ['trustBar', 'products', 'shopBundles', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
+const HOLIDAY_ANNOUNCE = {
+  en: 'Holiday season is here. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
+  fr: 'Le temps des fêtes est là. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
+};
 
 function applySectionOrder() {
   const order = Array.isArray(storeData?.site?.sectionOrder) && storeData.site.sectionOrder.length
     ? [...storeData.site.sectionOrder]
     : [...DEFAULT_SECTION_ORDER];
-  if (!order.includes('shopBundles')) {
-    const i = order.indexOf('products');
-    order.splice(i >= 0 ? i + 1 : 0, 0, 'shopBundles');
+  const withoutBundles = order.filter((id) => id !== 'shopBundles');
+  withoutBundles.unshift('shopBundles');
+  if (!withoutBundles.includes('lookbook')) {
+    const i = withoutBundles.indexOf('products');
+    withoutBundles.splice(i >= 0 ? i + 1 : 1, 0, 'lookbook');
   }
-  if (!order.includes('lookbook')) {
-    const i = order.indexOf('shopBundles') >= 0 ? order.indexOf('shopBundles') : order.indexOf('products');
-    order.splice(i >= 0 ? i + 1 : 0, 0, 'lookbook');
-  }
+  const pinned = withoutBundles;
   const hero = document.getElementById('heroSection');
   if (!hero) return;
   let ref = hero;
-  order.forEach((id) => {
+  pinned.forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     ref.after(el);
@@ -1317,13 +1373,16 @@ function renderSite() {
     logo.classList.remove('hidden');
   }
 
-  toggle('announceBar', sec.announcement !== false && s.announcement);
-  if (s.announcement) document.getElementById('announceBar').textContent = s.announcement;
+  const holidayLine = HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en;
+  toggle('announceBar', sec.announcement !== false);
+  document.getElementById('announceBar').textContent = holidayLine;
 
   document.getElementById('heroTag').textContent = s.tagline || '';
   document.getElementById('heroTitle').textContent = (s.heroTitle || raw.name || 'MENES').replace(/\\n/g, '\n');
   document.getElementById('heroSubtitle').textContent = s.heroSubtitle || '';
-  document.getElementById('heroCta').textContent = s.heroCta || t('hero_cta');
+  const heroCta = document.getElementById('heroCta');
+  heroCta.textContent = currentLang === 'fr' ? 'Voir les specials' : 'Shop the holiday drop';
+  heroCta.setAttribute('href', '#shopBundles');
 
   const heroBg = document.getElementById('heroBg');
   const heroVideo = document.getElementById('heroVideo');
@@ -1438,20 +1497,41 @@ function gallerySrc(url) {
   return raw;
 }
 
+function galleryDedupeKey(g) {
+  const post = String(g.postUrl || '').trim().replace(/\/+$/, '').split('?')[0];
+  if (/^https?:\/\//i.test(post)) return `post:${post.toLowerCase()}`;
+  const img = gallerySrc(g.image);
+  if (!img) return '';
+  if (img.startsWith('data:')) {
+    return `data:${img.length}:${img.slice(40, 120)}:${img.slice(-64)}`;
+  }
+  return imageKey(img);
+}
+
 function renderGallery(s, sec, raw) {
   const src = raw || storeData.site || {};
   const storyKeys = new Set([imageKey(STORY_PHOTO), 'drop-table.jpg']);
   const seen = new Set(storyKeys);
   const items = [];
+  const igHome = src.instagram || 'https://www.instagram.com/menes_jewelry';
+  const igHandle = src.instagramHandle || IG_HANDLE;
   const pushItem = (g) => {
     if (!g || !(g.image || g.postUrl || g.handle)) return;
     const image = gallerySrc(g.image);
-    const key = imageKey(image);
+    const next = { ...g, image };
+    const key = galleryDedupeKey(next);
     if (key && seen.has(key)) return;
     if (key) seen.add(key);
-    items.push({ ...g, image });
+    items.push(next);
   };
   (src.gallery || []).forEach(pushItem);
+  COMMUNITY_PHOTOS.forEach((g) => {
+    pushItem({
+      ...g,
+      handle: g.handle || igHandle,
+      postUrl: g.postUrl || igHome,
+    });
+  });
   LOOKBOOK_STREET.forEach((file) => {
     pushItem({
       image: `/images/lookbook/${file}`,
@@ -1464,7 +1544,7 @@ function renderGallery(s, sec, raw) {
   toggle('gallery', sec.gallery !== false);
   if (sec.gallery === false) return;
 
-  document.getElementById('galleryTitle').textContent = s.galleryTitle || (currentLang === 'en' ? 'They wear MENES' : 'Ils portent MENES');
+  document.getElementById('galleryTitle').textContent = s.galleryTitle || (currentLang === 'en' ? 'WE WEAR MENES' : 'Ils portent MENES');
   document.getElementById('gallerySubtitle').textContent = s.gallerySubtitle || '';
   const igLink = document.getElementById('galleryIgLink');
   if (src.instagram) {
@@ -2248,6 +2328,14 @@ function stockForOptionValue(product, optionName, value, partialVariant = {}) {
   return sum;
 }
 
+function colorOptionName(product) {
+  return productOptions(product).find((o) => /^(color|couleur)$/i.test(String(o.name || '')))?.name || '';
+}
+
+function listedStockForOption(product, optionName, value) {
+  return stockForOptionValue(product, optionName, value, {});
+}
+
 function applyVariantStockUi(root, product) {
   if (!root || !product) return;
   const partial = readSelectedVariant(root);
@@ -2258,6 +2346,7 @@ function applyVariantStockUi(root, product) {
     wrap.querySelectorAll('.opt-chip').forEach((chip) => {
       const val = chip.dataset.value;
       const left = stockForOptionValue(product, o.name, val, partial);
+      const listed = listedStockForOption(product, o.name, val);
       const oos = left <= 0;
       chip.classList.toggle('is-oos', oos);
       chip.disabled = oos;
@@ -2272,16 +2361,16 @@ function applyVariantStockUi(root, product) {
           chip.appendChild(tag);
         }
       } else {
-        chip.title = isLowStock(left) ? tFill('stock_left', { n: left }) : '';
+        chip.title = isLowStock(listed) ? tFill('stock_left', { n: listed }) : '';
         chip.querySelector('.oos-tag')?.remove();
         let count = chip.querySelector('.left-n');
-        if (isLowStock(left)) {
+        if (isLowStock(listed)) {
           if (!count) {
             count = document.createElement('span');
             count.className = 'left-n';
             chip.appendChild(count);
           }
-          count.textContent = String(left);
+          count.textContent = String(listed);
         } else {
           count?.remove();
         }
@@ -3354,7 +3443,7 @@ async function confirmPaidOrderFromUrl(params) {
         return data;
       }
       showSuccess({
-        title: currentLang === 'en' ? 'Payment received — confirming' : 'Paiement reçu — confirmation en cours',
+        title: currentLang === 'en' ? 'Payment received. Confirming' : 'Paiement reçu. Confirmation en cours',
         msg: data.message || (currentLang === 'en'
           ? 'We are confirming your payment with the provider. You will receive an email shortly.'
           : 'Nous confirmons votre paiement auprès du prestataire. Vous recevrez un courriel sous peu.'),
@@ -3564,7 +3653,6 @@ async function init() {
   updateCartUI();
   updateWishlistUI();
   setupPurchaseTicker();
-  setupVipOverlay();
   setupReviewsUI();
   document.getElementById('langToggle')?.addEventListener('click', () => {
     setVisitorLang(currentLang === 'en' ? 'fr' : 'en');
@@ -3612,6 +3700,7 @@ async function init() {
       if (btn) { btn.disabled = false; btn.textContent = old || t('passport_open'); }
     }
   });
+  const fromEmail = consumePassportMagicLink();
   if (rememberedPassportEmail()) document.getElementById('passportNavBtn')?.classList.add('has-pass');
   const params = new URLSearchParams(location.search);
   if (params.get('paid') === '1') {
@@ -3621,6 +3710,10 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     await confirmPaidOrderFromUrl(paidParams);
   }
+  if (fromEmail) {
+    try { await openPassportPanel(); } catch {}
+  }
+  setupVipOverlay();
   if (typeof initShopBundles === 'function') initShopBundles();
 }
 

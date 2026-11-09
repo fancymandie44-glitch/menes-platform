@@ -7,6 +7,8 @@
   let activeSlug = '';
   let selectedCombo = '';
   let builderPicks = [];
+  let selectedBoxerColor = '';
+  let selectedBoxerSize = '';
   let skipNextPop = false;
 
   function api() {
@@ -66,6 +68,7 @@
     if (bundle.image) urls.add(bundle.image);
     (bundle.combos || []).forEach((c) => { if (c.image) urls.add(c.image); });
     (bundle.pairOptions || []).forEach((p) => { if (p.image) urls.add(p.image); });
+    (bundle.boxerOptions || []).forEach((p) => { if (p.image) urls.add(p.image); });
     urls.forEach((src) => {
       if (PRELOADED.has(src)) return;
       PRELOADED.add(src);
@@ -76,12 +79,12 @@
 
   function headline() {
     return lang() === 'fr'
-      ? 'Trois packs. Un ancrage. Choisis ton entrée MENES.'
-      : 'Three packs. One anchor. Pick your MENES start.';
+      ? 'Le cadeau, sans te casser la tête. Essentials à 99,99 $. Kultur Steps à 34,99 $. Holiday Exclusive à 329,99 $. Tu construis le pack en une minute.'
+      : 'Don\'t overthink the gift. Essentials at 99.99. Kultur Steps at 34.99. Holiday Exclusive at 329.99. Build it in a minute.';
   }
 
   function viewLabel() {
-    return lang() === 'fr' ? 'Voir le bundle' : 'View bundle';
+    return lang() === 'fr' ? 'Acheter maintenant' : 'Shop now';
   }
 
   function soonLabel() {
@@ -95,9 +98,10 @@
     const title = document.getElementById('shopBundlesTitle');
     const lead = document.getElementById('shopBundlesLead');
     if (!grid || !B) return;
-    if (kicker) kicker.textContent = lang() === 'fr' ? 'Packs MENES' : 'MENES packs';
-    if (title) title.textContent = lang() === 'fr' ? 'Les trois bundles' : 'The three bundles';
+    if (kicker) kicker.textContent = lang() === 'fr' ? 'Drop des fêtes' : 'Holiday drop';
+    if (title) title.textContent = lang() === 'fr' ? 'Le temps des fêtes est là' : 'The season is on';
     if (lead) lead.textContent = headline();
+    renderFastBuy(B);
 
     const list = B.sorted();
     grid.innerHTML = list.map((bundle) => {
@@ -128,7 +132,30 @@
       </article>`;
     }).join('');
 
-    grid.querySelectorAll('a[href^="/bundle/"]').forEach((a) => {
+    wireBundleLinks(grid);
+  }
+
+  function renderFastBuy(B) {
+    const row = document.getElementById('shopBundlesFast');
+    if (!row || !B) return;
+    const ready = B.sorted().filter((b) => B.isReady(b))
+      .sort((a, b) => Number(a.price) - Number(b.price));
+    if (!ready.length) {
+      row.innerHTML = '';
+      return;
+    }
+    row.innerHTML = ready.map((bundle) => {
+      const label = lang() === 'fr'
+        ? `${loc(bundle.name)} ${money(bundle.price)}. Acheter`
+        : `${loc(bundle.name)} ${money(bundle.price)}. Shop now`;
+      return `<a class="shop-bundles-fast-btn${bundle.featured ? ' is-featured' : ''}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
+    }).join('');
+    wireBundleLinks(row);
+  }
+
+  function wireBundleLinks(root) {
+    if (!root) return;
+    root.querySelectorAll('a[href^="/bundle/"]').forEach((a) => {
       a.addEventListener('click', (e) => {
         const href = a.getAttribute('href') || '';
         const slug = href.replace(/^\/bundle\//, '').replace(/\/$/, '');
@@ -156,19 +183,32 @@
     comboList(bundle).forEach((c) => {
       if (c.image && !urls.includes(c.image)) urls.push(c.image);
     });
+    (bundle.boxerOptions || []).forEach((b) => {
+      if (b.image && !urls.includes(b.image)) urls.push(b.image);
+    });
+    if (bundle.fixedPairId) {
+      const B = api();
+      const fixed = B?.pairById(bundle, bundle.fixedPairId);
+      if (fixed?.image && !urls.includes(fixed.image)) urls.push(fixed.image);
+    }
+    (bundle.pairOptions || []).forEach((p) => {
+      if (p.image && !urls.includes(p.image)) urls.push(p.image);
+    });
     return urls;
   }
 
   function missingMessage(bundle) {
     const B = api();
-    if (!B.isPriced(bundle)) return lang() === 'fr' ? 'Prix à confirmer — pas encore en vente.' : 'Price to confirm — not on sale yet.';
+    if (!B.isPriced(bundle)) return lang() === 'fr' ? 'Prix à confirmer. Pas encore en vente.' : 'Price to confirm. Not on sale yet.';
     if (bundle.kind === 'combo' && comboList(bundle).length && !selectedCombo) {
       return lang() === 'fr' ? 'Choisis un combo de couleurs.' : 'Pick a color combo.';
     }
     if (bundle.kind === 'builder') {
-      const need = Number(bundle.pairCount) || 3;
+      const need = B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3);
       const n = builderPicks.filter(Boolean).length;
-      if (n < need) return lang() === 'fr' ? `${n} / ${need} paires choisies — il en manque ${need - n}.` : `${n} / ${need} pairs chosen — ${need - n} left.`;
+      if (n < need) return lang() === 'fr' ? `${n} / ${need} paires choisies. Il en manque ${need - n}.` : `${n} / ${need} pairs chosen. ${need - n} left.`;
+      if (bundle.boxer && !selectedBoxerColor) return lang() === 'fr' ? 'Choisis ton boxer (Red ou Grey).' : 'Pick your boxer (Red or Grey).';
+      if (bundle.boxer && !selectedBoxerSize) return lang() === 'fr' ? 'Choisis la taille du boxer.' : 'Pick the boxer size.';
     }
     return '';
   }
@@ -182,7 +222,12 @@
 
   function currentVariant(bundle) {
     if (bundle.kind === 'builder') {
-      return { pairs: builderPicks.filter(Boolean) };
+      const variant = { pairs: builderPicks.filter(Boolean) };
+      if (bundle.boxer) {
+        variant.boxerColor = selectedBoxerColor;
+        variant.boxerSize = selectedBoxerSize;
+      }
+      return variant;
     }
     if (comboList(bundle).length) return { combo: selectedCombo || comboList(bundle)[0].id };
     return {};
@@ -214,17 +259,19 @@
         <img src="${esc(url)}" alt="" width="64" height="64">
       </button>`).join('');
 
-    const swatches = comboList(bundle).map((c) => `
+    const swatches = bundle.kind === 'combo'
+      ? comboList(bundle).map((c) => `
       <button type="button" class="bundle-swatch${c.id === selectedCombo ? ' active' : ''}" data-combo="${esc(c.id)}"
         style="--swatch:${esc(c.swatch || '#888')}"
-        aria-label="${esc(loc(c.name))}" aria-pressed="${c.id === selectedCombo ? 'true' : 'false'}"></button>`).join('');
+        aria-label="${esc(loc(c.name))}" aria-pressed="${c.id === selectedCombo ? 'true' : 'false'}"></button>`).join('')
+      : '';
 
     const builder = bundle.kind === 'builder' ? renderBuilder(bundle) : '';
     inner.innerHTML = `
       <div class="bundle-pdp">
         <div class="pdp-media">
           <div class="pdp-img-wrap">
-            <img id="bundleMainImg" src="${esc(mainImg)}" alt="${esc(loc(bundle.name))}${comboName ? ` — ${esc(comboName)}` : ''}" width="720" height="900">
+            <img id="bundleMainImg" src="${esc(mainImg)}" alt="${esc(loc(bundle.name))}${comboName ? ` ${esc(comboName)}` : ''}" width="720" height="900">
           </div>
           <div class="pdp-thumbs" id="bundleThumbs">${thumbsHtml}</div>
         </div>
@@ -273,9 +320,15 @@
 
   function renderBuilder(bundle) {
     const B = api();
-    const need = Number(bundle.pairCount) || 3;
+    const need = B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3);
     if (builderPicks.length !== need) builderPicks = Array.from({ length: need }, (_, i) => builderPicks[i] || null);
     const filled = builderPicks.filter(Boolean).length;
+    const fixedPair = bundle.fixedPairId ? B.pairById(bundle, bundle.fixedPairId) : null;
+    const locked = fixedPair ? `<div class="builder-slot is-filled is-locked" aria-label="${esc(loc(fixedPair.name))}">
+        <span class="builder-slot-n">${esc(lang() === 'fr' ? 'Incluse' : 'Included')}</span>
+        <img src="${esc(fixedPair.image)}" alt="${esc(loc(fixedPair.name))}">
+        <strong>${esc(loc(fixedPair.name))}</strong>
+      </div>` : '';
     const slots = builderPicks.map((id, i) => {
       const pair = id ? B.pairById(bundle, id) : null;
       return `<div class="builder-slot${pair ? ' is-filled' : ''}" data-slot="${i}">
@@ -290,21 +343,47 @@
       const used = !bundle.allowDuplicatePairs && builderPicks.includes(p.id);
       const disabled = out || used;
       return `<button type="button" class="builder-opt${disabled ? ' is-disabled' : ''}" data-pair="${esc(p.id)}" ${disabled ? 'disabled' : ''}
-        aria-label="${esc(loc(p.name))}${out ? ` — ${esc(t('sold_out'))}` : ''}">
+        aria-label="${esc(loc(p.name))}${out ? ` ${esc(t('sold_out'))}` : ''}">
         <img src="${esc(p.image)}" alt="${esc(loc(p.name))}" width="160" height="200">
         <span class="builder-opt-swatch" style="background:${esc(p.swatch || '#888')}" aria-hidden="true"></span>
         <strong>${esc(loc(p.name))}</strong>
         ${out ? `<span class="builder-oos">${esc(t('sold_out'))}</span>` : ''}
       </button>`;
     }).join('');
-    const summary = builderPicks.filter(Boolean).map((id) => loc(B.pairById(bundle, id)?.name) || id);
-    return `<div class="bundle-builder" aria-label="${esc(lang() === 'fr' ? 'Compose tes 3 paires' : 'Build your 3 pairs')}">
-      <div class="builder-count" aria-live="polite">${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'paires choisies' : 'pairs chosen')}</div>
-      <div class="builder-slots">${slots}</div>
+    const boxer = bundle.boxer ? B.boxerById(bundle, selectedBoxerColor) : null;
+    const boxerSizes = bundle.boxerSizes || ['S', 'M', 'L', 'XL'];
+    const boxerBlock = bundle.boxer ? `
+      <div class="builder-boxer">
+        <p class="builder-count">${esc(lang() === 'fr' ? 'Choisis ton boxer' : 'Pick your boxer')}</p>
+        <div class="builder-grid builder-boxer-grid">
+          ${(bundle.boxerOptions || []).map((b) => `
+            <button type="button" class="builder-opt${b.id === selectedBoxerColor ? ' is-active' : ''}" data-boxer="${esc(b.id)}" aria-pressed="${b.id === selectedBoxerColor ? 'true' : 'false'}">
+              <img src="${esc(b.image)}" alt="${esc(loc(b.name))}" width="160" height="200">
+              <span class="builder-opt-swatch" style="background:${esc(b.swatch || '#888')}" aria-hidden="true"></span>
+              <strong>${esc(loc(b.name))}</strong>
+            </button>`).join('')}
+        </div>
+        <p class="builder-count">${esc(lang() === 'fr' ? 'Taille' : 'Size')}</p>
+        <div class="builder-sizes" role="group" aria-label="${esc(lang() === 'fr' ? 'Taille du boxer' : 'Boxer size')}">
+          ${boxerSizes.map((s) => `<button type="button" class="opt-chip${s === selectedBoxerSize ? ' active' : ''}" data-boxer-size="${esc(s)}" aria-pressed="${s === selectedBoxerSize ? 'true' : 'false'}">${esc(s)}</button>`).join('')}
+        </div>
+      </div>` : '';
+    const summary = [];
+    if (fixedPair) summary.push(loc(fixedPair.name));
+    builderPicks.filter(Boolean).forEach((id) => summary.push(loc(B.pairById(bundle, id)?.name) || id));
+    if (boxer) summary.push(`${loc(boxer.name)} ${selectedBoxerSize}`.trim());
+    const slotClass = (need + (fixedPair ? 1 : 0)) === 3 ? '' : (need === 2 ? ' builder-slots-2' : '');
+    const countLine = fixedPair
+      ? `${esc(lang() === 'fr' ? '1 paire Kultur incluse' : '1 Kultur pair included')} · ${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'couleurs' : 'colors')}`
+      : `${esc(String(filled))} / ${esc(String(need))} ${esc(lang() === 'fr' ? 'paires choisies' : 'pairs chosen')}`;
+    return `<div class="bundle-builder" aria-label="${esc(lang() === 'fr' ? 'Compose ton pack' : 'Build your pack')}">
+      <div class="builder-count" aria-live="polite">${countLine}</div>
+      <div class="builder-slots${slotClass}">${locked}${slots}</div>
       <div class="builder-grid">${options}</div>
+      ${boxerBlock}
       <div class="builder-summary">
         <strong>${esc(lang() === 'fr' ? 'Résumé' : 'Summary')}</strong>
-        <p>${summary.length ? esc(summary.join(' · ')) : esc(lang() === 'fr' ? 'Aucune paire encore.' : 'No pairs yet.')}</p>
+        <p>${summary.length ? esc(summary.join(' · ')) : esc(lang() === 'fr' ? 'Rien encore.' : 'Nothing yet.')}</p>
         <p class="builder-total">${priceHtml(bundle, { compact: true })}</p>
       </div>
     </div>`;
@@ -327,6 +406,18 @@
       btn.addEventListener('click', () => {
         const i = Number(btn.getAttribute('data-clear'));
         builderPicks[i] = null;
+        renderBundlePanel();
+      });
+    });
+    inner.querySelectorAll('[data-boxer]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedBoxerColor = btn.getAttribute('data-boxer') || '';
+        renderBundlePanel();
+      });
+    });
+    inner.querySelectorAll('[data-boxer-size]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedBoxerSize = btn.getAttribute('data-boxer-size') || '';
         renderBundlePanel();
       });
     });
@@ -394,7 +485,9 @@
     if (!bundle) return;
     activeSlug = slug;
     selectedCombo = comboList(bundle)[0]?.id || '';
-    builderPicks = Array.from({ length: Number(bundle.pairCount) || 3 }, () => null);
+    builderPicks = Array.from({ length: B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3) }, () => null);
+    selectedBoxerColor = '';
+    selectedBoxerSize = '';
     document.getElementById('pdpPanel')?.classList.add('hidden');
     document.getElementById('pdpOverlay')?.classList.add('hidden');
     document.getElementById('bundleOverlay')?.classList.remove('hidden');

@@ -29,6 +29,11 @@ function run() {
     'shop.css',
     'data/bundles.js',
     'images/bundles/holiday-exclusive.jpg',
+    'images/bundles/essentials.jpg',
+    'bundle/essentials/index.html',
+    'images/bundles/pairs/noir.jpg',
+    'images/bundles/pairs/jaune.jpg',
+    'images/bundles/pairs/kultur.jpg',
     'bundle/kultur-steps/index.html',
     'bundle/holiday-exclusive/index.html',
     'sitemap.xml',
@@ -53,12 +58,26 @@ function run() {
     'lib/cors.js',
     'lib/platform.js',
     'lib/passport.js',
+    'lib/passport-email.js',
+    'lib/notify.js',
     'data/store.json',
     'images/products/socks/black.jpg',
     'images/products/socks/green.jpg',
     'images/products/socks/kltr-orange.jpg',
+    'images/products/boxers/grey.jpg',
+    'images/products/boxers/grey-worn.jpg',
+    'images/products/boxers/red.jpg',
+    'images/products/boxers/red-worn.jpg',
     'images/lookbook/drop-table.jpg',
+    'images/community/hat-outdoor.jpg',
+    'images/community/street-point.jpg',
+    'images/community/dj-chain.jpg',
   ];
+
+  for (const file of ['shop-bundles.js', 'shop.js', 'data/bundles.js']) {
+    const check = spawnSync(process.execPath, ['--check', path.join(DIST, file)], { encoding: 'utf8' });
+    assert(check.status === 0, `${file} syntax error: ${check.stderr || check.stdout}`);
+  }
 
   for (const rel of required) {
     const full = path.join(DIST, rel);
@@ -70,6 +89,8 @@ function run() {
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
   assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
+  assert(html.includes('id="shopBundlesFast"'), 'homepage must include holiday fast-buy buttons');
+  assert(html.includes('Shop the holiday drop'), 'hero CTA must send shoppers to bundles');
   assert(html.includes('id="lookbook"'), 'homepage must include L\'histoire / lookbook');
   assert(html.includes('images/lookbook/drop-table.jpg'), 'lookbook must use the drop-table photo');
   assert(html.includes('id="lookbookStory"'), 'story copy mount must exist');
@@ -79,6 +100,18 @@ function run() {
   assert(/tribute|hommage/i.test(shopJs), 'story must include the tribute copy');
   assert(shopJs.includes('one of the most hated neighborhoods'), 'story must use one of the most, not the most');
   assert(shopJs.includes('LOOKBOOK_STREET'), 'community gallery must include street lookbook photos');
+  assert(shopJs.includes('COMMUNITY_PHOTOS'), 'community gallery must include We Wear MENES photos');
+  assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
+  assert(shopJs.includes('function galleryDedupeKey'), 'instagram data-uri posts must not collapse into one tile');
+  assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
+  assert(shopJs.includes('Holiday season is here'), 'holiday announcement must be in English');
+  assert(!/FREE shipping Canada/i.test(shopJs.match(/HOLIDAY_ANNOUNCE = \{[\s\S]*?\};/)?.[0] || ''), 'top bar must not say free shipping Canada');
+  assert(shopJs.includes('HOLIDAY_FREE_SHIPPING'), 'holiday free shipping flag');
+  assert(shopJs.includes('passport_pieces'), 'passport must show purchased pieces');
+  assert(shopJs.includes('Open my passport') || html.includes('Open my passport'), 'entry overlay asks for passport email');
+  assert(shopJs.includes('PASSPORT_GATE_SKIP_KEY'), 'passport gate skip is session-only');
+  assert(shopJs.includes("submitVipEmail") && shopJs.includes("'entry'"), 'entry overlay claims a passport');
+  assert(shopJs.includes('consumePassportMagicLink'), 'email CTA must open the passport');
   const kultur = fs.readFileSync(path.join(DIST, 'bundle/kultur-steps/index.html'), 'utf8');
   assert(kultur.includes('/bundle/kultur-steps'), 'kultur page must have a clean URL');
   assert(kultur.includes('application/ld+json'), 'kultur page must include JSON-LD');

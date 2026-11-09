@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="MENES. Luxury streetwear. Premium clothing, secure checkout, fast shipping across Quebec and Canada.">
+  <meta name="description" content="MENES. Luxury streetwear. Premium clothing. Secure checkout.">
   <meta name="theme-color" content="#050505">
   <meta property="og:title" content="MENES | Luxury Streetwear">
-  <meta property="og:description" content="Luxury streetwear. Premium clothing, secure checkout, shipping across Quebec and Canada.">
+  <meta property="og:description" content="Luxury streetwear. Premium clothing. Secure checkout.">
   <meta property="og:url" content="https://boutiquemenes.netlify.app/">
   <link rel="canonical" href="https://boutiquemenes.netlify.app/">
   <title>MENES | Luxury Streetwear</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shop.css?v=20261108c">
+  <link rel="stylesheet" href="/shop.css?v=20261108r">
   <script>
     // Prefer English before shop.js loads (avoids French flash)
     try {
@@ -32,8 +32,8 @@
       <span id="navBrand">MENES</span>
     </a>
     <div class="nav-links">
-      <a href="#products" data-i18n="nav_shop">Shop</a>
       <a href="#shopBundles" data-i18n="nav_bundles">Bundles</a>
+      <a href="#products" data-i18n="nav_shop">Shop</a>
       <a href="#lookbook" data-i18n="nav_story">Story</a>
       <a href="#gallery" data-i18n="nav_community">Community</a>
       <a href="#why" data-i18n="nav_why">Why MENES</a>
@@ -54,7 +54,7 @@
       <p class="hero-tag" id="heroTag"></p>
       <h1 id="heroTitle">MENES</h1>
       <p class="hero-sub" id="heroSubtitle"></p>
-      <a href="#products" class="hero-cta" id="heroCta">Shop the collection</a>
+      <a href="#shopBundles" class="hero-cta" id="heroCta">Shop the holiday drop</a>
     </div>
   </header>
 
@@ -104,17 +104,18 @@
     </div>
   </section>
 
-  <section id="shopBundles" class="shop-bundles-section">
+  <section id="shopBundles" class="shop-bundles-section is-holiday">
     <div class="container">
       <div class="section-head">
-        <span class="section-label" id="shopBundlesKicker" data-i18n="bundles_kicker">MENES packs</span>
-        <h2 id="shopBundlesTitle">The three bundles</h2>
-        <p class="section-sub" id="shopBundlesLead"></p>
+        <span class="section-label" id="shopBundlesKicker">Holiday drop</span>
+        <h2 id="shopBundlesTitle">The season is on</h2>
+        <p class="section-sub" id="shopBundlesLead">Don't overthink the gift. Pick a pack. Build it in a minute.</p>
       </div>
+      <div id="shopBundlesFast" class="shop-bundles-fast"></div>
       <div id="shopBundlesGrid" class="shop-bundles-grid"></div>
       <div class="shop-bundles-trust">
         <span data-i18n="proof_pay">Secure payment</span>
-        <span data-i18n="proof_ship">Ships CA</span>
+        <span data-i18n="proof_ship">Free shipping</span>
         <span data-i18n="proof_ex">14-day exchange</span>
       </div>
     </div>
@@ -278,7 +279,7 @@
       <div id="pdpOptions" class="pdp-options"></div>
       <div class="pdp-proof">
         <span data-i18n="proof_pay">Secure payment</span>
-        <span data-i18n="proof_ship">Ships CA</span>
+        <span data-i18n="proof_ship">Free shipping</span>
         <span data-i18n="proof_ex">14-day exchange</span>
       </div>
       <div id="pdpReviews" class="pdp-reviews"></div>
@@ -418,15 +419,16 @@
   <div id="vipOverlay" class="vip-overlay hidden" aria-hidden="true">
     <div class="vip-overlay-box">
       <button type="button" id="vipOverlayClose" class="vip-overlay-close" aria-label="Fermer">&times;</button>
-      <p class="vip-overlay-label" data-i18n="vip_overlay_label">Ambassador circle</p>
-      <h3 id="vipOverlayTitle" data-i18n="vip_overlay_title">Your 10% isn’t on the shelf</h3>
-      <p id="vipOverlaySub" data-i18n="vip_overlay_sub">MENES ambassadors hold the exclusive invite. Find yours, enter their code, and unlock 10% off — the public codes are gone.</p>
+      <p class="vip-overlay-label" data-i18n="vip_overlay_label">MENES Passport</p>
+      <h3 id="vipOverlayTitle" data-i18n="vip_overlay_title">Drop your email. Your passport opens.</h3>
+      <p id="vipOverlaySub" data-i18n="vip_overlay_sub">Even if you don’t buy today, you’re in. Drops, pieces, and future orders stick to this email.</p>
       <form id="vipOverlayForm" class="vip-overlay-form">
         <input type="email" id="vipOverlayEmail" required autocomplete="email" placeholder="you@email.com">
         <input type="text" id="vipOverlayHoney" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button type="submit" id="vipOverlayBtn" data-i18n="vip_overlay_btn">Get drop alerts</button>
+        <button type="submit" id="vipOverlayBtn" data-i18n="vip_overlay_btn">Open my passport</button>
       </form>
-      <button type="button" id="vipOverlaySkip" class="vip-overlay-skip" data-i18n="vip_overlay_skip">I’ll find an ambassador</button>
+      <p class="vip-overlay-consent" data-i18n="vip_overlay_consent">By continuing you get MENES emails. Unsubscribe anytime.</p>
+      <button type="button" id="vipOverlaySkip" class="vip-overlay-skip" data-i18n="vip_overlay_skip">Shop first</button>
     </div>
   </div>
 
@@ -522,8 +524,8 @@
   <div id="menesCursorRing" class="menes-cursor-ring" aria-hidden="true"></div>
 
   <script src="/config.js?v=20260805b"></script>
-  <script src="/data/bundles.js?v=20261108c"></script>
-  <script src="/shop-bundles.js?v=20261108c"></script>
-  <script src="/shop.js?v=20261108c"></script>
+  <script src="/data/bundles.js?v=20261108r"></script>
+  <script src="/shop-bundles.js?v=20261108r"></script>
+  <script src="/shop.js?v=20261108r"></script>
 </body>
 </html>
