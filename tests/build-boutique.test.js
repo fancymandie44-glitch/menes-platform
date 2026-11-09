@@ -68,7 +68,6 @@ function run() {
     'images/products/boxers/grey-worn.jpg',
     'images/products/boxers/red.jpg',
     'images/products/boxers/red-worn.jpg',
-    'images/products/hats/camo.jpg',
     'images/lookbook/drop-table.jpg',
   ];
 
