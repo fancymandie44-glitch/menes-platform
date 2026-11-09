@@ -1373,7 +1373,12 @@ function renderSite() {
     logo.classList.remove('hidden');
   }
 
-  const holidayLine = HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en;
+  const B = window.MENES_BUNDLES;
+  const holidayLine = (B && !B.isDropLive())
+    ? (HOLIDAY_ANNOUNCE[currentLang] || HOLIDAY_ANNOUNCE.en)
+    : (currentLang === 'fr'
+      ? 'Le temps des fêtes est là. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99'
+      : 'Holiday season is here. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99');
   toggle('announceBar', sec.announcement !== false);
   document.getElementById('announceBar').textContent = holidayLine;
 

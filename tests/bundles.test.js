@@ -4,7 +4,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const bundles = require('../data/bundles.js');
-const { buildTrustedOrder, findDiscount } = require('../lib/order-pricing');
+const { buildTrustedOrder, findDiscount, decrementStockForOrder } = require('../lib/order-pricing');
+const { publicStore } = require('../lib/public-catalog');
 
 const LIVE = bundles.dropAtMs();
 const LOCKED = LIVE - 1000;
@@ -124,5 +125,80 @@ bundles.CLIENT_DISCOUNT.percent = null;
 
 const cfg = fs.readFileSync(path.join(__dirname, '../data/bundles.js'), 'utf8');
 assert.ok(!cfg.includes('TODO'), 'no TODO in bundle config');
+
+assert.strictEqual(bundles.bySlug('essentials').limit, 3);
+assert.strictEqual(bundles.bySlug('holiday-exclusive').limit, 5);
+assert.strictEqual(bundles.bySlug('kultur-steps').limit, null);
+
+const stockStore = {
+  products: [
+    {
+      id: 'summer-socks',
+      name: 'Summer',
+      stock: 10,
+      variants: [
+        { options: { Color: 'Black' }, stock: 0 },
+        { options: { Color: 'Yellow' }, stock: 4 },
+        { options: { Color: 'Pink' }, stock: 2 },
+      ],
+    },
+    { id: 'menes-kltr-socks', name: 'KLTR', stock: 9 },
+    {
+      id: 'menes-boxer',
+      variants: [
+        { options: { Color: 'Red', Size: 'M' }, stock: 2 },
+        { options: { Color: 'Grey', Size: 'M' }, stock: 0 },
+      ],
+    },
+    { id: 'menes-kltr-trucker-hat', name: 'Hat', stock: 4 },
+    { id: 'menes-m-keyz-crossbody-bag-', name: 'Bag', stock: 10 },
+  ],
+  orders: [
+    { status: 'paid', items: [{ id: 'bundle-essentials', qty: 3 }] },
+    { status: 'paid', items: [{ id: 'bundle-holiday-exclusive', qty: 5 }] },
+  ],
+};
+assert.ok(!bundles.canPurchase(bundles.bySlug('essentials'), LIVE, stockStore), 'essentials capped at 3');
+assert.ok(!bundles.canPurchase(bundles.bySlug('holiday-exclusive'), LIVE, stockStore), 'holiday capped at 5');
+assert.ok(bundles.canPurchase(bundles.bySlug('kultur-steps'), LIVE, stockStore), 'kultur steps stay unlimited');
+assert.ok(!bundles.pairAvailable(stockStore, 'noir'), 'sold-out pair is unavailable');
+assert.ok(bundles.pairAvailable(stockStore, 'jaune'));
+assert.ok(bundles.validateBundleStock(stockStore, bundles.bySlug('kultur-steps'), { pairs: ['noir', 'jaune'] }, 1).error);
+assert.ok(!bundles.validateBundleStock(stockStore, bundles.bySlug('kultur-steps'), { pairs: ['jaune', 'rose'] }, 1).error);
+
+const oneLeft = {
+  ...stockStore,
+  orders: [{ status: 'paid', items: [{ id: 'bundle-essentials', qty: 2 }] }],
+};
+assert.strictEqual(bundles.bundleRemaining(oneLeft, bundles.bySlug('essentials')), 1);
+const fourth = buildTrustedOrder(oneLeft, {
+  customer,
+  items: [{ id: 'bundle-essentials', qty: 2, variant: essentialsLine.variant }],
+}, LIVE);
+assert.ok(fourth.error, 'cannot buy more essentials than remaining');
+
+const pub = publicStore(stockStore);
+assert.strictEqual(pub.bundles.remaining['bundle-essentials'], 0);
+assert.strictEqual(pub.bundles.remaining['bundle-holiday-exclusive'], 0);
+assert.strictEqual(pub.bundles.remaining['bundle-kultur-steps'], null);
+assert.strictEqual(pub.bundles.pairs.noir, false);
+assert.strictEqual(pub.bundles.pairs.jaune, true);
+
+const liveStock = {
+  products: JSON.parse(JSON.stringify(stockStore.products)),
+  orders: [],
+};
+const paidKultur = {
+  items: [{
+    id: 'bundle-kultur-steps',
+    qty: 1,
+    bundle: true,
+    variant: { pairs: ['jaune', 'rose'], fixedPair: 'kultur' },
+  }],
+};
+assert.strictEqual(decrementStockForOrder(liveStock, paidKultur), true);
+assert.strictEqual(liveStock.products.find((p) => p.id === 'menes-kltr-socks').stock, 8);
+assert.strictEqual(liveStock.products.find((p) => p.id === 'summer-socks').variants.find((v) => v.options.Color === 'Yellow').stock, 3);
+assert.strictEqual(liveStock.products.find((p) => p.id === 'summer-socks').variants.find((v) => v.options.Color === 'Black').stock, 0);
 
 console.log('ok: bundles');

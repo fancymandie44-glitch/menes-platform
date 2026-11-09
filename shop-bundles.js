@@ -17,6 +17,22 @@
     return window.MENES_BUNDLES || null;
   }
 
+  function shopStore() {
+    return (typeof storeData !== 'undefined' && storeData) ? storeData : null;
+  }
+
+  function remainingOf(bundle) {
+    const B = api();
+    if (!B) return Infinity;
+    return B.bundleRemaining(shopStore(), bundle);
+  }
+
+  function canBuy(bundle) {
+    const B = api();
+    if (!B) return false;
+    return B.canPurchase(bundle, Date.now(), shopStore());
+  }
+
   function lang() {
     return typeof currentLang === 'string' && currentLang === 'fr' ? 'fr' : 'en';
   }
@@ -146,12 +162,9 @@
         const btn = document.getElementById('bundleAddBtn');
         const B = api();
         const bundle = B?.bySlug(activeSlug);
-        if (msg && bundle && !B.canPurchase(bundle)) {
-          msg.textContent = lockLine();
-        }
-        if (btn && bundle && !B.canPurchase(bundle)) {
-          btn.textContent = lockLine(true);
-        }
+        if (!bundle || B.isDropLive()) return;
+        if (msg) msg.textContent = lockLine();
+        if (btn) btn.textContent = lockLine(true);
       }
     }, 1000);
   }
@@ -184,18 +197,26 @@
     const list = B.sorted();
     grid.innerHTML = list.map((bundle) => {
       const ready = B.isBrowsable ? B.isBrowsable(bundle) : B.isReady(bundle);
-      const buy = B.canPurchase ? B.canPurchase(bundle) : ready;
+      const buy = canBuy(bundle);
       const featured = !!bundle.featured;
       const highlights = (loc(bundle.highlights) || []).slice(0, 4);
       const img = bundle.image
         ? `<img src="${esc(bundle.image)}" alt="${esc(loc(bundle.name))}" width="640" height="800" ${featured ? '' : 'loading="lazy" decoding="async"'}>`
         : `<div class="shop-bundle-ph" aria-hidden="true">MENES</div>`;
       const badge = loc(bundle.badge);
-      const urgency = typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency);
-      const ctaLabel = buy ? viewLabel() : (ready ? (lang() === 'fr' ? 'Voir le pack' : 'See the pack') : soonLabel());
-      const cta = ready
+      const left = remainingOf(bundle);
+      const soldOut = B.isDropLive() && Number.isFinite(left) && left <= 0;
+      const urgency = soldOut
+        ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
+        : (Number.isFinite(left) && B.isDropLive()
+          ? (lang() === 'fr' ? `${left} restant${left > 1 ? 's' : ''}` : `${left} left`)
+          : (typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency)));
+      const ctaLabel = soldOut
+        ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
+        : (buy ? viewLabel() : (ready ? (lang() === 'fr' ? 'Voir le pack' : 'See the pack') : soonLabel()));
+      const cta = ready && !soldOut
         ? `<a class="${featured && buy ? 'hero-cta' : 'btn-outline-block'}" href="/bundle/${esc(bundle.slug)}">${esc(ctaLabel)}</a>`
-        : `<span class="shop-bundle-soon">${esc(soonLabel())}</span>`;
+        : `<span class="shop-bundle-soon">${esc(soldOut ? ctaLabel : soonLabel())}</span>`;
       return `<article class="shop-bundle-card${featured ? ' is-featured' : ''}${ready ? '' : ' is-soon'}${buy ? '' : ' is-locked'}" data-slug="${esc(bundle.slug)}">
         ${badge ? `<span class="shop-bundle-badge">${esc(badge)}</span>` : ''}
         <a class="shop-bundle-media" href="${ready ? `/bundle/${esc(bundle.slug)}` : '#shopBundles'}" ${ready ? '' : 'aria-disabled="true" tabindex="-1"'}>
@@ -226,14 +247,21 @@
     }
     const live = B.isDropLive();
     row.innerHTML = ready.map((bundle) => {
-      const label = live
-        ? (lang() === 'fr'
-          ? `${loc(bundle.name)} ${money(bundle.price)}. Acheter`
-          : `${loc(bundle.name)} ${money(bundle.price)}. Shop now`)
-        : (lang() === 'fr'
+      const left = remainingOf(bundle);
+      const soldOut = live && Number.isFinite(left) && left <= 0;
+      let label;
+      if (!live) {
+        label = lang() === 'fr'
           ? `${loc(bundle.name)} · ouvre à minuit le 20`
-          : `${loc(bundle.name)} · unlocks midnight Nov 20`);
-      return `<a class="shop-bundles-fast-btn${bundle.featured && live ? ' is-featured' : ''}${live ? '' : ' is-locked'}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
+          : `${loc(bundle.name)} · unlocks midnight Nov 20`;
+      } else if (soldOut) {
+        label = lang() === 'fr' ? `${loc(bundle.name)} · épuisé` : `${loc(bundle.name)} · sold out`;
+      } else {
+        label = lang() === 'fr'
+          ? `${loc(bundle.name)} ${money(bundle.price)}. Acheter`
+          : `${loc(bundle.name)} ${money(bundle.price)}. Shop now`;
+      }
+      return `<a class="shop-bundles-fast-btn${bundle.featured && live && !soldOut ? ' is-featured' : ''}${live && !soldOut ? '' : ' is-locked'}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
     }).join('');
     wireBundleLinks(row);
   }
@@ -300,9 +328,10 @@
 
   function canAdd(bundle) {
     const B = api();
-    if (!B.canPurchase(bundle)) return false;
+    if (!canBuy(bundle)) return false;
     const variant = currentVariant(bundle);
-    return !B.validateLine(bundle, variant).error;
+    if (B.validateLine(bundle, variant).error) return false;
+    return !B.validateBundleStock(shopStore(), bundle, variant, 1).error;
   }
 
   function currentVariant(bundle) {
@@ -376,8 +405,8 @@
             <span>${esc(t('proof_ship'))}</span>
             <span>${esc(t('proof_ex'))}</span>
           </div>
-          <p class="bundle-atc-msg" id="bundleAtcMsg">${esc(B.canPurchase(bundle) ? miss : lockLine())}</p>
-          <button type="button" class="btn-checkout" id="bundleAddBtn" ${addOk ? '' : 'disabled'}>${esc(B.canPurchase(bundle) ? t('add_to_cart') : lockLine(true))}</button>
+          <p class="bundle-atc-msg" id="bundleAtcMsg">${esc(canBuy(bundle) ? miss : (B.isDropLive() ? B.soldOutMessage(bundle, lang()) : lockLine()))}</p>
+          <button type="button" class="btn-checkout" id="bundleAddBtn" ${addOk ? '' : 'disabled'}>${esc(canBuy(bundle) ? t('add_to_cart') : (B.isDropLive() ? (lang() === 'fr' ? 'Épuisé' : 'Sold out') : lockLine(true)))}</button>
         </div>
       </div>
       `;
@@ -424,7 +453,7 @@
       </div>`;
     }).join('');
     const options = (bundle.pairOptions || []).map((p) => {
-      const out = p.inStock === false;
+      const out = p.inStock === false || (B.pairAvailable && !B.pairAvailable(shopStore(), p.id));
       const used = !bundle.allowDuplicatePairs && builderPicks.includes(p.id);
       const disabled = out || used;
       return `<button type="button" class="builder-opt${disabled ? ' is-disabled' : ''}" data-pair="${esc(p.id)}" ${disabled ? 'disabled' : ''}
@@ -450,7 +479,10 @@
         </div>
         <p class="builder-count">${esc(lang() === 'fr' ? 'Taille' : 'Size')}</p>
         <div class="builder-sizes" role="group" aria-label="${esc(lang() === 'fr' ? 'Taille du boxer' : 'Boxer size')}">
-          ${boxerSizes.map((s) => `<button type="button" class="opt-chip${s === selectedBoxerSize ? ' active' : ''}" data-boxer-size="${esc(s)}" aria-pressed="${s === selectedBoxerSize ? 'true' : 'false'}">${esc(s)}</button>`).join('')}
+          ${boxerSizes.map((s) => {
+            const sizeOut = selectedBoxerColor && B.boxerUnitsLeft && B.boxerUnitsLeft(shopStore(), selectedBoxerColor, s) <= 0;
+            return `<button type="button" class="opt-chip${s === selectedBoxerSize ? ' active' : ''}${sizeOut ? ' is-disabled' : ''}" data-boxer-size="${esc(s)}" ${sizeOut ? 'disabled' : ''} aria-pressed="${s === selectedBoxerSize ? 'true' : 'false'}">${esc(s)}</button>`;
+          }).join('')}
         </div>
       </div>` : '';
     const summary = [];
@@ -510,8 +542,8 @@
 
   function addBundleToCart(bundle) {
     const B = api();
-    if (!B || !B.canPurchase(bundle)) {
-      showToast(lockLine() || B?.dropLockMessage(lang()));
+    if (!B || !canBuy(bundle)) {
+      showToast(B?.isDropLive() ? B.soldOutMessage(bundle, lang()) : (lockLine() || B?.dropLockMessage(lang())));
       return;
     }
     if (!canAdd(bundle)) return;

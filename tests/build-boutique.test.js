@@ -106,6 +106,9 @@ function run() {
   assert(bundleJs.includes("DROP_AT = '2026-11-20T00:00:00-05:00'"), 'drop is Nov 20 midnight Eastern');
   assert(shopBundlesJs.includes('startDropTimer'), 'bundle UI must tick the drop clock');
   assert(shopBundlesJs.includes('canPurchase'), 'bundle add-to-cart must wait for the drop');
+  assert(shopBundlesJs.includes('pairAvailable'), 'sold-out pairs must show as unavailable');
+  assert(bundleJs.includes('limit: 3') && bundleJs.includes('limit: 5'), 'essentials 3 / holiday 5');
+  assert(shopJs.includes('Holiday season is here'), 'after the drop the timer copy is gone');
   assert(shopJs.includes('COMMUNITY_PHOTOS'), 'community gallery must include We Wear MENES photos');
   assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
   assert(shopJs.includes('function galleryDedupeKey'), 'instagram data-uri posts must not collapse into one tile');
