@@ -15,6 +15,10 @@ const types = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
 };
 
 function sendJson(res, code, data) {
@@ -76,6 +80,7 @@ http.createServer(async (req, res) => {
     return sendJson(res, 200, { error: 'Paiements en ligne actifs sur Netlify. En local: commande par email.' });
   }
 
+  if (urlPath.startsWith('/bundle/')) urlPath = '/index.html';
   if (urlPath === '/admin' || urlPath === '/admin/') urlPath = '/console.html';
   if (urlPath === '/console' || urlPath === '/console/') urlPath = '/console.html';
   if (urlPath === '/platform' || urlPath === '/platform/') urlPath = '/console.html';

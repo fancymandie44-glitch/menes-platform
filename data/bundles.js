@@ -50,6 +50,42 @@
   const BOXER_PRODUCT_ID = 'menes-boxer';
   const HAT_PRODUCT_ID = 'menes-kltr-trucker-hat';
   const BAG_PRODUCT_ID = 'menes-m-keyz-crossbody-bag-';
+  const CAMO_HAT_STOCK = 5;
+  const HAT_OPTIONS = [
+    {
+      id: 'camo',
+      name: { fr: 'Camo', en: 'Camo' },
+      swatch: '#5c5c5c',
+      image: '/images/bundles/holiday-exclusive.jpg',
+      virtual: true,
+      defaultStock: CAMO_HAT_STOCK,
+      priority: true,
+    },
+    {
+      id: 'orange',
+      name: { fr: 'Orange', en: 'Orange' },
+      swatch: '#d26512',
+      image: '/images/community/hat-orange-studio.jpg',
+      productId: HAT_PRODUCT_ID,
+      color: 'Orange',
+    },
+    {
+      id: 'black',
+      name: { fr: 'Noir', en: 'Black' },
+      swatch: '#111111',
+      image: '/images/community/hat-black-studio.jpg',
+      productId: HAT_PRODUCT_ID,
+      color: 'Black',
+    },
+    {
+      id: 'brown',
+      name: { fr: 'Brun', en: 'Brown' },
+      swatch: '#6b4a2b',
+      image: '/images/community/hat-beige-studio.jpg',
+      productId: HAT_PRODUCT_ID,
+      color: 'Brown',
+    },
+  ];
   const PENDING_RESERVE_MS = 45 * 60 * 1000;
 
   const BOXER_SIZES = ['S', 'M', 'L', 'XL'];
@@ -172,18 +208,21 @@
       price: 99.99,
       comparePrice: ESSENTIALS_COMPARE,
       currency: 'CAD',
-      urgency: { fr: '3 packs seulement', en: 'Only 3 packs' },
+      urgency: { fr: 'Le pack de tous les jours', en: 'The everyday pack' },
       highlights: {
         fr: ['1 casquette Kultur MENES', '2 paires au choix', '1 boxer Red ou Grey', ESSENTIALS_DEAL.hitFr],
         en: ['1 Kultur MENES cap', '2 pairs of your choice', '1 Red or Grey boxer', ESSENTIALS_DEAL.hitEn],
       },
       included: {
-        fr: ['1 casquette Kultur MENES', '2 paires Kultur Steps au choix', '1 boxer MENES au choix (Red ou Grey)'],
-        en: ['1 Kultur MENES cap', '2 Kultur Steps pairs of your choice', '1 MENES boxer of your choice (Red or Grey)'],
+        fr: ['1 casquette Kultur MENES (orange, noire ou brune)', '2 paires Kultur Steps au choix', '1 boxer MENES au choix (Red ou Grey)'],
+        en: ['1 Kultur MENES cap (orange, black or brown)', '2 Kultur Steps pairs of your choice', '1 MENES boxer of your choice (Red or Grey)'],
       },
       pairCount: 2,
       pairOptions: PAIR_OPTIONS,
       limit: 3,
+      hat: true,
+      hatOptions: HAT_OPTIONS.filter((h) => !h.virtual),
+      defaultHatId: 'orange',
       boxer: true,
       boxerOptions: BOXER_OPTIONS,
       boxerSizes: BOXER_SIZES,
@@ -201,12 +240,12 @@
       badge: { fr: 'Cadeau des fêtes', en: 'Holiday gift' },
       name: { fr: 'HOLIDAY EXCLUSIVE', en: 'HOLIDAY EXCLUSIVE' },
       tagline: {
-        fr: 'Casquette. Sac. Trois paires à toi de composer.',
-        en: 'Hat. Bag. Three pairs you build yourself.',
+        fr: 'Casquette au choix. Sac. Trois paires à toi de composer.',
+        en: 'Hat of your choice. Bag. Three pairs you build yourself.',
       },
       description: {
-        fr: `Casquette, sac M Keyz, 3 paires au choix. ${HOLIDAY_DEAL.fr}`,
-        en: `Hat, M Keyz bag, 3 pairs you pick. ${HOLIDAY_DEAL.en}`,
+        fr: `Casquette au choix (camo en premier), sac M Keyz, 3 paires. ${HOLIDAY_DEAL.fr}`,
+        en: `Hat of your choice (camo first), M Keyz bag, 3 pairs. ${HOLIDAY_DEAL.en}`,
       },
       seoTitle: {
         fr: 'HOLIDAY EXCLUSIVE | Casquette, sac et 3 paires MENES',
@@ -220,17 +259,20 @@
       price: 329.99,
       comparePrice: HOLIDAY_COMPARE,
       currency: 'CAD',
-      urgency: { fr: '5 packs seulement', en: 'Only 5 packs' },
+      urgency: { fr: 'Drop limité', en: 'Limited drop' },
       highlights: {
-        fr: ['Casquette MENES camo', 'Sac M Keyz', '3 paires au choix', HOLIDAY_DEAL.hitFr],
-        en: ['MENES camo trucker', 'M Keyz bag', '3 pairs of your choice', HOLIDAY_DEAL.hitEn],
+        fr: ['Casquette au choix, camo en premier', 'Sac M Keyz', '3 paires au choix', HOLIDAY_DEAL.hitFr],
+        en: ['Hat of your choice, camo first', 'M Keyz bag', '3 pairs of your choice', HOLIDAY_DEAL.hitEn],
       },
       included: {
-        fr: ['1 casquette MENES Holiday', '1 sac M Keyz', '3 paires Kultur Steps au choix'],
-        en: ['1 MENES Holiday trucker', '1 M Keyz bag', '3 Kultur Steps pairs of your choice'],
+        fr: ['1 casquette au choix (camo, orange, noire ou brune)', '1 sac M Keyz', '3 paires Kultur Steps au choix'],
+        en: ['1 hat of your choice (camo, orange, black or brown)', '1 M Keyz bag', '3 Kultur Steps pairs of your choice'],
       },
       pairCount: 3,
       pairOptions: PAIR_OPTIONS,
+      hat: true,
+      hatOptions: HAT_OPTIONS,
+      defaultHatId: 'camo',
       limit: 5,
       sizes: [],
       stock: null,
@@ -302,16 +344,22 @@
   function bundleRemaining(store, bundle) {
     const limit = bundleLimit(bundle);
     if (limit == null) return Infinity;
-    if (store?.bundles?.remaining && Object.prototype.hasOwnProperty.call(store.bundles.remaining, bundle.id) && !Array.isArray(store.orders)) {
-      const n = store.bundles.remaining[bundle.id];
-      if (n == null) return Infinity;
-      return Math.max(0, Number(n) || 0);
+    if (store?.bundles?.soldOut && Object.prototype.hasOwnProperty.call(store.bundles.soldOut, bundle.id) && !Array.isArray(store.orders)) {
+      return store.bundles.soldOut[bundle.id] ? 0 : 1;
     }
     return Math.max(0, limit - countCommitted(store, bundle.id));
   }
 
   function findProduct(store, id) {
     return (store?.products || []).find((p) => p && p.id === id) || null;
+  }
+
+  function optionColor(vo) {
+    return String(vo?.Color || vo?.Couleur || vo?.color || vo?.couleur || '').toLowerCase();
+  }
+
+  function optionSize(vo) {
+    return String(vo?.Size || vo?.Taille || vo?.size || vo?.taille || '').toLowerCase();
   }
 
   function unitsForProduct(product, optionMap) {
@@ -323,9 +371,16 @@
       return Math.max(0, s);
     }
     const opts = optionMap || {};
+    const wantColor = optionColor(opts);
+    const wantSize = optionSize(opts);
     const hit = list.find((v) => {
       const vo = v.options || {};
-      return Object.keys(opts).every((k) => String(vo[k] || '').toLowerCase() === String(opts[k] || '').toLowerCase());
+      if (wantColor && optionColor(vo) !== wantColor) return false;
+      if (wantSize && optionSize(vo) !== wantSize) return false;
+      if (!wantColor && !wantSize) {
+        return Object.keys(opts).every((k) => String(vo[k] || '').toLowerCase() === String(opts[k] || '').toLowerCase());
+      }
+      return true;
     });
     if (!hit) return 0;
     const s = Number(hit.stock);
@@ -348,6 +403,32 @@
     return pairUnitsLeft(store, pairId) > 0;
   }
 
+  function hatById(id) {
+    return HAT_OPTIONS.find((h) => h.id === String(id || '')) || null;
+  }
+
+  function hatUnitsLeft(store, hatId) {
+    const id = String(hatId || '').toLowerCase();
+    if (store?.bundles?.hats && typeof store.bundles.hats[id] === 'boolean' && !Array.isArray(store.orders)) {
+      return store.bundles.hats[id] ? Infinity : 0;
+    }
+    const hat = hatById(id);
+    if (!hat) return 0;
+    if (hat.virtual) {
+      const raw = store?.inventory?.hats?.[hat.id];
+      const n = Number(raw);
+      if (Number.isFinite(n)) return Math.max(0, n);
+      return Math.max(0, Number(hat.defaultStock) || 0);
+    }
+    const product = findProduct(store, hat.productId || HAT_PRODUCT_ID);
+    if (!product) return Infinity;
+    return unitsForProduct(product, hat.color ? { Color: hat.color } : {});
+  }
+
+  function hatAvailable(store, hatId) {
+    return hatUnitsLeft(store, hatId) > 0;
+  }
+
   function boxerUnitsLeft(store, color, size) {
     const key = `${String(color || '').toLowerCase()}:${String(size || '').toUpperCase()}`;
     if (store?.bundles?.boxers && typeof store.bundles.boxers[key] === 'boolean' && !Array.isArray(store.orders)) {
@@ -359,9 +440,13 @@
     return unitsForProduct(product, { Color: colorName, Size: String(size || '').toUpperCase() });
   }
 
-  function canPurchase(bundle, now, store) {
-    if (!isReady(bundle) || !isDropLive(now)) return false;
+  function canHold(bundle, now, store) {
+    if (!isReady(bundle)) return false;
     return bundleRemaining(store, bundle) > 0;
+  }
+
+  function canPurchase(bundle, now, store) {
+    return isDropLive(now) && canHold(bundle, now, store);
   }
 
   function soldOutMessage(bundle, lang) {
@@ -391,14 +476,18 @@
       const left = boxerUnitsLeft(store, variant?.boxerColor, variant?.boxerSize);
       if (left < q) return { error: 'Boxer indisponible dans cette taille' };
     }
+    if (bundle.hat) {
+      const left = hatUnitsLeft(store, variant?.hatColor || variant?.hat);
+      if (left < q) return { error: 'Casquette indisponible' };
+    }
     return { ok: true };
   }
 
   function publicBundleState(store) {
-    const remaining = {};
+    const soldOut = {};
     BUNDLES.forEach((b) => {
       const left = bundleRemaining(store, b);
-      remaining[b.id] = Number.isFinite(left) ? left : null;
+      soldOut[b.id] = Number.isFinite(left) ? left <= 0 : false;
     });
     const pairs = {};
     Object.keys(PAIR_STOCK).forEach((id) => {
@@ -410,13 +499,21 @@
         boxers[`${b.id}:${size}`] = boxerUnitsLeft(store, b.id, size) > 0;
       });
     });
-    return { remaining, pairs, boxers };
+    const hats = {};
+    HAT_OPTIONS.forEach((h) => {
+      hats[h.id] = hatAvailable(store, h.id);
+    });
+    return { soldOut, pairs, boxers, hats };
+  }
+
+  function payLockMessage(lang) {
+    return lang === 'en'
+      ? 'Your pack stays in the cart. Payment opens Nov 20 at midnight Eastern. Stock locks when you pay.'
+      : 'Le pack reste dans le panier. Le paiement ouvre le 20 novembre à minuit (Montréal). Le stock se confirme au paiement.';
   }
 
   function dropLockMessage(lang) {
-    return lang === 'en'
-      ? 'Packs unlock Nov 20 at midnight Eastern.'
-      : 'Les packs s’ouvrent le 20 novembre à minuit (Montréal).';
+    return payLockMessage(lang);
   }
 
   function countdownParts(now) {
@@ -529,6 +626,12 @@
         out.boxerColor = boxer.id;
         out.boxerSize = size;
       }
+      if (bundle.hat) {
+        const list = bundle.hatOptions || HAT_OPTIONS;
+        const hat = list.find((h) => h.id === String(variant?.hatColor || variant?.hat || '')) || null;
+        if (!hat) return { error: 'Choisis une casquette' };
+        out.hatColor = hat.id;
+      }
       return { ok: true, variant: out };
     }
     return { ok: true, variant: variant || {} };
@@ -552,6 +655,9 @@
         const color = loc(boxer?.name, lang) || variant.boxerColor;
         parts.push([color, variant.boxerSize].filter(Boolean).join(' '));
       }
+      if (bundle.hat && variant?.hatColor) {
+        parts.push(loc(hatById(variant.hatColor)?.name, lang) || variant.hatColor);
+      }
       return parts.filter(Boolean).join(' · ');
     }
     return '';
@@ -572,6 +678,8 @@
     PAIR_STOCK,
     BOXER_PRODUCT_ID,
     HAT_PRODUCT_ID,
+    HAT_OPTIONS,
+    CAMO_HAT_STOCK,
     BAG_PRODUCT_ID,
     dropAtMs,
     isDropLive,
@@ -580,10 +688,15 @@
     pairAvailable,
     pairUnitsLeft,
     boxerUnitsLeft,
+    hatById,
+    hatUnitsLeft,
+    hatAvailable,
+    canHold,
     canPurchase,
     soldOutMessage,
     validateBundleStock,
     publicBundleState,
+    payLockMessage,
     dropLockMessage,
     countdownParts,
     CLIENT_DISCOUNT,

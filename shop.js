@@ -1332,8 +1332,8 @@ async function refreshStore(opts = {}) {
 
 const DEFAULT_SECTION_ORDER = ['shopBundles', 'trustBar', 'products', 'lookbook', 'gallery', 'reviews', 'why', 'emailCapture', 'faq', 'contact', 'guarantee'];
 const HOLIDAY_ANNOUNCE = {
-  en: 'Holiday packs drop Nov 20 at midnight. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
-  fr: 'Les packs s’ouvrent le 20 novembre à minuit. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
+  en: 'Add holiday packs now. Pay Nov 20 at midnight. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99',
+  fr: 'Mets les packs au panier. Paiement le 20 novembre à minuit. Essentials 99,99. Kultur Steps 34,99. Holiday Exclusive 329,99',
 };
 
 function applySectionOrder() {
@@ -2834,6 +2834,22 @@ function updateCartTotalsOnly() {
   const totalEl = document.getElementById('cartTotal');
   if (countEl) countEl.textContent = count;
   if (totalEl) totalEl.textContent = `${shown.toFixed(2)}$`;
+  const hold = typeof cartHasLockedBundle === 'function' && cartHasLockedBundle();
+  const payBtn = document.getElementById('checkoutBtn');
+  const holdNote = document.getElementById('cartPayHold');
+  if (payBtn) {
+    payBtn.disabled = hold;
+    payBtn.textContent = hold
+      ? (currentLang === 'fr' ? 'Payer le 20 novembre' : 'Pay on Nov 20')
+      : t('cart_checkout');
+  }
+  if (holdNote) {
+    const B = window.MENES_BUNDLES;
+    holdNote.hidden = !hold;
+    holdNote.textContent = hold
+      ? ((B?.payLockMessage || B?.dropLockMessage)?.(currentLang === 'fr' ? 'fr' : 'en') || '')
+      : '';
+  }
   renderShippingBar();
 }
 
