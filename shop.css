@@ -784,6 +784,8 @@ body.scroll-locked .checkout-pay-dock {
   text-transform: uppercase; font-size: 0.8rem; transition: background 0.2s, transform var(--motion) var(--ease);
 }
 .btn-checkout:hover { background: var(--white); transform: translateY(-1px); }
+.btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; transform: none; background: var(--gold); color: var(--black); }
+.cart-pay-hold { margin-top: 10px; font-size: 0.78rem; color: var(--gold); line-height: 1.4; text-align: center; }
 
 .modal {
   position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 300;

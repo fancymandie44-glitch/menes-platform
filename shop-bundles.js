@@ -28,6 +28,13 @@
     return B.bundleRemaining(shopStore(), bundle);
   }
 
+  function canHold(bundle) {
+    const B = api();
+    if (!B) return false;
+    if (typeof B.canHold === 'function') return B.canHold(bundle, Date.now(), shopStore());
+    return B.isReady(bundle);
+  }
+
   function canBuy(bundle) {
     const B = api();
     if (!B) return false;
@@ -100,8 +107,8 @@
     const B = api();
     if (B && !B.isDropLive()) {
       return lang() === 'fr'
-        ? 'Les packs s’ouvrent le 20 novembre à minuit. Essentials 99,99 $. Kultur Steps 34,99 $. Holiday Exclusive 329,99 $. Tu peux les regarder maintenant. Tu les achètes à minuit.'
-        : 'Packs unlock Nov 20 at midnight. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99. Look now. Buy when the clock hits zero.';
+        ? 'Mets le pack au panier maintenant. Tu paies le 20 novembre à minuit. Essentials 99,99 $. Kultur Steps 34,99 $. Holiday Exclusive 329,99 $.'
+        : 'Add a pack to your cart now. You pay Nov 20 at midnight. Essentials 99.99. Kultur Steps 34.99. Holiday Exclusive 329.99.';
     }
     return lang() === 'fr'
       ? 'Le cadeau, sans te casser la tête. Essentials à 99,99 $. Kultur Steps à 34,99 $. Holiday Exclusive à 329,99 $. Tu construis le pack en une minute.'
@@ -141,7 +148,7 @@
     const parts = B.countdownParts();
     box.hidden = false;
     box.innerHTML = `
-      <p class="bundle-drop-kicker">${esc(lang() === 'fr' ? 'Achat ouvert le 20 novembre à minuit' : 'Buy opens Nov 20 at midnight Eastern')}</p>
+      <p class="bundle-drop-kicker">${esc(lang() === 'fr' ? 'Panier ouvert. Paiement le 20 novembre à minuit' : 'Cart is open. Payment Nov 20 at midnight Eastern')}</p>
       <div class="bundle-drop-clock" aria-live="polite">${clockHtml(parts)}</div>
     `;
     return false;
@@ -164,8 +171,7 @@
         const B = api();
         const bundle = B?.bySlug(activeSlug);
         if (!bundle || B.isDropLive()) return;
-        if (msg) msg.textContent = lockLine();
-        if (btn) btn.textContent = lockLine(true);
+        if (msg && !canHold(bundle)) msg.textContent = lockLine();
       }
     }, 1000);
   }
@@ -176,10 +182,18 @@
     const p = B.countdownParts();
     if (short) {
       return lang() === 'fr'
-        ? `Ouvre dans ${p.days}j ${pad2(p.hours)}h ${pad2(p.minutes)}m`
-        : `Opens in ${p.days}d ${pad2(p.hours)}h ${pad2(p.minutes)}m`;
+        ? `Payer le 20 · ${p.days}j ${pad2(p.hours)}h`
+        : `Pay Nov 20 · ${p.days}d ${pad2(p.hours)}h`;
     }
-    return B.dropLockMessage(lang());
+    return (B.payLockMessage || B.dropLockMessage)(lang());
+  }
+
+  function holdNote(bundle, miss) {
+    const B = api();
+    if (!canHold(bundle)) return B?.soldOutMessage(bundle, lang()) || '';
+    if (miss) return miss;
+    if (B && !B.isDropLive()) return lockLine();
+    return '';
   }
 
   function renderShopBundles() {
@@ -198,7 +212,7 @@
     const list = B.sorted();
     grid.innerHTML = list.map((bundle) => {
       const ready = B.isBrowsable ? B.isBrowsable(bundle) : B.isReady(bundle);
-      const buy = canBuy(bundle);
+      const hold = canHold(bundle);
       const featured = !!bundle.featured;
       const highlights = (loc(bundle.highlights) || []).slice(0, 4);
       const img = bundle.image
@@ -206,17 +220,17 @@
         : `<div class="shop-bundle-ph" aria-hidden="true">MENES</div>`;
       const badge = loc(bundle.badge);
       const left = remainingOf(bundle);
-      const soldOut = B.isDropLive() && Number.isFinite(left) && left <= 0;
+      const soldOut = Number.isFinite(left) && left <= 0;
       const urgency = soldOut
         ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
         : (typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency));
       const ctaLabel = soldOut
         ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
-        : (buy ? viewLabel() : (ready ? (lang() === 'fr' ? 'Voir le pack' : 'See the pack') : soonLabel()));
+        : (ready ? (lang() === 'fr' ? 'Mettre au panier' : 'Add to cart') : soonLabel());
       const cta = ready && !soldOut
-        ? `<a class="${featured && buy ? 'hero-cta' : 'btn-outline-block'}" href="/bundle/${esc(bundle.slug)}">${esc(ctaLabel)}</a>`
+        ? `<a class="${featured && hold ? 'hero-cta' : 'btn-outline-block'}" href="/bundle/${esc(bundle.slug)}">${esc(ctaLabel)}</a>`
         : `<span class="shop-bundle-soon">${esc(soldOut ? ctaLabel : soonLabel())}</span>`;
-      return `<article class="shop-bundle-card${featured ? ' is-featured' : ''}${ready ? '' : ' is-soon'}${buy ? '' : ' is-locked'}" data-slug="${esc(bundle.slug)}">
+      return `<article class="shop-bundle-card${featured ? ' is-featured' : ''}${ready ? '' : ' is-soon'}${hold ? '' : ' is-locked'}" data-slug="${esc(bundle.slug)}">
         ${badge ? `<span class="shop-bundle-badge">${esc(badge)}</span>` : ''}
         <a class="shop-bundle-media" href="${ready ? `/bundle/${esc(bundle.slug)}` : '#shopBundles'}" ${ready ? '' : 'aria-disabled="true" tabindex="-1"'}>
           ${img}
@@ -247,20 +261,20 @@
     const live = B.isDropLive();
     row.innerHTML = ready.map((bundle) => {
       const left = remainingOf(bundle);
-      const soldOut = live && Number.isFinite(left) && left <= 0;
+      const soldOut = Number.isFinite(left) && left <= 0;
       let label;
-      if (!live) {
-        label = lang() === 'fr'
-          ? `${loc(bundle.name)} · ouvre à minuit le 20`
-          : `${loc(bundle.name)} · unlocks midnight Nov 20`;
-      } else if (soldOut) {
+      if (soldOut) {
         label = lang() === 'fr' ? `${loc(bundle.name)} · épuisé` : `${loc(bundle.name)} · sold out`;
+      } else if (!live) {
+        label = lang() === 'fr'
+          ? `${loc(bundle.name)} · mettre au panier`
+          : `${loc(bundle.name)} · add to cart`;
       } else {
         label = lang() === 'fr'
           ? `${loc(bundle.name)} ${money(bundle.price)}. Acheter`
           : `${loc(bundle.name)} ${money(bundle.price)}. Shop now`;
       }
-      return `<a class="shop-bundles-fast-btn${bundle.featured && live && !soldOut ? ' is-featured' : ''}${live && !soldOut ? '' : ' is-locked'}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
+      return `<a class="shop-bundles-fast-btn${bundle.featured && !soldOut ? ' is-featured' : ''}${soldOut ? ' is-locked' : ''}" href="/bundle/${esc(bundle.slug)}">${esc(label)}</a>`;
     }).join('');
     wireBundleLinks(row);
   }
@@ -331,7 +345,7 @@
 
   function canAdd(bundle) {
     const B = api();
-    if (!canBuy(bundle)) return false;
+    if (!canHold(bundle)) return false;
     const variant = currentVariant(bundle);
     if (B.validateLine(bundle, variant).error) return false;
     return !B.validateBundleStock(shopStore(), bundle, variant, 1).error;
@@ -421,8 +435,8 @@
             <span>${esc(t('proof_ship'))}</span>
             <span>${esc(t('proof_ex'))}</span>
           </div>
-          <p class="bundle-atc-msg" id="bundleAtcMsg">${esc(canBuy(bundle) ? miss : (B.isDropLive() ? B.soldOutMessage(bundle, lang()) : lockLine()))}</p>
-          <button type="button" class="btn-checkout" id="bundleAddBtn" ${addOk ? '' : 'disabled'}>${esc(canBuy(bundle) ? t('add_to_cart') : (B.isDropLive() ? (lang() === 'fr' ? 'Épuisé' : 'Sold out') : lockLine(true)))}</button>
+          <p class="bundle-atc-msg" id="bundleAtcMsg">${esc(holdNote(bundle, miss))}</p>
+          <button type="button" class="btn-checkout" id="bundleAddBtn" ${addOk ? '' : 'disabled'}>${esc(canHold(bundle) ? t('add_to_cart') : (lang() === 'fr' ? 'Épuisé' : 'Sold out'))}</button>
         </div>
       </div>
       `;
@@ -586,8 +600,8 @@
 
   function addBundleToCart(bundle) {
     const B = api();
-    if (!B || !canBuy(bundle)) {
-      showToast(B?.isDropLive() ? B.soldOutMessage(bundle, lang()) : (lockLine() || B?.dropLockMessage(lang())));
+    if (!B || !canHold(bundle)) {
+      showToast(B?.soldOutMessage(bundle, lang()) || (lang() === 'fr' ? 'Épuisé' : 'Sold out'));
       return;
     }
     if (!canAdd(bundle)) return;
@@ -616,7 +630,7 @@
     }
     persistCart();
     updateCartUI({ forceList: true });
-    showToast(t('added'));
+    showToast(B.isDropLive() ? t('added') : lockLine());
     closeShopBundle({ restore: true });
     document.getElementById('cartBtn')?.click();
   }

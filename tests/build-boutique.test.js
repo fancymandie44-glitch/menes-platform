@@ -105,7 +105,8 @@ function run() {
   const shopBundlesJs = fs.readFileSync(path.join(DIST, 'shop-bundles.js'), 'utf8');
   assert(bundleJs.includes("DROP_AT = '2026-11-20T00:00:00-05:00'"), 'drop is Nov 20 midnight Eastern');
   assert(shopBundlesJs.includes('startDropTimer'), 'bundle UI must tick the drop clock');
-  assert(shopBundlesJs.includes('canPurchase'), 'bundle add-to-cart must wait for the drop');
+  assert(shopBundlesJs.includes('canHold'), 'packs can sit in the cart before the drop');
+  assert(shopJs.includes('cartHasLockedBundle'), 'checkout must stay locked until Nov 20');
   assert(shopBundlesJs.includes('pairAvailable'), 'sold-out pairs must show as unavailable');
   assert(shopBundlesJs.includes('data-hat'), 'holiday pack lets shoppers pick a hat');
   assert(bundleJs.includes("id: 'camo'"), 'camo hat is the priority holiday pick');
@@ -117,7 +118,7 @@ function run() {
   assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
   assert(shopJs.includes('function galleryDedupeKey'), 'instagram data-uri posts must not collapse into one tile');
   assert(shopJs.includes("withoutBundles.unshift('shopBundles')"), 'holiday bundles must pin to the top of the page');
-  assert(shopJs.includes('Holiday packs drop Nov 20 at midnight'), 'holiday announcement must lock packs until Nov 20');
+  assert(shopJs.includes('Pay Nov 20 at midnight'), 'holiday announcement must keep payment on Nov 20');
   assert(!/FREE shipping Canada/i.test(shopJs.match(/HOLIDAY_ANNOUNCE = \{[\s\S]*?\};/)?.[0] || ''), 'top bar must not say free shipping Canada');
   assert(shopJs.includes('HOLIDAY_FREE_SHIPPING'), 'holiday free shipping flag');
   assert(shopJs.includes('passport_pieces'), 'passport must show purchased pieces');

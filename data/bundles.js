@@ -440,9 +440,13 @@
     return unitsForProduct(product, { Color: colorName, Size: String(size || '').toUpperCase() });
   }
 
-  function canPurchase(bundle, now, store) {
-    if (!isReady(bundle) || !isDropLive(now)) return false;
+  function canHold(bundle, now, store) {
+    if (!isReady(bundle)) return false;
     return bundleRemaining(store, bundle) > 0;
+  }
+
+  function canPurchase(bundle, now, store) {
+    return isDropLive(now) && canHold(bundle, now, store);
   }
 
   function soldOutMessage(bundle, lang) {
@@ -502,10 +506,14 @@
     return { soldOut, pairs, boxers, hats };
   }
 
-  function dropLockMessage(lang) {
+  function payLockMessage(lang) {
     return lang === 'en'
-      ? 'Packs unlock Nov 20 at midnight Eastern.'
-      : 'Les packs s’ouvrent le 20 novembre à minuit (Montréal).';
+      ? 'Your pack stays in the cart. Payment opens Nov 20 at midnight Eastern. Stock locks when you pay.'
+      : 'Le pack reste dans le panier. Le paiement ouvre le 20 novembre à minuit (Montréal). Le stock se confirme au paiement.';
+  }
+
+  function dropLockMessage(lang) {
+    return payLockMessage(lang);
   }
 
   function countdownParts(now) {
@@ -683,10 +691,12 @@
     hatById,
     hatUnitsLeft,
     hatAvailable,
+    canHold,
     canPurchase,
     soldOutMessage,
     validateBundleStock,
     publicBundleState,
+    payLockMessage,
     dropLockMessage,
     countdownParts,
     CLIENT_DISCOUNT,
