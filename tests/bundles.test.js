@@ -245,5 +245,8 @@ assert.strictEqual(hatStore.inventory.hats.camo, 4);
 const shopBundlesJs = fs.readFileSync(path.join(__dirname, '../shop-bundles.js'), 'utf8');
 assert.ok(!shopBundlesJs.includes('${left} left'), 'do not show remaining bundle counts');
 assert.ok(!shopBundlesJs.includes('restant${left'), 'do not show remaining bundle counts in French');
+assert.notStrictEqual(bundles.bySlug('holiday-exclusive').urgency.en, 'Only 5 packs');
+assert.notStrictEqual(bundles.bySlug('essentials').urgency.en, 'Only 3 packs');
+assert.ok(!/Only \d+ packs/i.test(fs.readFileSync(path.join(__dirname, '../data/bundles.js'), 'utf8')));
 
 console.log('ok: bundles');
