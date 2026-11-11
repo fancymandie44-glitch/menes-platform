@@ -9,6 +9,7 @@
   let builderPicks = [];
   let selectedBoxerColor = '';
   let selectedBoxerSize = '';
+  let selectedHatColor = '';
   let skipNextPop = false;
   let dropTick = 0;
   let dropWasLive = null;
@@ -208,9 +209,7 @@
       const soldOut = B.isDropLive() && Number.isFinite(left) && left <= 0;
       const urgency = soldOut
         ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
-        : (Number.isFinite(left) && B.isDropLive()
-          ? (lang() === 'fr' ? `${left} restant${left > 1 ? 's' : ''}` : `${left} left`)
-          : (typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency)));
+        : (typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency));
       const ctaLabel = soldOut
         ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
         : (buy ? viewLabel() : (ready ? (lang() === 'fr' ? 'Voir le pack' : 'See the pack') : soonLabel()));
@@ -299,6 +298,9 @@
     (bundle.boxerOptions || []).forEach((b) => {
       if (b.image && !urls.includes(b.image)) urls.push(b.image);
     });
+    (bundle.hatOptions || []).forEach((h) => {
+      if (h.image && !urls.includes(h.image)) urls.push(h.image);
+    });
     if (bundle.fixedPairId) {
       const B = api();
       const fixed = B?.pairById(bundle, bundle.fixedPairId);
@@ -322,6 +324,7 @@
       if (n < need) return lang() === 'fr' ? `${n} / ${need} paires choisies. Il en manque ${need - n}.` : `${n} / ${need} pairs chosen. ${need - n} left.`;
       if (bundle.boxer && !selectedBoxerColor) return lang() === 'fr' ? 'Choisis ton boxer (Red ou Grey).' : 'Pick your boxer (Red or Grey).';
       if (bundle.boxer && !selectedBoxerSize) return lang() === 'fr' ? 'Choisis la taille du boxer.' : 'Pick the boxer size.';
+      if (bundle.hat && !selectedHatColor) return lang() === 'fr' ? 'Choisis ta casquette.' : 'Pick your hat.';
     }
     return '';
   }
@@ -341,6 +344,7 @@
         variant.boxerColor = selectedBoxerColor;
         variant.boxerSize = selectedBoxerSize;
       }
+      if (bundle.hat) variant.hatColor = selectedHatColor;
       return variant;
     }
     if (comboList(bundle).length) return { combo: selectedCombo || comboList(bundle)[0].id };
@@ -358,8 +362,20 @@
     }
     preloadBundleImages(bundle);
     if (bundle.kind === 'combo' && !selectedCombo && comboList(bundle)[0]) selectedCombo = comboList(bundle)[0].id;
+    if (bundle.hat && !selectedHatColor) {
+      const list = bundle.hatOptions || B.HAT_OPTIONS || [];
+      const preferred = list.find((h) => h.id === bundle.defaultHatId)
+        || list.find((h) => h.priority)
+        || list[0];
+      if (preferred && (!B.hatAvailable || B.hatAvailable(shopStore(), preferred.id))) selectedHatColor = preferred.id;
+      else {
+        const next = list.find((h) => !B.hatAvailable || B.hatAvailable(shopStore(), h.id));
+        selectedHatColor = next?.id || '';
+      }
+    }
     const combo = activeCombo(bundle);
-    const mainImg = combo?.image || bundle.image || '';
+    const selectedHat = bundle.hat && selectedHatColor ? B.hatById(selectedHatColor) : null;
+    const mainImg = selectedHat?.image || combo?.image || bundle.image || '';
     const thumbs = galleryUrls(bundle);
     const included = loc(bundle.included) || [];
     const highlights = loc(bundle.highlights) || [];
@@ -464,6 +480,23 @@
         ${out ? `<span class="builder-oos">${esc(t('sold_out'))}</span>` : ''}
       </button>`;
     }).join('');
+    const hatList = bundle.hat ? (bundle.hatOptions || B.HAT_OPTIONS || []) : [];
+    const hat = bundle.hat ? (B.hatById ? B.hatById(selectedHatColor) : hatList.find((h) => h.id === selectedHatColor)) : null;
+    const hatBlock = bundle.hat ? `
+      <div class="builder-boxer">
+        <p class="builder-count">${esc(lang() === 'fr' ? 'Choisis ta casquette' : 'Pick your hat')}</p>
+        <div class="builder-grid builder-boxer-grid">
+          ${hatList.map((h) => {
+            const out = B.hatAvailable && !B.hatAvailable(shopStore(), h.id);
+            return `<button type="button" class="builder-opt${h.id === selectedHatColor ? ' is-active' : ''}${out ? ' is-disabled' : ''}" data-hat="${esc(h.id)}" ${out ? 'disabled' : ''} aria-pressed="${h.id === selectedHatColor ? 'true' : 'false'}">
+              <img src="${esc(h.image)}" alt="${esc(loc(h.name))}" width="160" height="200">
+              <span class="builder-opt-swatch" style="background:${esc(h.swatch || '#888')}" aria-hidden="true"></span>
+              <strong>${esc(loc(h.name))}${h.priority ? ` · ${esc(lang() === 'fr' ? 'priorité' : 'first pick')}` : ''}</strong>
+              ${out ? `<span class="builder-oos">${esc(t('sold_out'))}</span>` : ''}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>` : '';
     const boxer = bundle.boxer ? B.boxerById(bundle, selectedBoxerColor) : null;
     const boxerSizes = bundle.boxerSizes || ['S', 'M', 'L', 'XL'];
     const boxerBlock = bundle.boxer ? `
@@ -488,6 +521,7 @@
     const summary = [];
     if (fixedPair) summary.push(loc(fixedPair.name));
     builderPicks.filter(Boolean).forEach((id) => summary.push(loc(B.pairById(bundle, id)?.name) || id));
+    if (hat) summary.push(loc(hat.name));
     if (boxer) summary.push(`${loc(boxer.name)} ${selectedBoxerSize}`.trim());
     const slotClass = (need + (fixedPair ? 1 : 0)) === 3 ? '' : (need === 2 ? ' builder-slots-2' : '');
     const countLine = fixedPair
@@ -497,6 +531,7 @@
       <div class="builder-count" aria-live="polite">${countLine}</div>
       <div class="builder-slots${slotClass}">${locked}${slots}</div>
       <div class="builder-grid">${options}</div>
+      ${hatBlock}
       ${boxerBlock}
       <div class="builder-summary">
         <strong>${esc(lang() === 'fr' ? 'Résumé' : 'Summary')}</strong>
@@ -510,7 +545,7 @@
     if (bundle.kind !== 'builder') return;
     const inner = document.getElementById('bundlePanelInner');
     if (!inner) return;
-    inner.querySelectorAll('.builder-opt').forEach((btn) => {
+    inner.querySelectorAll('[data-pair]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-pair');
         const idx = builderPicks.findIndex((x) => !x);
@@ -535,6 +570,15 @@
     inner.querySelectorAll('[data-boxer-size]').forEach((btn) => {
       btn.addEventListener('click', () => {
         selectedBoxerSize = btn.getAttribute('data-boxer-size') || '';
+        renderBundlePanel();
+      });
+    });
+    inner.querySelectorAll('[data-hat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedHatColor = btn.getAttribute('data-hat') || '';
+        const hat = api()?.hatById(selectedHatColor);
+        const img = document.getElementById('bundleMainImg');
+        if (hat?.image && img) img.src = hat.image;
         renderBundlePanel();
       });
     });
@@ -609,6 +653,7 @@
     builderPicks = Array.from({ length: B.pairNeed ? B.pairNeed(bundle) : (Number(bundle.pairCount) || 3) }, () => null);
     selectedBoxerColor = '';
     selectedBoxerSize = '';
+    selectedHatColor = '';
     document.getElementById('pdpPanel')?.classList.add('hidden');
     document.getElementById('pdpOverlay')?.classList.add('hidden');
     document.getElementById('bundleOverlay')?.classList.remove('hidden');

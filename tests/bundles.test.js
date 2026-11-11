@@ -59,7 +59,8 @@ assert.ok(pairImages.length === 8, 'eight holiday pair photos');
 assert.ok(pairImages.every((src) => src.includes('/images/bundles/pairs/')), 'holiday pairs use pack shots, not combo photos');
 assert.ok(pairImages.every((src) => !src.includes('kultur-steps-')), 'holiday pairs must not reuse Kultur Steps combo photos');
 assert.ok(bundles.validateLine(holiday, { pairs: ['noir'] }).error);
-assert.ok(!bundles.validateLine(holiday, { pairs: ['noir', 'jaune', 'rose'] }).error);
+assert.ok(bundles.validateLine(holiday, { pairs: ['noir', 'jaune', 'rose'] }).error, 'holiday needs a hat');
+assert.ok(!bundles.validateLine(holiday, { pairs: ['noir', 'jaune', 'rose'], hatColor: 'camo' }).error);
 assert.ok(bundles.validateLine(holiday, { pairs: ['noir', 'nope', 'rose'] }).error);
 
 const store = {
@@ -94,7 +95,7 @@ const ok = buildTrustedOrder(store, {
     id: 'bundle-holiday-exclusive',
     qty: 1,
     price: 1,
-    variant: { pairs: ['noir', 'jaune', 'rose'] },
+    variant: { pairs: ['noir', 'jaune', 'rose'], hatColor: 'camo' },
   }],
 }, LIVE);
 assert.ok(!ok.error, ok.error);
@@ -105,7 +106,7 @@ const essentialsLine = {
   id: 'bundle-essentials',
   qty: 1,
   price: 1,
-  variant: { pairs: ['noir', 'jaune'], boxerColor: 'red', boxerSize: 'M' },
+  variant: { pairs: ['noir', 'jaune'], boxerColor: 'red', boxerSize: 'M', hatColor: 'orange' },
 };
 assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir'] }).error);
 assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir', 'jaune'] }).error, 'boxer required');
@@ -150,7 +151,16 @@ const stockStore = {
         { options: { Color: 'Grey', Size: 'M' }, stock: 0 },
       ],
     },
-    { id: 'menes-kltr-trucker-hat', name: 'Hat', stock: 4 },
+    {
+      id: 'menes-kltr-trucker-hat',
+      name: 'Hat',
+      stock: 7,
+      variants: [
+        { options: { Color: 'Orange' }, stock: 5 },
+        { options: { Color: 'Black' }, stock: 1 },
+        { options: { Color: 'Brown' }, stock: 1 },
+      ],
+    },
     { id: 'menes-m-keyz-crossbody-bag-', name: 'Bag', stock: 10 },
   ],
   orders: [
@@ -178,11 +188,13 @@ const fourth = buildTrustedOrder(oneLeft, {
 assert.ok(fourth.error, 'cannot buy more essentials than remaining');
 
 const pub = publicStore(stockStore);
-assert.strictEqual(pub.bundles.remaining['bundle-essentials'], 0);
-assert.strictEqual(pub.bundles.remaining['bundle-holiday-exclusive'], 0);
-assert.strictEqual(pub.bundles.remaining['bundle-kultur-steps'], null);
+assert.strictEqual(pub.bundles.soldOut['bundle-essentials'], true);
+assert.strictEqual(pub.bundles.soldOut['bundle-holiday-exclusive'], true);
+assert.strictEqual(pub.bundles.soldOut['bundle-kultur-steps'], false);
+assert.ok(!('remaining' in pub.bundles), 'customers must not see remaining bundle counts');
 assert.strictEqual(pub.bundles.pairs.noir, false);
 assert.strictEqual(pub.bundles.pairs.jaune, true);
+assert.strictEqual(pub.bundles.hats.camo, true);
 
 const liveStock = {
   products: JSON.parse(JSON.stringify(stockStore.products)),
@@ -200,5 +212,38 @@ assert.strictEqual(decrementStockForOrder(liveStock, paidKultur), true);
 assert.strictEqual(liveStock.products.find((p) => p.id === 'menes-kltr-socks').stock, 8);
 assert.strictEqual(liveStock.products.find((p) => p.id === 'summer-socks').variants.find((v) => v.options.Color === 'Yellow').stock, 3);
 assert.strictEqual(liveStock.products.find((p) => p.id === 'summer-socks').variants.find((v) => v.options.Color === 'Black').stock, 0);
+
+assert.ok(bundles.validateLine(bundles.bySlug('holiday-exclusive'), { pairs: ['noir', 'jaune', 'rose'] }).error, 'holiday needs a hat');
+assert.ok(!bundles.validateLine(bundles.bySlug('holiday-exclusive'), { pairs: ['noir', 'jaune', 'rose'], hatColor: 'camo' }).error);
+assert.ok(bundles.validateLine(bundles.bySlug('essentials'), { pairs: ['noir', 'jaune'], boxerColor: 'red', boxerSize: 'M', hatColor: 'camo' }).error, 'camo is holiday-only');
+assert.strictEqual(bundles.HAT_OPTIONS[0].id, 'camo', 'camo is the first hat');
+const hatStore = { products: JSON.parse(JSON.stringify(stockStore.products)), orders: [], inventory: { hats: { camo: 5 } } };
+assert.ok(!bundles.validateBundleStock(hatStore, bundles.bySlug('holiday-exclusive'), { pairs: ['jaune', 'rose', 'jaune'], hatColor: 'black' }, 1).error);
+hatStore.products.find((p) => p.id === 'menes-kltr-trucker-hat').variants.find((v) => v.options.Color === 'Black').stock = 0;
+assert.ok(bundles.validateBundleStock(hatStore, bundles.bySlug('holiday-exclusive'), { pairs: ['jaune', 'rose', 'jaune'], hatColor: 'black' }, 1).error, 'cannot sell a black hat twice');
+const paidHoliday = {
+  items: [{
+    id: 'bundle-holiday-exclusive',
+    qty: 1,
+    bundle: true,
+    variant: { pairs: ['jaune', 'rose', 'jaune'], hatColor: 'orange' },
+  }],
+};
+assert.strictEqual(decrementStockForOrder(hatStore, paidHoliday), true);
+assert.strictEqual(hatStore.products.find((p) => p.id === 'menes-kltr-trucker-hat').variants.find((v) => v.options.Color === 'Orange').stock, 4);
+const paidCamo = {
+  items: [{
+    id: 'bundle-holiday-exclusive',
+    qty: 1,
+    bundle: true,
+    variant: { pairs: ['jaune', 'rose', 'jaune'], hatColor: 'camo' },
+  }],
+};
+assert.strictEqual(decrementStockForOrder(hatStore, paidCamo), true);
+assert.strictEqual(hatStore.inventory.hats.camo, 4);
+
+const shopBundlesJs = fs.readFileSync(path.join(__dirname, '../shop-bundles.js'), 'utf8');
+assert.ok(!shopBundlesJs.includes('${left} left'), 'do not show remaining bundle counts');
+assert.ok(!shopBundlesJs.includes('restant${left'), 'do not show remaining bundle counts in French');
 
 console.log('ok: bundles');
