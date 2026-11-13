@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>MENES Platform · Console</title>
+  <title>MENÈS Control Center</title>
   <script>
     (function () {
       var t = localStorage.getItem('menes_admin_theme');
@@ -14,18 +14,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="console.css">
+  <link rel="stylesheet" href="console.css?v=20261113a">
 </head>
 <body>
   <div id="loginScreen" class="login-screen">
     <div class="login-wrap">
       <div class="login-brand">
         <div class="login-logo">MENES</div>
-        <div class="login-platform">Platform Console</div>
+        <div class="login-platform">Control Center</div>
       </div>
       <form id="loginForm" class="login-box">
         <h1>Connexion</h1>
-        <p>Gère tes boutiques, domaines, produits et commandes. Tout en un seul endroit.</p>
+        <p>MENÈS Control Center — revenus, tracking, stock, upsells et santé système. Un seul endroit.</p>
         <input type="password" id="loginPassword" placeholder="Mot de passe admin" required autocomplete="current-password">
         <button type="submit">Accéder à la console</button>
       </form>
@@ -37,7 +37,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <div class="sidebar-top-row">
-          <div class="sidebar-brand">MENES<span>Platform</span></div>
+          <div class="sidebar-brand">MENES<span>Control</span></div>
           <button type="button" id="sidebarCloseBtn" class="sidebar-close" aria-label="Fermer le menu">✕</button>
         </div>
         <label class="site-switch">
@@ -47,23 +47,24 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-group-label">Principal</div>
+        <div class="nav-group-label">Control Center</div>
         <button class="nav-btn active" data-tab="dashboard">Aperçu</button>
-        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
-        <button class="nav-btn" data-tab="domains">Domaines</button>
+        <button class="nav-btn" data-tab="tracking">Tracking Center</button>
+        <button class="nav-btn" data-tab="health">System Health</button>
+        <button class="nav-btn" data-tab="inventory">Inventaire</button>
+        <button class="nav-btn" data-tab="recovery">Paniers abandonnés</button>
+        <button class="nav-btn" data-tab="upsells">Upsells & bundles</button>
+        <button class="nav-btn" data-tab="automations">Automations</button>
 
         <div class="nav-group-label">Commerce</div>
         <button class="nav-btn" data-tab="products">Produits</button>
         <button class="nav-btn" data-tab="collections">Collections</button>
-        <button class="nav-btn" data-tab="inventory">Inventaire</button>
         <button class="nav-btn" data-tab="orders">Commandes</button>
         <button class="nav-btn" data-tab="customers">Clients</button>
-        <button class="nav-btn" data-tab="recovery">Paniers abandonnés</button>
         <button class="nav-btn" data-tab="marketing">Marketing</button>
-        <button class="nav-btn" data-tab="tracking">Tracking Center</button>
-        <button class="nav-btn" data-tab="upsells">Upsells & bundles</button>
-        <button class="nav-btn" data-tab="automations">Automations</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
+        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
+        <button class="nav-btn" data-tab="domains">Domaines</button>
 
         <div class="nav-group-label">Boutique en ligne</div>
         <button class="nav-btn" data-tab="appearance">Apparence & thème</button>
@@ -90,7 +91,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="topbar-titles">
-            <h1 id="pageTitle">Tableau de bord</h1>
+            <h1 id="pageTitle">Aperçu</h1>
             <span id="siteBadge" class="site-badge"></span>
           </div>
         </div>
@@ -113,6 +114,13 @@
       <main class="main">
         <!-- Dashboard -->
         <section id="tab-dashboard" class="tab active">
+          <div class="cc-hero">
+            <p class="cc-hero-kicker">MENÈS Control Center</p>
+            <h2>Aperçu opérationnel</h2>
+            <p>Revenus payés, stock, checkouts abandonnés et tracking — source Netlify Blobs, pas Shopify.</p>
+          </div>
+          <div id="ccIntel"></div>
+          <h3 class="cc-subhead">Indicateurs classiques</h3>
           <div class="stats-grid">
             <div class="stat-card highlight">
               <span class="stat-num" id="statRevenue">0$</span>
@@ -184,7 +192,6 @@
           <div class="card info-card">
             <strong>MENES Platform</strong>. Une console pour plusieurs marques, domaines, produits, commandes et paiements.
           </div>
-          <div id="ccIntel"></div>
         </section>
 
         <section id="tab-inventory" class="tab">
@@ -940,8 +947,8 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js"></script>
-  <script src="console.js"></script>
-  <script src="console-control.js"></script>
+  <script src="config.js?v=20261113a"></script>
+  <script src="console.js?v=20261113a"></script>
+  <script src="console-control.js?v=20261113a"></script>
 </body>
 </html>

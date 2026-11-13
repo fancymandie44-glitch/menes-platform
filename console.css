@@ -670,6 +670,23 @@ body.nav-open { overflow: hidden; }
   .menu-toggle, .sidebar-close, .sidebar-backdrop { display: none !important; }
 }
 
+.cc-hero {
+  margin: 0 0 20px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--highlight-bg);
+}
+.cc-hero-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.cc-hero h2 { font-size: 1.45rem; margin-bottom: 6px; }
+.cc-hero p { color: var(--muted); max-width: 40rem; }
+.cc-subhead { margin: 28px 0 12px; font-size: 0.95rem; color: var(--muted); }
 .cc-search {
   min-width: 220px;
   max-width: 280px;
