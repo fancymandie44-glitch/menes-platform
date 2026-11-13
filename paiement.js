@@ -70,6 +70,7 @@ async function processPayment(method) {
   note.className = 'checkout-note';
 
   try {
+    try { window.menesTrack?.('AddPaymentInfo', { transactionId: order.id, value: order.total }); } catch {}
     const res = await fetch(shopApi('/api/pay'), {
       method: 'POST',
       headers: shopHeaders({ 'Content-Type': 'application/json' }),

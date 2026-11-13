@@ -29,6 +29,8 @@ const STATIC_FILES = [
   'console.html',
   'console.js',
   'console.css',
+  'console-control.js',
+  'shop-track.js',
 ];
 
 const REQUIRED_FILES = [
@@ -55,6 +57,16 @@ const REQUIRED_FILES = [
   'lib/order-pricing.js',
   'lib/admin-auth.js',
   'lib/public-catalog.js',
+  'lib/commerce-intel.js',
+  'lib/tracking-core.js',
+  'lib/diagnostics.js',
+  'lib/customers.js',
+  'lib/automations.js',
+  'api/intel.js',
+  'api/diagnostics.js',
+  'api/track.js',
+  'console-control.js',
+  'shop-track.js',
   'images/products/socks/black.jpg',
   'images/products/socks/kltr-orange.jpg',
   'images/products/boxers/grey.jpg',

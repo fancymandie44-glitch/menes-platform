@@ -746,6 +746,7 @@ async function submitVipEmail(email, btn, source = 'entry') {
     rememberPassportIdentity(email, data.passport?.token);
     if (data.passport) applyPassport(data.passport);
     localStorage.setItem(VIP_KEY, '1');
+    try { window.menesTrack?.('Lead', { eventId: `lead_${email.slice(0, 24)}` }); } catch {}
     showToast(t('vip_welcome'));
     syncPromoField();
     hideVipOverlay();
@@ -2014,6 +2015,16 @@ function getCartProductIds() {
 
 function getCartUpsells(limit = 3) {
   const inCart = getCartProductIds();
+  const cfg = storeData?.site?.upsells || {};
+  if (cfg.enabled === false) return [];
+  const pinned = Array.isArray(cfg.cartProductIds) ? cfg.cartProductIds : [];
+  if (pinned.length) {
+    const picked = pinned
+      .map((id) => (storeData?.products || []).find((p) => p.id === id && p.active && !inCart.has(p.id)))
+      .filter(Boolean)
+      .slice(0, limit);
+    if (picked.length) return picked;
+  }
   const cats = new Set(cart.map((c) => storeData.products.find((p) => p.id === c.id)?.category).filter(Boolean));
   const others = (storeData?.products || []).filter((p) => p.active && !inCart.has(p.id));
   const score = (p) => {
@@ -2094,6 +2105,12 @@ function quickAddProduct(id) {
   persistCart();
   updateCartUI({ forceList: true });
   showToast(t('added'));
+  try {
+    window.menesTrack?.('AddToCart', {
+      value: Number(product.price) || 0,
+      items: [{ id: product.id, name: product.name, price: product.price, qty: 1 }],
+    });
+  } catch {}
 }
 
 function renderCartUpsells() {
@@ -2634,6 +2651,12 @@ function openPdp(id) {
   renderPdpRecommendations(product);
   document.getElementById('pdpPanel').classList.remove('hidden');
   document.getElementById('pdpOverlay').classList.remove('hidden');
+  try {
+    window.menesTrack?.('ViewContent', {
+      value: Number(product.price) || 0,
+      items: [{ id: product.id, name: product.name, price: product.price, qty: 1 }],
+    });
+  } catch {}
   document.getElementById('pdpPanel').setAttribute('aria-hidden', 'false');
   showStickyAtc(product, main);
   syncScrollLock();
@@ -2746,6 +2769,12 @@ window.addToCart = (id, card) => {
   persistCart();
   updateCartUI({ forceList: true });
   showToast(t('added'));
+  try {
+    window.menesTrack?.('AddToCart', {
+      value: Number(product.price) || 0,
+      items: [{ id: product.id, name: product.name, price: product.price, qty: 1 }],
+    });
+  } catch {}
   setTimeout(() => {
     if (!isOverlayOpen() || !document.getElementById('cartPanel')?.classList.contains('hidden')) {
       showUpsellModal(id);
@@ -2784,7 +2813,14 @@ function changeCartQty(index, delta) {
 function removeCartItem(index) {
   const i = Number(index);
   if (!Number.isInteger(i) || i < 0 || i >= cart.length) return;
+  const gone = cart[i];
   cart.splice(i, 1);
+  try {
+    window.menesTrack?.('RemoveFromCart', {
+      value: Number(gone?.price) || 0,
+      items: gone ? [{ id: gone.id, name: gone.name, price: gone.price, qty: gone.qty }] : [],
+    });
+  } catch {}
   persistCart();
   updateCartUI({ forceList: true });
   if (document.getElementById('checkoutModal') && !document.getElementById('checkoutModal')?.classList.contains('hidden')) {
@@ -3271,6 +3307,7 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
   renderCheckoutSummary();
   document.getElementById('checkoutModal').classList.remove('hidden');
   syncScrollLock();
+  try { window.menesTrack?.('InitiateCheckout', { value: currentTotals().total }); } catch {}
 });
 
 document.getElementById('applyPromoBtn')?.addEventListener('click', () => {
@@ -3395,6 +3432,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   btn.textContent = currentLang === 'en' ? 'Secure redirect…' : 'Redirection sécurisée…';
 
   try {
+    window.menesTrack?.('AddPaymentInfo', { value: currentTotals().total, transactionId: order.id });
     const res = await fetch(shopApi('/api/pay'), {
       method: 'POST',
       headers: shopHeaders({ 'Content-Type': 'application/json' }),
@@ -3474,6 +3512,13 @@ async function confirmPaidOrderFromUrl(params) {
       }
       if (data.ok && data.verified) {
         if (data.passport) applyPassport(data.passport);
+        try {
+          window.menesTrack?.('Purchase', {
+            transactionId: orderId,
+            eventId: `purchase_${orderId}`,
+            value: Number(data.total) || 0,
+          });
+        } catch {}
         showSuccess({
           msg: currentLang === 'en'
             ? 'Payment confirmed. A confirmation email is on its way.'

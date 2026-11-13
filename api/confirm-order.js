@@ -211,6 +211,15 @@ exports.handler = async (event) => {
     } catch (e) {
       console.error('passport hook', e.message);
     }
+    try {
+      const { upsertCustomerFromOrder } = require('../lib/customers');
+      const { runPaidAutomations, inventoryAutomation } = require('../lib/automations');
+      upsertCustomerFromOrder(store, order);
+      runPaidAutomations(store, order);
+      inventoryAutomation(store);
+    } catch (e) {
+      console.error('crm/automation hook', e.message);
+    }
 
     const merchant = await notifyMerchant(order, method || order.payment || 'Paiement', 'PAYÉ ✓', store);
     const customer = await notifyCustomer(order, method || order.payment || 'Paiement', passportView);
