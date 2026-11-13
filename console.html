@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>MENES Platform · Console</title>
+  <title>MENÈS Control Center</title>
   <script>
     (function () {
       var t = localStorage.getItem('menes_admin_theme');
@@ -14,18 +14,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="console.css">
+  <link rel="stylesheet" href="console.css?v=20261113a">
 </head>
 <body>
   <div id="loginScreen" class="login-screen">
     <div class="login-wrap">
       <div class="login-brand">
         <div class="login-logo">MENES</div>
-        <div class="login-platform">Platform Console</div>
+        <div class="login-platform">Control Center</div>
       </div>
       <form id="loginForm" class="login-box">
         <h1>Connexion</h1>
-        <p>Gère tes boutiques, domaines, produits et commandes. Tout en un seul endroit.</p>
+        <p>MENÈS Control Center — revenus, tracking, stock, upsells et santé système. Un seul endroit.</p>
         <input type="password" id="loginPassword" placeholder="Mot de passe admin" required autocomplete="current-password">
         <button type="submit">Accéder à la console</button>
       </form>
@@ -37,7 +37,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <div class="sidebar-top-row">
-          <div class="sidebar-brand">MENES<span>Platform</span></div>
+          <div class="sidebar-brand">MENES<span>Control</span></div>
           <button type="button" id="sidebarCloseBtn" class="sidebar-close" aria-label="Fermer le menu">✕</button>
         </div>
         <label class="site-switch">
@@ -47,10 +47,14 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-group-label">Principal</div>
-        <button class="nav-btn active" data-tab="dashboard">Tableau de bord</button>
-        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
-        <button class="nav-btn" data-tab="domains">Domaines</button>
+        <div class="nav-group-label">Control Center</div>
+        <button class="nav-btn active" data-tab="dashboard">Aperçu</button>
+        <button class="nav-btn" data-tab="tracking">Tracking Center</button>
+        <button class="nav-btn" data-tab="health">System Health</button>
+        <button class="nav-btn" data-tab="inventory">Inventaire</button>
+        <button class="nav-btn" data-tab="recovery">Paniers abandonnés</button>
+        <button class="nav-btn" data-tab="upsells">Upsells & bundles</button>
+        <button class="nav-btn" data-tab="automations">Automations</button>
 
         <div class="nav-group-label">Commerce</div>
         <button class="nav-btn" data-tab="products">Produits</button>
@@ -59,6 +63,8 @@
         <button class="nav-btn" data-tab="customers">Clients</button>
         <button class="nav-btn" data-tab="marketing">Marketing</button>
         <button class="nav-btn" data-tab="ambassadors">Ambassadeurs</button>
+        <button class="nav-btn" data-tab="sites">Boutiques & marques</button>
+        <button class="nav-btn" data-tab="domains">Domaines</button>
 
         <div class="nav-group-label">Boutique en ligne</div>
         <button class="nav-btn" data-tab="appearance">Apparence & thème</button>
@@ -67,6 +73,7 @@
 
         <div class="nav-group-label">Système</div>
         <button class="nav-btn" data-tab="payments">Paiements</button>
+        <button class="nav-btn" data-tab="health">System Health</button>
         <button class="nav-btn" data-tab="settings">Paramètres</button>
         <button class="nav-btn" data-tab="publish">Déploiement</button>
       </nav>
@@ -84,7 +91,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="topbar-titles">
-            <h1 id="pageTitle">Tableau de bord</h1>
+            <h1 id="pageTitle">Aperçu</h1>
             <span id="siteBadge" class="site-badge"></span>
           </div>
         </div>
@@ -93,9 +100,11 @@
             <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
             <span id="themeToggleLabel" class="theme-toggle-text">Clair</span>
           </button>
+          <input type="search" id="ccSearch" class="cc-search" placeholder="Recherche produits, commandes, emails…" autocomplete="off">
           <button id="saveAllBtn" class="btn-primary btn-sm">Sauvegarder</button>
         </div>
       </header>
+      <div id="ccSearchHits" class="cc-search-hits"></div>
       <div id="catalogRestoreBanner" class="catalog-restore-banner hidden">
         <span id="catalogRestoreMsg"></span>
         <button type="button" id="catalogRestoreBtn" class="btn-primary btn-sm">Restaurer en ligne</button>
@@ -105,6 +114,13 @@
       <main class="main">
         <!-- Dashboard -->
         <section id="tab-dashboard" class="tab active">
+          <div class="cc-hero">
+            <p class="cc-hero-kicker">MENÈS Control Center</p>
+            <h2>Aperçu opérationnel</h2>
+            <p>Revenus payés, stock, checkouts abandonnés et tracking — source Netlify Blobs, pas Shopify.</p>
+          </div>
+          <div id="ccIntel"></div>
+          <h3 class="cc-subhead">Indicateurs classiques</h3>
           <div class="stats-grid">
             <div class="stat-card highlight">
               <span class="stat-num" id="statRevenue">0$</span>
@@ -176,6 +192,67 @@
           <div class="card info-card">
             <strong>MENES Platform</strong>. Une console pour plusieurs marques, domaines, produits, commandes et paiements.
           </div>
+        </section>
+
+        <section id="tab-inventory" class="tab">
+          <div class="tab-header"><h2>Inventaire</h2></div>
+          <p class="hint">Source de vérité: catalogue Netlify Blobs (pas Shopify). Seuil d’alerte: 5 unités.</p>
+          <div id="ccInventory" class="data-table-wrap"></div>
+        </section>
+
+        <section id="tab-recovery" class="tab">
+          <div class="tab-header"><h2>Paniers abandonnés</h2></div>
+          <p class="hint" id="ccRecNote"></p>
+          <div class="card">
+            <label class="cc-kpi-toggle"><input type="checkbox" id="ccRecOn"> Activer les rappels (email seulement avec consentement + SMTP/Resend)</label>
+            <label>Délais (heures, séparés par des virgules)<input id="ccRecDelays" placeholder="1, 24, 48"></label>
+            <label>Code promo de relance (optionnel)<input id="ccRecCode"></label>
+            <button type="button" class="btn-primary" id="ccRecSave">Enregistrer</button>
+          </div>
+          <div id="ccRecList" class="mini-list"></div>
+        </section>
+
+        <section id="tab-tracking" class="tab">
+          <div class="tab-header"><h2>Tracking Center</h2></div>
+          <p class="hint" id="ccTrackSecrets">Pixel IDs publics. Tokens CAPI uniquement en secrets Netlify.</p>
+          <div class="grid-2">
+            <div class="card">
+              <label>Meta Pixel ID<input id="ccMetaPixel" inputmode="numeric" autocomplete="off"></label>
+              <label>TikTok Pixel ID<input id="ccTiktokPixel" autocomplete="off"></label>
+              <label>GA4 Measurement ID<input id="ccGa4" placeholder="G-XXXXXXXX" autocomplete="off"></label>
+              <label class="cc-kpi-toggle"><input type="checkbox" id="ccTrackTest"> Mode test (Meta test_event_code env META_TEST_EVENT_CODE)</label>
+              <button type="button" class="btn-primary" id="ccTrackSave">Sauvegarder les IDs</button>
+            </div>
+            <div class="card">
+              <h3>Événements serveur</h3>
+              <div id="ccTrackEvents"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-upsells" class="tab">
+          <div class="tab-header"><h2>Upsells &amp; bundles</h2></div>
+          <p class="hint">Les packs Holiday / Essentials / Kultur Steps restent dans Bundles. Ici: recos panier mesurables. Pas de one-click post-achat Stripe sans ton accord checkout.</p>
+          <div class="card">
+            <label class="cc-kpi-toggle"><input type="checkbox" id="ccUpsellOn" checked> Recos panier actives</label>
+            <label>IDs produits reco (virgules)<input id="ccUpsellIds" placeholder="menes-socks-black, ..."></label>
+            <label>Panier minimum ($)<input id="ccUpsellMin" type="number" min="0" step="1"></label>
+            <button type="button" class="btn-primary" id="ccUpsellSave">Créer / enregistrer</button>
+          </div>
+          <div id="ccUpsellStats" class="mini-list"></div>
+        </section>
+
+        <section id="tab-automations" class="tab">
+          <div class="tab-header"><h2>Automations</h2></div>
+          <p class="hint">Règles natives: commande payée → tag VIP (LTV ≥ 200 $). Stock bas → alerte console. Pas de boucles: chaque alerte a une clé unique.</p>
+          <div id="ccAutoList"></div>
+          <h3>Journal</h3>
+          <div id="ccAlerts" class="mini-list"></div>
+        </section>
+
+        <section id="tab-health" class="tab">
+          <div class="tab-header"><h2>System Health</h2><button type="button" class="btn-primary" id="ccHealthRun">RUN FULL SYSTEM CHECK</button></div>
+          <div id="ccHealth"></div>
         </section>
 
         <!-- Sites -->
@@ -254,7 +331,7 @@
 
         <!-- Customers -->
         <section id="tab-customers" class="tab">
-          <div class="tab-header"><h2>Clients (CRM)</h2></div>
+          <div class="tab-header"><h2>Clients (CRM)</h2><button type="button" class="btn-outline" id="ccExportCustomers">Exporter CSV</button></div>
           <div class="toolbar">
             <select id="customerSegmentFilter">
               <option value="">Tous segments</option>
@@ -870,7 +947,8 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="config.js"></script>
-  <script src="console.js"></script>
+  <script src="config.js?v=20261113a"></script>
+  <script src="console.js?v=20261113a"></script>
+  <script src="console-control.js?v=20261113a"></script>
 </body>
 </html>

@@ -65,11 +65,14 @@ let pendingHeroImage = null;
 let pendingLogo = null;
 
 const TAB_TITLES = {
-  dashboard: 'Tableau de bord', sites: 'Boutiques & marques', domains: 'Domaines',
-  products: 'Produits', collections: 'Collections', orders: 'Commandes',
-  customers: 'Clients', marketing: 'Marketing', ambassadors: 'Ambassadeurs',
+  dashboard: 'Aperçu', sites: 'Boutiques & marques', domains: 'Domaines',
+  products: 'Produits', collections: 'Collections', inventory: 'Inventaire',
+  orders: 'Commandes', customers: 'Clients', recovery: 'Paniers abandonnés',
+  marketing: 'Marketing', tracking: 'Tracking Center', upsells: 'Upsells & bundles',
+  automations: 'Automations', ambassadors: 'Ambassadeurs',
   appearance: 'Apparence & thème', design: 'Design & contenu',
-  sections: 'Sections page', payments: 'Paiements', settings: 'Paramètres', publish: 'Déploiement',
+  sections: 'Sections page', payments: 'Paiements', health: 'System Health',
+  settings: 'Paramètres', publish: 'Déploiement',
 };
 
 function headers() {
@@ -215,9 +218,13 @@ function switchTab(tab) {
   document.getElementById('pageTitle').textContent = TAB_TITLES[tab] || tab;
   closeMobileNav();
   const renders = {
-    dashboard: updateDashboard, products: renderProducts, collections: renderCollections,
-    orders: renderOrders, customers: renderCustomers, marketing: renderMarketing,
-    ambassadors: renderAmbassadors,
+    dashboard: () => { updateDashboard(); window.ccLoadOverview?.(); },
+    products: renderProducts, collections: renderCollections, inventory: () => window.ccLoadInventory?.(),
+    orders: renderOrders, customers: renderCustomers,
+    recovery: async () => { try { await window.ccLoadOverview?.(); } catch {} window.ccLoadRecovery?.(); },
+    marketing: renderMarketing, tracking: () => window.ccLoadTracking?.(),
+    upsells: () => window.ccLoadUpsells?.(), automations: () => window.ccLoadAutomations?.(),
+    ambassadors: renderAmbassadors, health: () => window.ccRunHealth?.(),
     sites: renderSites, domains: renderDomains, design: loadDesignForm, appearance: loadAppearanceForm,
     sections: () => { renderSectionEditors(); renderGalleryEditor(); },
   };

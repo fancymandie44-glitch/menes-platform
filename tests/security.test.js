@@ -22,6 +22,7 @@ const store = {
 };
 const pub = publicStore(store);
 assert.ok(!pub.orders, 'public catalog must not include orders');
+assert.ok(!JSON.stringify(pub).includes('capi'), 'public catalog must not leak CAPI names');
 assert.strictEqual(pub.discounts.length, 0, 'VIP10 must stay private');
 assert.strictEqual(pub.reviews.length, 0, 'pending reviews must stay private');
 

@@ -6,10 +6,11 @@ set OUT=%TEMP%\menes-admin-deploy
 if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
 
-copy /Y admin-site\index.html "%OUT%\index.html" >nul
+copy /Y console.html "%OUT%\index.html" >nul
 copy /Y console.css "%OUT%\console.css" >nul
 copy /Y console.js "%OUT%\console.js" >nul
-copy /Y config.js "%OUT%\config.js" >nul
+copy /Y console-control.js "%OUT%\console-control.js" >nul
+copy /Y admin-site\config.js "%OUT%\config.js" >nul
 copy /Y admin-site\netlify.toml "%OUT%\netlify.toml" >nul
 
 echo.

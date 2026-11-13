@@ -54,6 +54,13 @@ function run() {
     'lib/address.js',
     'lib/payments.js',
     'lib/public-catalog.js',
+    'lib/commerce-intel.js',
+    'lib/tracking-core.js',
+    'api/intel.js',
+    'api/track.js',
+    'api/diagnostics.js',
+    'console-control.js',
+    'shop-track.js',
     'lib/order-pricing.js',
     'lib/cors.js',
     'lib/platform.js',
@@ -88,6 +95,8 @@ function run() {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   assert(html.includes('<title>MENES'), 'dist/index.html is not the boutique homepage');
   assert(!html.toLowerCase().includes('page not found'), 'dist/index.html looks like a 404 page');
+  assert(html.includes('id="consentBar"'), 'homepage must include the consent bar');
+  assert(html.includes('shop-track.js'), 'homepage must load storefront tracking');
   assert(html.includes('id="shopBundles"'), 'homepage must include the bundles section');
   assert(html.includes('id="shopBundlesFast"'), 'homepage must include holiday fast-buy buttons');
   assert(html.includes('id="shopBundlesTimer"'), 'homepage must include the bundle drop timer');
