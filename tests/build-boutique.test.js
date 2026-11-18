@@ -54,6 +54,7 @@ function run() {
     'lib/address.js',
     'lib/payments.js',
     'lib/public-catalog.js',
+    'lib/ambassador-links.js',
     'lib/commerce-intel.js',
     'lib/tracking-core.js',
     'api/intel.js',
@@ -116,6 +117,8 @@ function run() {
   assert(shopBundlesJs.includes('startDropTimer'), 'bundle UI must tick the drop clock');
   assert(shopBundlesJs.includes('canHold'), 'packs can sit in the cart before the drop');
   assert(shopJs.includes('cartHasLockedBundle'), 'checkout must stay locked until Nov 20');
+  assert(shopJs.includes('ambassadorLandingFromLocation'), 'ambassador links must be captured on the shop');
+  assert(shopJs.includes('applyAmbassadorPromoAfterCatalog'), 'ambassador promo must apply after catalog load');
   assert(shopBundlesJs.includes('pairAvailable'), 'sold-out pairs must show as unavailable');
   assert(shopBundlesJs.includes('data-hat'), 'holiday pack lets shoppers pick a hat');
   assert(bundleJs.includes("id: 'camo'"), 'camo hat is the priority holiday pick');

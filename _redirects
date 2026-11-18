@@ -1,5 +1,6 @@
 /                    /index.html          200
 /bundle/*            /index.html          200
+/r/*                 /index.html          200
 /console             /console.html        200
 /console/            /console.html        200
 /platform            /console.html        200

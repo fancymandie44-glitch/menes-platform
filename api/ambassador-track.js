@@ -61,7 +61,10 @@ exports.handler = async (event) => {
     return json(headers, 200, {
       ok: true,
       attribution,
-      redirect: `${program.settings.shopBaseUrl || 'https://boutiquemenes.netlify.app'}/?ref=${amb.slug}`,
+      redirect: require('../lib/ambassador-links').shopReferralLink(program.settings, {
+        slug: amb.slug,
+        promoCode: amb.promoCode,
+      }),
       displayName: amb.displayName,
     });
   } catch (err) {

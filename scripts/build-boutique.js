@@ -57,6 +57,7 @@ const REQUIRED_FILES = [
   'lib/order-pricing.js',
   'lib/admin-auth.js',
   'lib/public-catalog.js',
+  'lib/ambassador-links.js',
   'lib/commerce-intel.js',
   'lib/tracking-core.js',
   'lib/diagnostics.js',

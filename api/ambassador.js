@@ -156,7 +156,10 @@ function dashboardPayload(program, amb) {
       paidCommission: Math.round(paid * 100) / 100,
     },
     tools: {
-      link: `${settings.shopBaseUrl || 'https://boutiquemenes.netlify.app'}/${amb.slug}`,
+      link: require('../lib/ambassador-links').shopReferralLink(settings, {
+        slug: amb.slug,
+        promoCode: amb.promoCode,
+      }),
       slug: amb.slug,
       promoCode: amb.promoCode,
       inviteLink: `${settings.ambassadorAppUrl || 'https://menesambassador.netlify.app'}/join?ref=${amb.slug}`,

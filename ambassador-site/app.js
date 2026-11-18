@@ -156,6 +156,18 @@
       || `${location.origin.replace(/\/$/, '')}/join?ref=${encodeURIComponent(slug)}`;
   }
 
+  function shopLink(d) {
+    const fromApi = String(d?.tools?.link || '').trim();
+    if (/mymenes\.com\/r\//i.test(fromApi) && /[?&]ref=/i.test(fromApi)) return fromApi;
+    const slug = d?.tools?.slug || state.ambassador?.slug || '';
+    const code = d?.tools?.promoCode || state.ambassador?.promoCode || '';
+    const shop = String(CFG.SHOP_URL || 'https://www.mymenes.com').replace(/\/$/, '');
+    if (!slug) return fromApi || `${shop}/`;
+    const q = new URLSearchParams({ ref: slug });
+    if (code) q.set('promo', String(code).toUpperCase());
+    return `${shop}/r/${encodeURIComponent(slug)}?${q.toString()}`;
+  }
+
   function trackInviteShare() {
     const last = Number(sessionStorage.getItem('menes_invite_track_at') || 0);
     if (Date.now() - last < 60_000) return;
@@ -434,7 +446,7 @@
           <input type="checkbox" id="obAgree" style="width:auto;margin-top:3px" ${a.agreementAcceptedAt ? 'checked' : ''}> J'accepte les règles Ambassador
         </label>`;
     } else if (cfg.type === 'tools') {
-      const link = tools?.link || `${CFG.SHOP_URL || 'https://boutiquemenes.netlify.app'}/${a.slug || ''}`;
+      const link = shopLink(state.dash) || `${(CFG.SHOP_URL || 'https://www.mymenes.com').replace(/\/$/, '')}/r/${encodeURIComponent(a.slug || '')}`;
       box.innerHTML = `
         <div class="tool-row"><div><strong>Lien</strong><br><span>${esc(link)}</span></div></div>
         <div class="tool-row" style="margin-top:8px"><div><strong>Code</strong><br><span>${esc(a.promoCode || tools?.promoCode || '')}</span></div></div>`;
@@ -606,7 +618,7 @@
       <p class="section-title">Outils promo</p>
       <div class="tools-list">
         <div class="tool-row">
-          <div><strong>Lien boutique</strong><br><span class="tool-url">${esc(d.tools?.link || '')}</span></div>
+          <div><strong>Lien boutique</strong><br><span class="tool-url">${esc(shopLink(d))}</span></div>
           <button type="button" class="btn-ghost" data-copy-target="link">Copier</button>
         </div>
         <div class="tool-row">
@@ -654,7 +666,7 @@
 
   function bindHomeActions(main, d) {
     const copyMap = {
-      link: d.tools?.link,
+      link: shopLink(d),
       code: d.tools?.promoCode,
       invite: d.tools?.inviteLink || getInviteLink(),
     };
@@ -691,7 +703,7 @@
     });
     main.querySelectorAll('[data-share]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const link = d.tools?.link || '';
+        const link = shopLink(d);
         const code = d.tools?.promoCode || '';
         if (btn.dataset.share === 'wa') {
           window.open(`https://wa.me/?text=${encodeURIComponent(`MENES — ${link} · code ${code}`)}`, '_blank');

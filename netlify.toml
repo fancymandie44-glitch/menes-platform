@@ -67,6 +67,11 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+[[redirects]]
+  from = "/:slug"
+  to = "/index.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
