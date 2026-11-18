@@ -31,37 +31,74 @@ function getAmbassadorAttribution() {
 }
 
 function saveAmbassadorAttribution(attr) {
-  if (!attr?.ambassadorId) return;
-  localStorage.setItem(ATTR_KEY, JSON.stringify(attr));
-  if (attr.promoCode && !localStorage.getItem(PROMO_KEY)) {
-    appliedPromoCode = String(attr.promoCode).toUpperCase();
-    localStorage.setItem(PROMO_KEY, appliedPromoCode);
+  if (!attr?.ambassadorId && !attr?.promoCode) return;
+  if (attr?.ambassadorId) localStorage.setItem(ATTR_KEY, JSON.stringify(attr));
+  const code = String(attr.promoCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code && !RETIRED_PUBLIC_CODES.has(code)) {
+    appliedPromoCode = code;
+    localStorage.setItem(PROMO_KEY, code);
   }
 }
 
-async function captureAmbassadorRef() {
+const AMBASSADOR_RESERVED_PATHS = new Set([
+  'console', 'admin', 'platform', 'paiement', 'livraison', 'retours',
+  'confidentialite', 'bundle', 'images', 'api', 'r', 'data', 'lib',
+]);
+
+function ambassadorLandingFromLocation() {
   const params = new URLSearchParams(location.search);
+  const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
   let slug = params.get('ref') || params.get('amb') || '';
-  if (!slug) {
-    const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
-    if (parts[0] === 'r' && parts[1]) slug = parts[1];
+  let promo = params.get('promo') || params.get('code') || '';
+  if (!slug && parts[0] === 'r' && parts[1]) slug = parts[1];
+  if (!slug && parts.length === 1) {
+    const candidate = parts[0].split('?')[0];
+    if (!AMBASSADOR_RESERVED_PATHS.has(candidate.toLowerCase()) && /^[a-z0-9-]{2,32}$/i.test(candidate)) {
+      slug = candidate;
+    }
   }
-  if (!slug) return;
+  return {
+    slug: String(slug || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 32),
+    promo: String(promo || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 32),
+  };
+}
+
+function applyAmbassadorPromoAfterCatalog() {
+  const code = appliedPromoCode || (localStorage.getItem(PROMO_KEY) || '').toUpperCase();
+  if (!code || RETIRED_PUBLIC_CODES.has(code)) return;
+  applyPromoCode(code, { silent: true });
+}
+
+async function captureAmbassadorRef() {
+  const landing = ambassadorLandingFromLocation();
+  if (landing.promo && !RETIRED_PUBLIC_CODES.has(landing.promo)) {
+    appliedPromoCode = landing.promo;
+    localStorage.setItem(PROMO_KEY, landing.promo);
+  }
+  if (!landing.slug && !landing.promo) return;
   try {
-    const res = await fetch(shopApi(`/api/ambassador-track?slug=${encodeURIComponent(slug)}`));
-    const data = await res.json().catch(() => ({}));
-    if (data.ok && data.attribution) {
-      saveAmbassadorAttribution(data.attribution);
-      const clean = new URL(location.href);
-      clean.searchParams.delete('ref');
-      clean.searchParams.delete('amb');
-      if (location.pathname.startsWith('/r/')) {
-        history.replaceState({}, '', `/${clean.search}`);
-      } else {
-        history.replaceState({}, '', clean.pathname + (clean.search || '') + clean.hash);
+    if (landing.slug) {
+      const res = await fetch(shopApi(`/api/ambassador-track?slug=${encodeURIComponent(landing.slug)}`));
+      const data = await res.json().catch(() => ({}));
+      if (data.ok && data.attribution) {
+        saveAmbassadorAttribution({
+          ...data.attribution,
+          promoCode: data.attribution.promoCode || landing.promo,
+        });
       }
     }
   } catch {}
+  if (landing.slug || landing.promo) {
+    const clean = new URL(location.href);
+    clean.searchParams.delete('ref');
+    clean.searchParams.delete('amb');
+    clean.searchParams.delete('promo');
+    clean.searchParams.delete('code');
+    const onRefPath = location.pathname.startsWith('/r/')
+      || (location.pathname.replace(/\/+$/, '').split('/').filter(Boolean).length === 1
+        && !AMBASSADOR_RESERVED_PATHS.has(location.pathname.replace(/\//g, '').toLowerCase()));
+    history.replaceState({}, '', (onRefPath ? '/' : clean.pathname) + (clean.search || '') + clean.hash);
+  }
 }
 
 function shippingThreshold() {
@@ -3735,6 +3772,7 @@ async function init() {
   initCustomCursor();
   await captureAmbassadorRef();
   await refreshStore();
+  applyAmbassadorPromoAfterCatalog();
   updateCartUI();
   updateWishlistUI();
   setupPurchaseTicker();
