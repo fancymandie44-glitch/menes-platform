@@ -5,7 +5,7 @@
 
 const { setLambdaEvent } = require('../lib/platform');
 const { corsHeaders } = require('../lib/cors');
-const { readProgram, writeProgram, uid, slugify } = require('../lib/ambassador-data');
+const { readProgram, writeProgram, uid, slugify, ambassadorShopLink } = require('../lib/ambassador-data');
 const { awardLinkClickXp } = require('../lib/ambassador-engine');
 
 function json(headers, status, body) {
@@ -61,7 +61,7 @@ exports.handler = async (event) => {
     return json(headers, 200, {
       ok: true,
       attribution,
-      redirect: `${program.settings.shopBaseUrl || 'https://boutiquemenes.netlify.app'}/?ref=${amb.slug}`,
+      redirect: ambassadorShopLink(program.settings, amb.slug),
       displayName: amb.displayName,
     });
   } catch (err) {

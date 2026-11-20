@@ -434,7 +434,8 @@
           <input type="checkbox" id="obAgree" style="width:auto;margin-top:3px" ${a.agreementAcceptedAt ? 'checked' : ''}> J'accepte les règles Ambassador
         </label>`;
     } else if (cfg.type === 'tools') {
-      const link = tools?.link || `${CFG.SHOP_URL || 'https://boutiquemenes.netlify.app'}/${a.slug || ''}`;
+      const shop = (CFG.SHOP_URL || 'https://www.mymenes.com').replace(/\/$/, '');
+      const link = tools?.link || (a.slug ? `${shop}/r/${a.slug}` : shop);
       box.innerHTML = `
         <div class="tool-row"><div><strong>Lien</strong><br><span>${esc(link)}</span></div></div>
         <div class="tool-row" style="margin-top:8px"><div><strong>Code</strong><br><span>${esc(a.promoCode || tools?.promoCode || '')}</span></div></div>`;
