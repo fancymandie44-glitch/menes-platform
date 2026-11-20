@@ -55,6 +55,7 @@ const REQUIRED_FILES = [
   'lib/payments.js',
   'lib/cors.js',
   'lib/order-pricing.js',
+  'lib/order-number.js',
   'lib/admin-auth.js',
   'lib/public-catalog.js',
   'lib/ambassador-links.js',

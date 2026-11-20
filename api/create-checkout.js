@@ -6,6 +6,7 @@ const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
 const { readProgram, mergeAmbassadorDiscounts } = require('../lib/ambassador-data');
 const { notifyMerchant } = require('../lib/notify');
+const { assignOrderNumber } = require('../lib/order-number');
 
 exports.handler = async (event) => {
   setLambdaEvent(event);
@@ -38,6 +39,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: priced.error }) };
     }
     const order = priced.order;
+    assignOrderNumber(store, order);
 
     let result = await stripeCheckout(order, false);
     if (result.error) result = await paypalCheckout(order);
@@ -68,7 +70,13 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ checkoutUrl: result.checkoutUrl, orderId: order.id, total: order.total, method: provider }),
+      body: JSON.stringify({
+        checkoutUrl: result.checkoutUrl,
+        orderId: order.id,
+        number: order.number,
+        total: order.total,
+        method: provider,
+      }),
     };
   } catch (err) {
     console.error('create-checkout', err);

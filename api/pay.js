@@ -4,9 +4,10 @@ const { corsHeaders } = require('../lib/cors');
 const { buildTrustedOrder } = require('../lib/order-pricing');
 const { notifyMerchant } = require('../lib/notify');
 const { readProgram, mergeAmbassadorDiscounts } = require('../lib/ambassador-data');
+const { assignOrderNumber } = require('../lib/order-number');
 
-async function recordOrder(order, method, siteId) {
-  const store = await readSiteStore(siteId);
+async function recordOrder(order, method, siteId, store) {
+  if (!store) store = await readSiteStore(siteId);
   if (!store.orders) store.orders = [];
   const existing = store.orders.findIndex((o) => o.id === order.id);
   const entry = {
@@ -57,6 +58,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers: cors, body: JSON.stringify({ error: priced.error }) };
     }
     const order = priced.order;
+    assignOrderNumber(store, order);
 
     const requested = String(method || '').toLowerCase();
     let result;
@@ -100,13 +102,19 @@ exports.handler = async (event) => {
     }
 
     const provider = result.provider || requested;
-    const savedStore = await recordOrder(order, provider, siteId);
+    const savedStore = await recordOrder(order, provider, siteId, store);
     await notifyMerchant(order, provider, 'En attente de paiement', savedStore);
 
     return {
       statusCode: 200,
       headers: cors,
-      body: JSON.stringify({ checkoutUrl: result.checkoutUrl, orderId: order.id, total: order.total, method: provider }),
+      body: JSON.stringify({
+        checkoutUrl: result.checkoutUrl,
+        orderId: order.id,
+        number: order.number,
+        total: order.total,
+        method: provider,
+      }),
     };
   } catch (err) {
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Erreur serveur paiement' }) };

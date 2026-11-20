@@ -254,6 +254,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         ok: true,
         orderId,
+        number: order.number || null,
         status: 'paid',
         verified: true,
         notified: Boolean(merchant?.ok),
