@@ -1,0 +1,15 @@
+LEDGER MAISON (comptabilite perso, sur TON PC)
+==============================================
+
+Dossier : ledger-maison  (separe de la boutique, de Grillz et de l'admin)
+
+1. Installe Git + Docker Desktop (icone verte)
+2. Si tu n'as pas deja le repo :
+     git clone https://github.com/fancymandie44-glitch/menes-platform.git
+3. Double-clic : START-LEDGER.bat
+4. Chrome : http://127.0.0.1:3847/connexion
+5. Cree le coffre, puis Import tes CSV / OFX / XLSX / PDF
+
+Tes extraits restent sur le PC (volume Docker). Pas Netlify. Pas trycloudflare.
+
+Arreter : Ctrl+C dans la fenetre noire.

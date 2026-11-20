@@ -1,0 +1,9 @@
+api/.venv
+api/data
+api/*.egg-info
+api/.pytest_cache
+web/node_modules
+web/.next
+**/.DS_Store
+__pycache__/
+*.pyc

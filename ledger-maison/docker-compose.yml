@@ -1,0 +1,22 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "8847:8847"
+    environment:
+      LEDGER_DATA: /data
+      LEDGER_FILE_PASSWORD: ${LEDGER_FILE_PASSWORD:-local-dev-change-me}
+      MARKET_API_KEY: ${MARKET_API_KEY:-}
+    volumes:
+      - ledger-data:/data
+  web:
+    build: ./web
+    ports:
+      - "3847:3847"
+    environment:
+      LEDGER_API_URL: http://api:8847
+    depends_on:
+      - api
+
+volumes:
+  ledger-data:
