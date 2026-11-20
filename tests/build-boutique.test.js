@@ -63,6 +63,7 @@ function run() {
     'console-control.js',
     'shop-track.js',
     'lib/order-pricing.js',
+    'lib/order-number.js',
     'lib/cors.js',
     'lib/platform.js',
     'lib/passport.js',

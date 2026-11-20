@@ -3485,7 +3485,12 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
       // Manual wallets fallback only if Coinbase not configured
       document.getElementById('checkoutModal').classList.add('hidden');
       syncScrollLock();
-      showCryptoPayment({ ...order, total: data.total || currentTotals().total }, data.total || currentTotals().total);
+      showCryptoPayment({
+        ...order,
+        id: data.orderId || order.id,
+        number: data.number || order.number,
+        total: data.total || currentTotals().total,
+      }, data.total || currentTotals().total);
       btn.disabled = false;
       btn.textContent = currentLang === 'en' ? 'Pay' : 'Payer';
       return;
@@ -3558,8 +3563,8 @@ async function confirmPaidOrderFromUrl(params) {
         } catch {}
         showSuccess({
           msg: currentLang === 'en'
-            ? 'Payment confirmed. A confirmation email is on its way.'
-            : 'Paiement confirmé. Un courriel de confirmation est en route.',
+            ? `Payment confirmed${data.number ? ` · order #${data.number}` : ''}. A confirmation email is on its way.`
+            : `Paiement confirmé${data.number ? ` · commande #${data.number}` : ''}. Un courriel de confirmation est en route.`,
           passport: data.passport,
         });
         return data;
@@ -3710,7 +3715,7 @@ function renderCryptoPanel(symbol) {
 
 async function showCryptoPayment(order, total) {
   const wallets = getWallets();
-  document.getElementById('cryptoOrderId').textContent = `#${order.id}`;
+  document.getElementById('cryptoOrderId').textContent = `#${order.number || order.id}`;
   document.getElementById('cryptoAmount').textContent = `${total.toFixed(2)}$ CAD`;
 
   const modal = document.getElementById('cryptoModal');
@@ -3727,7 +3732,7 @@ async function showCryptoPayment(order, total) {
     document.getElementById('cryptoTimer').classList.add('hidden');
     tabs.innerHTML = '';
     const ig = storeData?.site?.instagram || 'https://www.instagram.com/menes_jewelry';
-    panel.innerHTML = `<p class="crypto-empty">Contacte-nous sur <a href="${ig}" target="_blank" rel="noopener">Instagram</a> ou par email pour recevoir l'adresse de paiement crypto. Ta commande #${order.id} est enregistrée.</p>`;
+    panel.innerHTML = `<p class="crypto-empty">Contacte-nous sur <a href="${ig}" target="_blank" rel="noopener">Instagram</a> ou par email pour recevoir l'adresse de paiement crypto. Ta commande #${order.number || order.id} est enregistrée.</p>`;
     return;
   }
 

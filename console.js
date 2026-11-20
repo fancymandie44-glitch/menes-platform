@@ -490,7 +490,7 @@ function updateDashboard() {
 
   const recent = orders.slice(-5).reverse();
   document.getElementById('recentOrders').innerHTML = recent.length
-    ? recent.map((o) => `<div class="mini-item"><span>#${esc(o.id)} · ${esc(o.customer?.name || 'Client')}<br><span class="mini-item-status">${esc(orderStatusLabel(o.status || 'pending'))}</span></span><span>${formatMoney(o.total || 0)}</span></div>`).join('')
+    ? recent.map((o) => `<div class="mini-item"><span>#${esc(o.number || o.id)} · ${esc(o.customer?.name || 'Client')}<br><span class="mini-item-status">${esc(orderStatusLabel(o.status || 'pending'))}</span></span><span>${formatMoney(o.total || 0)}</span></div>`).join('')
     : '<p class="empty">Aucune commande</p>';
 }
 
@@ -1010,7 +1010,7 @@ function renderOrders() {
     <tbody>${orders.map((o) => {
       const st = o.status || 'pending';
       return `<tr>
-      <td><strong>${esc(o.id)}</strong></td>
+      <td><strong>${esc(o.number || o.id)}</strong></td>
       <td>${esc(o.customer?.name)}<br><small>${esc(o.customer?.email)}</small></td>
       <td>${(o.total || 0).toFixed(2)}$</td>
       <td>${esc(o.payment || o.method || '-')}</td>
@@ -1041,7 +1041,7 @@ window.openOrderDetail = (id) => {
     : '<p class="empty">Aucun article</p>';
   const title = document.getElementById('orderModalTitle');
   const body = document.getElementById('orderModalBody');
-  if (title) title.textContent = `Commande ${o.id}`;
+  if (title) title.textContent = `Commande ${o.number || o.id}`;
   if (body) {
     body.innerHTML = `
       <div class="order-detail-grid">
