@@ -7,6 +7,7 @@ const WISHLIST_KEY = 'menes_wishlist';
 const VIP_DISMISSED_KEY = 'menes_vip_dismissed';
 const PASSPORT_EMAIL_KEY = 'menes_passport_email';
 const PASSPORT_TOKEN_KEY = 'menes_passport_token';
+const LOW_STOCK_LIMIT = 10;
 const VIP_DISMISS_DAYS = 14;
 const RETIRED_PUBLIC_CODES = new Set(['VIP10', 'WELCOME10']);
 const FREE_SHIPPING_THRESHOLD = 150;
@@ -577,10 +578,14 @@ function renderPdpUrgency(product) {
   const variant = readSelectedVariant(panel);
   const left = availableStockFor(product, variant);
   const bits = [];
-  if (Number.isFinite(left) && left > 0 && left <= 5) {
+  if (Number.isFinite(left) && isLowStock(left)) {
     bits.push(tFill('stock_left', { n: left }));
+    el.classList.add('is-low');
   } else if (Number.isFinite(left) && left <= 0) {
     bits.push(t('sold_out_variant'));
+    el.classList.remove('is-low');
+  } else {
+    el.classList.remove('is-low');
   }
   if (bits.length) {
     el.textContent = bits.join(' · ');
@@ -1800,7 +1805,7 @@ function getCartUpsells(limit = 3) {
     let s = 0;
     if (!cats.has(p.category)) s += 3;
     if (p.featured) s += 2;
-    if (p.stock > 0 && p.stock <= 5) s += 1;
+    if (p.stock > 0 && p.stock < LOW_STOCK_LIMIT) s += 1;
     return s;
   };
   return [...others].sort((a, b) => score(b) - score(a) || (Number(a.price) || 0) - (Number(b.price) || 0)).slice(0, limit);
@@ -2032,35 +2037,67 @@ function findProductVariant(product, variantMap) {
     || null;
 }
 
-/** Available units for a selection. null = unlimited / not tracked per variant */
+/** Available units for a selection. Infinity = plenty / not tracked */
+function parsePublicStock(raw, { variant = false } = {}) {
+  if (raw == null || raw === '') return Infinity;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return Infinity;
+  if (!variant && n <= 0) return Infinity;
+  return Math.max(0, n);
+}
+
+function isLowStock(n) {
+  return Number.isFinite(n) && n > 0 && n < LOW_STOCK_LIMIT;
+}
+
+function cardRemaining(product) {
+  if (!product) return null;
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (variants.length) {
+    if (variants.some((v) => v.stock == null)) return null;
+    const sum = variants.reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0);
+    if (isLowStock(sum)) return sum;
+    return null;
+  }
+  const n = parsePublicStock(product.stock, { variant: false });
+  return isLowStock(n) ? n : null;
+}
+
 function availableStockFor(product, variantMap) {
   if (!product) return 0;
   const variants = Array.isArray(product.variants) ? product.variants : [];
   if (variants.length) {
     const hit = findProductVariant(product, variantMap);
     if (!hit) return 0;
-    return Math.max(0, Number(hit.stock) || 0);
+    return parsePublicStock(hit.stock, { variant: true });
   }
-  // Legacy product-level stock: 0 often means "not set" in this catalog — treat as unlimited
-  const s = Number(product.stock);
-  if (!Number.isFinite(s) || s <= 0) return Infinity;
-  return s;
+  return parsePublicStock(product.stock, { variant: false });
 }
 
 function stockForOptionValue(product, optionName, value, partialVariant = {}) {
   const variants = Array.isArray(product?.variants) ? product.variants : [];
   if (!variants.length) return Infinity;
-  // Sum stock of all variants that include this option value (given other selections when possible)
-  return variants
-    .filter((v) => {
-      const opts = v.options || {};
-      if (opts[optionName] !== value) return false;
-      return Object.keys(partialVariant).every((k) => {
-        if (k === optionName) return true;
-        return !partialVariant[k] || opts[k] === partialVariant[k];
-      });
-    })
-    .reduce((s, v) => s + (Number(v.stock) || 0), 0);
+  let plenty = false;
+  let sum = 0;
+  let matched = false;
+  for (const v of variants) {
+    const opts = v.options || {};
+    if (opts[optionName] !== value) continue;
+    const ok = Object.keys(partialVariant).every((k) => {
+      if (k === optionName) return true;
+      return !partialVariant[k] || opts[k] === partialVariant[k];
+    });
+    if (!ok) continue;
+    matched = true;
+    if (v.stock == null || v.stock === '') {
+      plenty = true;
+      continue;
+    }
+    sum += Number(v.stock) || 0;
+  }
+  if (!matched) return 0;
+  if (plenty) return Infinity;
+  return sum;
 }
 
 function applyVariantStockUi(root, product) {
@@ -2079,6 +2116,7 @@ function applyVariantStockUi(root, product) {
       chip.setAttribute('aria-disabled', oos ? 'true' : 'false');
       if (oos) {
         chip.title = t('sold_out');
+        chip.querySelector('.left-n')?.remove();
         if (!chip.querySelector('.oos-tag')) {
           const tag = document.createElement('span');
           tag.className = 'oos-tag';
@@ -2086,8 +2124,19 @@ function applyVariantStockUi(root, product) {
           chip.appendChild(tag);
         }
       } else {
-        chip.title = '';
+        chip.title = isLowStock(left) ? tFill('stock_left', { n: left }) : '';
         chip.querySelector('.oos-tag')?.remove();
+        let count = chip.querySelector('.left-n');
+        if (isLowStock(left)) {
+          if (!count) {
+            count = document.createElement('span');
+            count.className = 'left-n';
+            chip.appendChild(count);
+          }
+          count.textContent = String(left);
+        } else {
+          count?.remove();
+        }
       }
     });
     // If active chip is OOS, switch to first available
@@ -2124,9 +2173,13 @@ function renderProducts() {
   }
 
   grid.innerHTML = products.map((p) => {
-    const hasStockBadge = p.stock > 0 && p.stock <= 5;
+    const remaining = cardRemaining(p);
+    const hasStockBadge = isLowStock(remaining);
     const stockBadge = hasStockBadge
-      ? `<span class="stock-badge">${t('only_left')} ${p.stock}</span>`
+      ? `<span class="stock-badge">${esc(tFill('stock_left', { n: remaining }))}</span>`
+      : '';
+    const stockLine = hasStockBadge
+      ? `<p class="product-stock-left">${esc(tFill('stock_left', { n: remaining }))}</p>`
       : '';
     const wishlisted = isWishlisted(p.id);
     const imgs = productImages(p);
@@ -2180,6 +2233,7 @@ function renderProducts() {
           <span class="price-now">${p.price}$ CAD</span>
           ${p.comparePrice > p.price ? `<span class="price-save">-${Math.round((1 - p.price / p.comparePrice) * 100)}%</span>` : ''}
         </div>
+        ${stockLine}
         ${optionsHtml}
         <button type="button" class="add-btn">${addLabel}</button>
       </div>

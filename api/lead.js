@@ -1,5 +1,6 @@
 const { corsHeaders } = require('../lib/cors');
 const { notifySimple, brandShell, escHtml, resendConfigured } = require('../lib/notify');
+const { allowRequest, clientIp, tooManyRequests } = require('../lib/rate-limit');
 
 exports.handler = async (event) => {
   const headers = corsHeaders(event);
@@ -9,6 +10,9 @@ exports.handler = async (event) => {
   }
 
   try {
+    if (!allowRequest(`lead:${clientIp(event)}`, { limit: 8, windowMs: 60_000 })) {
+      return tooManyRequests(headers);
+    }
     if (!resendConfigured()) {
       return {
         statusCode: 503,
@@ -56,6 +60,6 @@ exports.handler = async (event) => {
 
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Erreur' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur' }) };
   }
 };

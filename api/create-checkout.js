@@ -1,87 +1,76 @@
-// Netlify Function — Square Checkout
-// Set env vars in Netlify: SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID, SQUARE_SANDBOX=true
+'use strict';
+
+const { stripeCheckout, paypalCheckout, squareCheckout } = require('../lib/payments');
+const { readSiteStore, writeSiteStore, resolveSiteId, setLambdaEvent } = require('../lib/platform');
+const { corsHeaders } = require('../lib/cors');
+const { buildTrustedOrder } = require('../lib/order-pricing');
+const { readProgram, mergeAmbassadorDiscounts } = require('../lib/ambassador-data');
+const { notifyMerchant } = require('../lib/notify');
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
+  setLambdaEvent(event);
+  const headers = corsHeaders(event);
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers, body: '' };
   }
-
-  const token = process.env.SQUARE_ACCESS_TOKEN;
-  const locationId = process.env.SQUARE_LOCATION_ID;
-  const sandbox = process.env.SQUARE_SANDBOX === 'true';
-  const baseUrl = sandbox
-    ? 'https://connect.squareupsandbox.com'
-    : 'https://connect.squareup.com';
-
-  if (!token || !locationId) {
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        error: 'Square not configured',
-        message: 'Configure SQUARE_ACCESS_TOKEN and SQUARE_LOCATION_ID in Netlify env vars',
-      }),
-    };
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   try {
-    const { order } = JSON.parse(event.body);
-    const lineItems = order.items.map((item) => ({
-      name: `${item.name} (${item.size})`,
-      quantity: String(item.qty),
-      base_price_money: {
-        amount: Math.round(item.price * 100),
-        currency: 'CAD',
-      },
-    }));
+    const host = event.headers['x-forwarded-host'] || event.headers.host || '';
+    const params = event.queryStringParameters || {};
+    const headerSiteId = event.headers['x-site-id'] || event.headers['X-Site-Id'];
+    const siteId = await resolveSiteId(host, params.site || headerSiteId);
+    const body = JSON.parse(event.body || '{}');
 
-    const idempotencyKey = `${order.id}-${Date.now()}`;
-
-    const response = await fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
-      method: 'POST',
-      headers: {
-        'Square-Version': '2024-01-18',
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        idempotency_key: idempotencyKey,
-        order: {
-          location_id: locationId,
-          line_items: lineItems,
-          reference_id: order.id,
-        },
-        checkout_options: {
-          redirect_url: `${process.env.URL || 'https://boutiquemenes.netlify.app'}/?paid=1&order=${order.id}&method=square`,
-          ask_for_shipping_address: true,
-        },
-        pre_populated_data: {
-          buyer_email: order.customer.email,
-          buyer_phone_number: order.customer.phone,
-        },
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Square error:', data);
-      return { statusCode: 500, body: JSON.stringify({ error: data.errors?.[0]?.detail || 'Square error' }) };
-    }
-
-    const checkoutUrl = data.payment_link?.url || data.payment_link?.long_url;
-
+    const store = await readSiteStore(siteId);
+    let pricedStore = store;
     try {
-      const { notifyMerchant } = require('../lib/notify');
-      await notifyMerchant(order, 'Square', 'En attente de paiement');
+      pricedStore = mergeAmbassadorDiscounts(store, await readProgram());
     } catch (e) {
-      console.log('Merchant notify failed:', e.message);
+      console.error('create-checkout mergeAmbassadorDiscounts', e.message);
     }
+
+    const priced = buildTrustedOrder(pricedStore, body.order || body);
+    if (priced.error) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: priced.error }) };
+    }
+    const order = priced.order;
+
+    let result = await squareCheckout(order);
+    if (result.error) result = await stripeCheckout(order, false);
+    if (result.error) result = await paypalCheckout(order);
+    if (result.error || !result.checkoutUrl) {
+      return {
+        statusCode: 503,
+        headers,
+        body: JSON.stringify({ error: 'Paiement temporairement indisponible. Réessayez ou contactez-nous.' }),
+      };
+    }
+
+    if (!store.orders) store.orders = [];
+    const existing = store.orders.findIndex((o) => o.id === order.id);
+    const entry = {
+      ...order,
+      payment: 'square',
+      method: 'square',
+      status: 'pending',
+      date: order.date || new Date().toISOString(),
+    };
+    if (existing >= 0) store.orders[existing] = { ...store.orders[existing], ...entry };
+    else store.orders.push(entry);
+    await writeSiteStore(siteId, store);
+    await notifyMerchant(order, 'Square', 'En attente de paiement', store);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ checkoutUrl, orderId: order.id }),
+      headers,
+      body: JSON.stringify({ checkoutUrl: result.checkoutUrl, orderId: order.id, total: order.total }),
     };
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    console.error('create-checkout', err);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erreur serveur paiement' }) };
   }
 };

@@ -78,7 +78,7 @@ async function findMedia(store, siteId, id) {
     const listed = await store.list({ prefix: 'media:' });
     const hit = (listed.blobs || []).find((b) => {
       const k = String(b.key || '');
-      return k === id || k.endsWith(`:${id}`) || k.endsWith(`/${id}`) || k.includes(id);
+      return k === id || k.endsWith(`:${id}`);
     });
     if (hit) return readEntry(store, hit.key);
   } catch {}

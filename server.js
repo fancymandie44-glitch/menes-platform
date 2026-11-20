@@ -2,10 +2,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { readStoreFile, writeStoreFile } = require('./lib/store-data');
+const { publicStore } = require('./lib/public-catalog');
+const { passwordsMatch } = require('./lib/admin-auth');
 const { cleanEmail, isEmail, findPassport, upsertPassportFromPaidOrders, clientView, tokenMatches } = require('./lib/passport');
 
 const root = __dirname;
-const port = 8888;
+const port = Number(process.env.PORT) || 8888;
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '').trim();
 
 const types = {
@@ -33,11 +35,11 @@ http.createServer(async (req, res) => {
   let urlPath = decodeURIComponent(url.pathname);
 
   if (urlPath === '/api/store') {
-    if (req.method === 'GET') return sendJson(res, 200, readStoreFile(root));
+    if (req.method === 'GET') return sendJson(res, 200, publicStore(readStoreFile(root)));
     if (req.method === 'POST') {
       if (!ADMIN_PASSWORD) return sendJson(res, 503, { error: 'ADMIN_PASSWORD non configuré sur le serveur' });
       const body = await readBody(req);
-      if (req.headers['x-admin-password'] !== ADMIN_PASSWORD) return sendJson(res, 401, { error: 'Mot de passe incorrect' });
+      if (!passwordsMatch(req.headers['x-admin-password'] || '', ADMIN_PASSWORD)) return sendJson(res, 401, { error: 'Mot de passe incorrect' });
       writeStoreFile(root, JSON.parse(body));
       return sendJson(res, 200, { ok: true });
     }
@@ -64,6 +66,10 @@ http.createServer(async (req, res) => {
     if (!passport) return sendJson(res, 404, { ok: false, exists: false });
     const full = tokenMatches(passport, token);
     return sendJson(res, 200, { ok: true, exists: true, created, full, passport: clientView(passport, { full }) });
+  }
+
+  if (urlPath === '/api/health') {
+    return sendJson(res, 200, { ok: true, service: 'menes' });
   }
 
   if ((urlPath === '/api/pay' || urlPath === '/api/create-checkout') && req.method === 'POST') {
