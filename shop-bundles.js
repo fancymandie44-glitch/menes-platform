@@ -25,7 +25,17 @@
   function remainingOf(bundle) {
     const B = api();
     if (!B) return Infinity;
+    const fromStore = shopStore()?.bundles?.remaining?.[bundle.id];
+    if (fromStore != null && Number.isFinite(Number(fromStore))) return Number(fromStore);
     return B.bundleRemaining(shopStore(), bundle);
+  }
+
+  function remainingCopy(bundle) {
+    const left = remainingOf(bundle);
+    if (!Number.isFinite(left)) return loc(bundle.urgency);
+    if (left <= 0) return lang() === 'fr' ? 'Épuisé' : 'Sold out';
+    if (lang() === 'fr') return left === 1 ? 'Plus que 1 pack' : `Plus que ${left} packs`;
+    return left === 1 ? 'Only 1 pack left' : `Only ${left} packs left`;
   }
 
   function canHold(bundle) {
@@ -221,9 +231,7 @@
       const badge = loc(bundle.badge);
       const left = remainingOf(bundle);
       const soldOut = Number.isFinite(left) && left <= 0;
-      const urgency = soldOut
-        ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
-        : (typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency));
+      const urgency = remainingCopy(bundle);
       const ctaLabel = soldOut
         ? (lang() === 'fr' ? 'Épuisé' : 'Sold out')
         : (ready ? (lang() === 'fr' ? 'Mettre au panier' : 'Add to cart') : soonLabel());
@@ -424,7 +432,7 @@
           <h2 id="bundlePdpName">${esc(loc(bundle.name))}</h2>
           <p class="shop-bundle-tag">${esc(loc(bundle.tagline))}</p>
           <div class="pdp-price">${priceHtml(bundle)}</div>
-          ${loc(bundle.urgency) || (typeof bundle.urgency === 'string' && bundle.urgency) ? `<p class="pdp-urgency">${esc(typeof bundle.urgency === 'string' ? bundle.urgency : loc(bundle.urgency))}</p>` : ''}
+          ${remainingCopy(bundle) ? `<p class="pdp-urgency">${esc(remainingCopy(bundle))}</p>` : ''}
           <p class="pdp-desc">${esc(loc(bundle.description))}</p>
           ${included.length ? `<div class="bundle-included"><h3>${esc(lang() === 'fr' ? 'Ce que le bundle contient' : 'What this bundle includes')}</h3><ul>${included.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`
             : (highlights.length ? `<ul class="shop-bundle-points">${highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : '')}

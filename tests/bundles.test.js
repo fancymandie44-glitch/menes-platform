@@ -128,8 +128,8 @@ bundles.CLIENT_DISCOUNT.percent = null;
 const cfg = fs.readFileSync(path.join(__dirname, '../data/bundles.js'), 'utf8');
 assert.ok(!cfg.includes('TODO'), 'no TODO in bundle config');
 
-assert.strictEqual(bundles.bySlug('essentials').limit, 3);
-assert.strictEqual(bundles.bySlug('holiday-exclusive').limit, 5);
+assert.strictEqual(bundles.bySlug('essentials').limit, 5);
+assert.strictEqual(bundles.bySlug('holiday-exclusive').limit, 3);
 assert.strictEqual(bundles.bySlug('kultur-steps').limit, null);
 
 const stockStore = {
@@ -165,12 +165,12 @@ const stockStore = {
     { id: 'menes-m-keyz-crossbody-bag-', name: 'Bag', stock: 10 },
   ],
   orders: [
-    { status: 'paid', items: [{ id: 'bundle-essentials', qty: 3 }] },
-    { status: 'paid', items: [{ id: 'bundle-holiday-exclusive', qty: 5 }] },
+    { status: 'paid', items: [{ id: 'bundle-essentials', qty: 5 }] },
+    { status: 'paid', items: [{ id: 'bundle-holiday-exclusive', qty: 3 }] },
   ],
 };
-assert.ok(!bundles.canPurchase(bundles.bySlug('essentials'), LIVE, stockStore), 'essentials capped at 3');
-assert.ok(!bundles.canPurchase(bundles.bySlug('holiday-exclusive'), LIVE, stockStore), 'holiday capped at 5');
+assert.ok(!bundles.canPurchase(bundles.bySlug('essentials'), LIVE, stockStore), 'essentials capped at 5');
+assert.ok(!bundles.canPurchase(bundles.bySlug('holiday-exclusive'), LIVE, stockStore), 'holiday capped at 3');
 assert.ok(bundles.canPurchase(bundles.bySlug('kultur-steps'), LIVE, stockStore), 'kultur steps stay unlimited');
 assert.ok(!bundles.pairAvailable(stockStore, 'noir'), 'sold-out pair is unavailable');
 assert.ok(bundles.pairAvailable(stockStore, 'jaune'));
@@ -179,7 +179,7 @@ assert.ok(!bundles.validateBundleStock(stockStore, bundles.bySlug('kultur-steps'
 
 const oneLeft = {
   ...stockStore,
-  orders: [{ status: 'paid', items: [{ id: 'bundle-essentials', qty: 2 }] }],
+  orders: [{ status: 'paid', items: [{ id: 'bundle-essentials', qty: 4 }] }],
 };
 assert.strictEqual(bundles.bundleRemaining(oneLeft, bundles.bySlug('essentials')), 1);
 const fourth = buildTrustedOrder(oneLeft, {
@@ -192,7 +192,12 @@ const pub = publicStore(stockStore);
 assert.strictEqual(pub.bundles.soldOut['bundle-essentials'], true);
 assert.strictEqual(pub.bundles.soldOut['bundle-holiday-exclusive'], true);
 assert.strictEqual(pub.bundles.soldOut['bundle-kultur-steps'], false);
-assert.ok(!('remaining' in pub.bundles), 'customers must not see remaining bundle counts');
+assert.strictEqual(pub.bundles.remaining['bundle-essentials'], 0);
+assert.strictEqual(pub.bundles.remaining['bundle-holiday-exclusive'], 0);
+assert.ok(!('bundle-kultur-steps' in pub.bundles.remaining), 'kultur steps stay unlimited');
+const freshPub = publicStore({ products: [], orders: [] });
+assert.strictEqual(freshPub.bundles.remaining['bundle-essentials'], 5);
+assert.strictEqual(freshPub.bundles.remaining['bundle-holiday-exclusive'], 3);
 assert.strictEqual(pub.bundles.pairs.noir, false);
 assert.strictEqual(pub.bundles.pairs.jaune, true);
 assert.strictEqual(pub.bundles.hats.camo, true);
@@ -244,10 +249,10 @@ assert.strictEqual(decrementStockForOrder(hatStore, paidCamo), true);
 assert.strictEqual(hatStore.inventory.hats.camo, 4);
 
 const shopBundlesJs = fs.readFileSync(path.join(__dirname, '../shop-bundles.js'), 'utf8');
-assert.ok(!shopBundlesJs.includes('${left} left'), 'do not show remaining bundle counts');
-assert.ok(!shopBundlesJs.includes('restant${left'), 'do not show remaining bundle counts in French');
-assert.notStrictEqual(bundles.bySlug('holiday-exclusive').urgency.en, 'Only 5 packs');
-assert.notStrictEqual(bundles.bySlug('essentials').urgency.en, 'Only 3 packs');
-assert.ok(!/Only \d+ packs/i.test(fs.readFileSync(path.join(__dirname, '../data/bundles.js'), 'utf8')));
+assert.ok(shopBundlesJs.includes('function remainingCopy'), 'shop shows leftover pack counts');
+assert.ok(shopBundlesJs.includes('Only ${left} packs left'));
+assert.ok(shopBundlesJs.includes('Plus que ${left} packs'));
+assert.strictEqual(bundles.bySlug('essentials').limit, 5);
+assert.strictEqual(bundles.bySlug('holiday-exclusive').limit, 3);
 
 console.log('ok: bundles');
