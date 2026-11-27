@@ -219,7 +219,7 @@
       },
       pairCount: 2,
       pairOptions: PAIR_OPTIONS,
-      limit: 3,
+      limit: 5,
       hat: true,
       hatOptions: HAT_OPTIONS.filter((h) => !h.virtual),
       defaultHatId: 'orange',
@@ -273,7 +273,7 @@
       hat: true,
       hatOptions: HAT_OPTIONS,
       defaultHatId: 'camo',
-      limit: 5,
+      limit: 3,
       sizes: [],
       stock: null,
       allowDuplicatePairs: true,
@@ -485,9 +485,11 @@
 
   function publicBundleState(store) {
     const soldOut = {};
+    const remaining = {};
     BUNDLES.forEach((b) => {
       const left = bundleRemaining(store, b);
       soldOut[b.id] = Number.isFinite(left) ? left <= 0 : false;
+      if (Number.isFinite(left)) remaining[b.id] = left;
     });
     const pairs = {};
     Object.keys(PAIR_STOCK).forEach((id) => {
@@ -503,7 +505,7 @@
     HAT_OPTIONS.forEach((h) => {
       hats[h.id] = hatAvailable(store, h.id);
     });
-    return { soldOut, pairs, boxers, hats };
+    return { soldOut, remaining, pairs, boxers, hats };
   }
 
   function payLockMessage(lang) {

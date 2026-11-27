@@ -123,9 +123,10 @@ function run() {
   assert(shopBundlesJs.includes('pairAvailable'), 'sold-out pairs must show as unavailable');
   assert(shopBundlesJs.includes('data-hat'), 'holiday pack lets shoppers pick a hat');
   assert(bundleJs.includes("id: 'camo'"), 'camo hat is the priority holiday pick');
-  assert(bundleJs.includes('limit: 3') && bundleJs.includes('limit: 5'), 'essentials 3 / holiday 5');
-  assert(!/Only \d+ packs/i.test(bundleJs), 'customers must not see Only N packs');
-  assert(!/packs seulement/i.test(bundleJs), 'customers must not see N packs seulement');
+  assert(bundleJs.includes('limit: 3') && bundleJs.includes('limit: 5'), 'holiday 3 / essentials 5');
+  assert(shopBundlesJs.includes('function remainingCopy'), 'customers see leftover pack counts');
+  assert(shopBundlesJs.includes('Only ${left} packs left'));
+  assert(shopBundlesJs.includes('Plus que ${left} packs'));
   assert(shopJs.includes('Holiday season is here'), 'after the drop the timer copy is gone');
   assert(shopJs.includes('COMMUNITY_PHOTOS'), 'community gallery must include We Wear MENES photos');
   assert(shopJs.includes('/images/community/hat-outdoor.jpg'), 'community hat photo must ship with the shop');
